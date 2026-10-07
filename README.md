@@ -161,6 +161,10 @@ https://www.figma.com/design/5mFuLmt00uZP7Osp3ezM0z/Untitled?node-id=0-1
 
 The Figma design should be consulted before implementing or modifying user-facing interfaces.
 
+## Approved Architecture Baseline
+
+[FAIRWORK-ARCH-1.0.0](docs/ARCHITECTURE_BASELINE.md) is the approved Stage 1 implementation baseline. Read the [approval record](docs/STAGE1_APPROVAL.md), [master capability manifest](docs/FAIRWORK_MASTER_SPEC.md) and [solo competition plan](docs/MVP_PLAN.md) before implementation. The lifecycle below remains the long-term vision; the competition scope is narrower and no runtime capability is implemented yet. This documentation task does not start Stage 2.
+
 ## Current Development Status
 
 FAIRWORK began as a UI/UX prototype.
