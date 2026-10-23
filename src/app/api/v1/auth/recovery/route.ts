@@ -4,7 +4,7 @@ import { requestRecovery } from "@/server/recovery";
 export async function POST(request: Request) {
   return apiResponse(async () => {
     assertSameOrigin(request);
-    const { email } = await readJson(request, recoveryRequestSchema);
-    return requestRecovery(email);
+    const { email, continuation } = await readJson(request, recoveryRequestSchema);
+    return requestRecovery(email, continuation);
   }, "auth-recovery.v1");
 }

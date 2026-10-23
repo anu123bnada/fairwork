@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { participantDestination, participantAuthQuery } from "@/features/offer/participant-path";
-import Link from "next/link";
+import { AuthLink } from "./auth-link";
 
 export function SecureSignInForm({ className }: { className?: string }) {
   const router = useRouter();
@@ -34,12 +34,13 @@ export function SecureSignInForm({ className }: { className?: string }) {
   }
 
   return (
-    <form className={className} onSubmit={(event) => void submit(event)}>
+    <form className={className} onSubmit={(event) => void submit(event)} aria-busy={busy}>
       <label>Email address<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
       <label>Password<input name="password" type="password" autoComplete="current-password" required maxLength={128} /></label>
       <button className="fw-primary" disabled={busy}>{busy ? "Verifying account…" : "Continue securely"}</button>
       {error && <p role="alert">{error}</p>}
-      <p><Link href="/forgot-password">Forgot your password?</Link></p>
+      <p><AuthLink href="/forgot-password">Forgot your password?</AuthLink></p>
+      {error && <p><AuthLink href="/auth/confirm">Need to verify your email?</AuthLink></p>}
     </form>
   );
 }

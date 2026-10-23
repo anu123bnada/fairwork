@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { participantOfferId,participantCaseId,participantDestination,participantGrantId,participantAgreementBasisId,participantAuthQuery } from "@/features/offer/participant-path";
+import { participantOfferId,participantCaseId,participantDestination,participantGrantId,participantAgreementBasisId,participantAuthQuery,participantSignInPath } from "@/features/offer/participant-path";
 
 describe("participant sign-in selection", () => {
+  it("preserves allowlisted product pages without allowing arbitrary paths or privileged pages", () => {
+    expect(participantSignInPath("/app/settings", "")).toBe("/sign-in?screen=settings");
+    expect(participantDestination("screen=settings")).toBe("/app/settings");
+    expect(participantAuthQuery("screen=settings")).toBe("screen=settings");
+    expect(participantSignInPath("/operator/authority", "")).toBe("/sign-in");
+    for (const value of ["screen=admin", "screen=//evil.invalid", "screen=settings&screen=settings"]) {
+      expect(participantDestination(value)).toBeNull();
+    }
+    const id = "40000000-0000-4000-8000-000000000003";
+    expect(participantAuthQuery(`offerId=${id}&workspace=employer`)).toBe(`offerId=${id}&workspace=employer`);
+    expect(participantSignInPath("/app/settings", `offerId=${id}`)).toBe(`/sign-in?offerId=${id}`);
+  });
   it("preserves employer navigation without accepting roles, arbitrary URLs or duplicate hints",()=>{
     expect(participantDestination("?workspace=employer")).toBe("/app/employer");
     expect(participantAuthQuery("?workspace=employer&role=ADMIN&next=https://evil.invalid")).toBe("workspace=employer");

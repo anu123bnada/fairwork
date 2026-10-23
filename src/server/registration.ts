@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { requirePublicEnvironment } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { getServerEnvironment } from "./env";
+import { authPath } from "@/features/identity/auth-navigation";
 
 export function requireRegistration() {
   if (process.env.AUTH_REGISTRATION_ENABLED !== "true") throw new AppError("ACTION_FORBIDDEN", 403);
@@ -11,7 +12,7 @@ export function requireRegistration() {
   return config;
 }
 
-export async function registerAccount(email: string, password: string) {
+export async function registerAccount(email: string, password: string, continuation = "", displayName?: string) {
   const { origin } = requireRegistration();
   const { url, key } = requirePublicEnvironment();
   // Check provider policy before creating an account. Do not accept auto-confirm
@@ -30,13 +31,28 @@ export async function registerAccount(email: string, password: string) {
     throw new AppError("SERVICE_UNAVAILABLE", 503);
   }
   // Registration never installs a session, even if provider settings change
-  // between the preflight and signup. No service key, roles or user metadata.
+  // between the preflight and signup. No service key or authority metadata.
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-  const { data, error } = await client.auth.signUp({ email, password, options: { emailRedirectTo: `${origin}/auth/confirm` } });
+  const { data, error } = await client.auth.signUp({ email, password, options: {
+    emailRedirectTo: `${origin}${authPath("/auth/confirm", continuation)}`,
+    // Display-only metadata. Never used for identity, membership or permissions.
+    ...(displayName ? { data: { display_name: displayName } } : {}),
+  } });
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
   if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
   if (error && error.code !== "user_already_exists" && error.code !== "email_exists") throw new AppError("VALIDATION_FAILED", 422);
   if (data?.session) throw new AppError("SERVICE_UNAVAILABLE", 503);
   // Same response for an existing account and a new, unconfirmed account.
+  return { verificationRequired: true };
+}
+
+export async function resendVerification(email: string, continuation = "") {
+  const { origin } = requireRegistration();
+  const { url, key } = requirePublicEnvironment();
+  const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  const { error } = await client.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${origin}${authPath("/auth/confirm", continuation)}` } });
+  if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
+  if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  // The same response covers unknown, confirmed and unconfirmed addresses.
   return { verificationRequired: true };
 }

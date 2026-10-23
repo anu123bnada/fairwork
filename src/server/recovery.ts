@@ -5,6 +5,7 @@ import { requirePublicEnvironment } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { getServerEnvironment } from "./env";
 import { createServerSupabase } from "./supabase";
+import { authPath } from "@/features/identity/auth-navigation";
 
 function providerFailure(error: { status?: number } | null, invalid = false) {
   if (!error) return;
@@ -12,12 +13,12 @@ function providerFailure(error: { status?: number } | null, invalid = false) {
   if ((error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
   throw new AppError(invalid ? "AUTH_REQUIRED" : "VALIDATION_FAILED", invalid ? 401 : 422);
 }
-export async function requestRecovery(email: string) {
+export async function requestRecovery(email: string, continuation = "") {
   const { origin } = getServerEnvironment();
   if (!process.env.APP_ORIGIN || (process.env.NODE_ENV === "production" && !origin.startsWith("https://"))) throw new AppError("SERVICE_UNAVAILABLE", 503);
   const { url, key } = requirePublicEnvironment();
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
-  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: `${origin}/auth/recover` });
+  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: `${origin}${authPath("/auth/recover", continuation)}` });
   // Never disclose whether an address exists. Supabase enforces email/IP limits.
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
   if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);

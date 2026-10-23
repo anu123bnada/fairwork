@@ -9,7 +9,7 @@ export const metadata = { title: "Sign-in information" };
 export default async function SignInInformation({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const query = new URLSearchParams();
-  for (const key of ["offerId", "workflowId", "workId", "caseId", "grantId", "agreementBasisId", "workspace"]) {
+  for (const key of ["offerId", "workflowId", "workId", "caseId", "grantId", "agreementBasisId", "workspace", "screen"]) {
     const value = params[key];
     if (typeof value === "string") query.set(key, value);
   }
@@ -22,7 +22,7 @@ export default async function SignInInformation({ searchParams }: { searchParams
     <h1>ORYQEN sign-in information</h1>
     <h2>Test accounts only</h2>
     <p>This development build is for test accounts and synthetic data only. Do not enter real employment records. {process.env.AUTH_REGISTRATION_ENABLED === "true" ? "Controlled email registration is enabled for integration testing." : "Public account registration is not available."}</p>
-    {process.env.AUTH_REGISTRATION_ENABLED === "true" && <Link href="/register">Register a test account</Link>}
+    {process.env.AUTH_REGISTRATION_ENABLED === "true" && <Link href={`/register${suffix ? `?${suffix}` : ""}`}>Register a test account</Link>}
     <h2>Email and password</h2>
     <p>Sign-in uses your account email and password through Supabase. ORYQEN does not send or simulate SMS codes. Phone-number sign-in and phone OTP are not implemented in this build.</p>
     <h2>Authenticator verification</h2>

@@ -1,6 +1,8 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
+import { AuthLink } from "./auth-link";
+import { authPath } from "@/features/identity/auth-navigation";
+import { participantAuthQuery } from "@/features/offer/participant-path";
 import { appRequest } from "@/features/authority/client";
 export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
   const [step, setStep] = useState(confirm ? "confirm" : "request");
@@ -17,11 +19,11 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
     const data = new FormData(event.currentTarget);
     try {
       if (step === "request") {
-        await appRequest("/api/v1/auth/recovery", { email: data.get("email") }); setStep("sent");
+        await appRequest("/api/v1/auth/recovery", { email: data.get("email"), continuation: participantAuthQuery(window.location.search) }); setStep("sent");
       } else if (step === "confirm") {
         const tokenHash = new URLSearchParams(window.location.hash.slice(1)).get("token_hash");
         await appRequest("/api/v1/auth/recovery/confirm", { tokenHash });
-        window.history.replaceState(null, "", "/auth/recover");
+        window.history.replaceState(null, "", authPath("/auth/recover", window.location.search));
         // The one-use link is consumed. Retry only the assurance lookup if it
         // fails; never expose password entry before that lookup succeeds.
         setStep("assurance");
@@ -37,9 +39,9 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Recovery could not be completed."); }
     finally { setBusy(false); }
   }
-  if (step === "sent") return <p role="status">If this address has an account, check its inbox for a recovery link. No account information is disclosed here.</p>;
-  if (step === "done") return <><p role="status">Your password was changed. Sign in again with the new password.</p><Link className="fw-primary" href="/sign-in">Sign in</Link></>;
-  return <form onSubmit={event => void submit(event)}>
+  if (step === "sent") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✉</span><h2>Check your inbox</h2><p role="status">If this address has an account, check its inbox for a recovery link. No account information is disclosed here.</p><p>Check spam and allow a few minutes for delivery.</p><button type="button" onClick={() => setStep("request")}>Try another email</button><p><AuthLink href="/sign-in">Back to sign in</AuthLink></p></section>;
+  if (step === "done") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✓</span><h2>Password updated</h2><p role="status">Your password was changed. Sign in again with the new password.</p><AuthLink className="fw-primary" href="/sign-in">Sign in</AuthLink></section>;
+  return <><form onSubmit={event => void submit(event)} aria-busy={busy}>
     {step === "request" && <label>Email address<input name="email" type="email" autoComplete="username" required maxLength={254}/></label>}
     {step === "confirm" && <p>Continue only if you requested this password reset. Opening this page alone does not consume the recovery link.</p>}
     {step === "assurance" && <p>Your recovery link was confirmed. Check your account authenticator requirements to continue.</p>}
@@ -47,5 +49,5 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
     {step === "password" && <><label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><p>Changing your password signs out refresh sessions on all devices. Existing access tokens expire on the configured provider schedule.</p></>}
     {error && <p role="alert">{error}</p>}
     <button className="fw-primary" disabled={busy}>{busy ? "Please wait…" : step === "request" ? "Send recovery email" : step === "confirm" ? "Confirm recovery link" : step === "assurance" ? "Retry authenticator check" : step === "mfa" ? "Verify authenticator" : "Save new password"}</button>
-  </form>;
+  </form><p><AuthLink href="/sign-in">Back to sign in</AuthLink></p></>;
 }

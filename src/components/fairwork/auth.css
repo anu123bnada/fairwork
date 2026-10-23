@@ -33,3 +33,38 @@ body:has(> .fw-auth) { margin:0; }
 .fw-auth input, .fw-auth select, .fw-auth textarea { background:rgba(255,255,255,.66); border-color:rgba(255,255,255,.8); box-shadow:0 4px 16px rgba(11,27,51,.09); backdrop-filter:blur(24px); }
 .fw-auth button { background:linear-gradient(#4a78ff,#1e4fff); box-shadow:0 8px 18px rgba(30,79,255,.3); font-weight:800; }
 .fw-auth button:not(:disabled):active { transform:scale(.96); }
+
+/* Extend the exported auth palette and geometry for complete account flows. */
+.fw-auth-flow { width:100%; }
+.fw-auth .fw-auth-tabs { display:flex; gap:4px; padding:5px; margin:24px 0 0; border:1px solid #fff; border-radius:16px; background:rgba(255,255,255,.5); }
+.fw-auth .fw-auth-tabs > * { flex:1; display:flex; justify-content:center; align-items:center; min-height:44px; border-radius:12px; font-size:14px; font-weight:800; text-decoration:none; }
+.fw-auth .fw-auth-tabs [aria-current] { background:#fff; box-shadow:0 4px 16px rgba(11,27,51,.08); }
+.fw-auth .fw-auth-steps { display:flex; justify-content:space-between; gap:8px; list-style:none; padding:0; margin:28px 0; }
+.fw-auth-steps li { display:grid; justify-items:center; gap:8px; flex:1; font-size:11px; color:#52627d; }
+.fw-auth-steps li span { display:grid; place-items:center; width:30px; height:30px; border:1px solid #b9c8e4; border-radius:50%; background:rgba(255,255,255,.7); font-weight:800; }
+.fw-auth-steps li[aria-current] { color:#1e4fff; font-weight:800; }
+.fw-auth-steps li[aria-current] span { background:#1e4fff; color:#fff; border-color:#1e4fff; }
+.fw-auth .fw-account-choices h2 { text-align:center; }
+.fw-auth .fw-account-choices button { display:flex; align-items:center; gap:12px; width:100%; margin-top:14px; padding:20px 16px; text-align:left; color:#0b1b33; background:rgba(255,255,255,.76); border:1px solid white; border-radius:20px; box-shadow:0 6px 20px rgba(11,27,51,.08); }
+.fw-account-choices button > span:nth-child(2) { flex:1; }
+.fw-account-choices strong { display:block; font-size:16px; }
+.fw-account-choices small { display:block; margin-top:6px; font-weight:500; font-size:12px; line-height:1.7; color:#52627d; }
+.fw-choice-icon { display:grid; place-items:center; width:36px; height:40px; flex-shrink:0; color:#1e4fff; background:#eaf0ff; border-radius:12px; font-size:12px; }
+.fw-auth .fw-auth-note, .fw-auth .fw-auth-result, .fw-auth .fw-auth-resend { padding:18px; border:1px solid rgba(255,255,255,.9); border-radius:18px; background:rgba(255,255,255,.5); }
+.fw-auth .fw-auth-note { text-align:left; color:#40516d; }
+.fw-auth .fw-auth-note[role=alert] { color:#8e162c; border-color:#d8a5ae; }
+.fw-auth .fw-auth-result { text-align:center; }
+.fw-auth .fw-auth-result h2 { margin-top:12px; }
+.fw-auth .fw-result-icon { display:inline-grid; place-items:center; width:56px; height:56px; border-radius:18px; background:#e6edff; color:#1e4fff; font-size:26px; }
+.fw-auth .fw-auth-selection { display:flex; align-items:center; justify-content:space-between; font-size:14px; }
+.fw-auth .fw-auth-selection button { background:transparent; box-shadow:none; color:#1e4fff; min-height:44px; padding:8px 12px; font-size:13px; }
+.fw-auth .fw-field-help { margin:-8px 0 0; text-align:left; font-size:12px; }
+.fw-auth .fw-auth-resend { margin-top:20px; font-size:13px; }
+.fw-auth summary { cursor:pointer; padding-block:8px; font-weight:700; }
+.fw-auth .fw-auth-resend form { margin-top:16px; }
+.fw-auth input, .fw-auth select, .fw-auth textarea { font-size:16px; }
+.fw-auth a.fw-primary { display:flex; justify-content:center; padding:15px; border-radius:14px; color:#fff; text-decoration:none; font-weight:800; }
+@media(min-width:600px) {
+  .fw-auth { max-width:520px; min-height:calc(100dvh - 64px); margin-block:32px; padding-inline:48px; border:1px solid white; border-radius:28px; background-size:100% 100%; }
+  .fw-auth.fw-sign-in { padding-inline:48px; }
+}

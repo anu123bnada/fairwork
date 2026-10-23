@@ -26,6 +26,12 @@ it("uses canonical callback and does not reveal account existence", async () => 
   }
   expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith("local@example.test", { redirectTo: "http://127.0.0.1:3100/auth/recover" });
 });
+it("preserves a validated recovery destination and rejects injected redirects", async () => {
+  mocks.resetPasswordForEmail.mockResolvedValue({ error: null });
+  expect((await requestRecovery(request({ email: "local@example.test", continuation: "workspace=employer" }))).status).toBe(200);
+  expect(mocks.resetPasswordForEmail).toHaveBeenCalledWith("local@example.test", { redirectTo: "http://127.0.0.1:3100/auth/recover?workspace=employer" });
+  expect((await requestRecovery(request({ email: "local@example.test", continuation: "next=https://evil.invalid" }))).status).toBe(422);
+});
 it("accepts only recovery verification and rejects replayed tokens", async () => {
   mocks.verifyOtp.mockResolvedValue({ data: {}, error: { status: 403 } });
   const tokenHash = "a".repeat(64);

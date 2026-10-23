@@ -62,7 +62,7 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
    {kind === "new" ? <label className="fw-field">Organization name<input name="companyName" maxLength={120} required /></label> : <label className="fw-field">Organization ID<input name="companyId" required /></label>}
    <label className="fw-field">Membership request statement<textarea name="statement" maxLength={500} required /></label>
    <p>Explain your authority to represent this organization. Do not include passwords, identity documents or sensitive personal information.</p>
-   <button className="fw-primary" disabled={busy}>Request independent approval</button>
+   <button className="fw-primary" disabled={busy}>{busy ? "Submitting request…" : "Request independent approval"}</button>
   </form>}
   {!page && !error && <p role="status">Loading organization requests…</p>}
   {page?.items.length === 0 && <p>No organization requests to display.</p>}
@@ -73,6 +73,7 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
    {"previousDecisionReason" in item&&item.previousDecisionReason&&<p>Original rejection rationale: {item.previousDecisionReason}</p>}
    {item.companyId && <p>Organization ID: <span style={{ overflowWrap: "anywhere" }}>{item.companyId}</span></p>}
    {"decision" in item && <><p>Status: {item.decision ?? "Pending independent review"}{item.decision === "approve" ? item.active ? " · Authority currently active" : " · Authority no longer active" : ""}</p>{item.reason && <p>{item.reason}</p>}</>}
+   {!operator && "decision" in item && <p className="fw-notice">{item.decision === null ? "Next step: wait for independent review. Refresh here to check for a decision. You cannot represent this organization while approval is pending." : item.decision === "reject" ? "Next step: review the decision above. If you have a correction or new evidence, use the appeal option below when available." : item.active ? "Next step: add your organization details in Company information, then open offers you are authorized to represent. This is synthetic membership, not real-world verification." : "Next step: request a new independent review before representing this organization again. Previous approval does not provide current access."}</p>}
    {"appealRequestId" in item&&item.appealRequestId&&<p>Linked appeal request: <span style={{overflowWrap:"anywhere"}}>{item.appealRequestId}</span></p>}
    {!operator&&"decision" in item&&item.decision==="reject"&&!item.parentRequestId&&!item.appealRequestId&&<details><summary>Appeal this rejection</summary>
     <form onSubmit={event=>void appeal(event,item.requestId)}>

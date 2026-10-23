@@ -44,9 +44,10 @@ export function EmployerWorkspace() {
   return <>
     <header className="fw-employer-top"><Link href="/app/settings">Back to settings</Link><span className="fw-pill fw-employer-pill">EMPLOYER VIEW</span></header>
     <div className="fw-employer-heading"><h2>Your employer workspace</h2><p>Only offers where you are the designated representative with current organization authority appear here.</p></div>
-    <SavedOffers context="EMPLOYER" />
+    <section className="fw-list-card" aria-label="Employer onboarding"><h3>Set up your organization</h3><ol><li>Request a new organization or join an existing one below.</li><li>Check your request status after independent review.</li><li>Once authorized, complete company information and manage your offers.</li></ol><p>Account registration is complete. Organization verification is separate; no real employer verification service is connected.</p></section>
     <OrganizationRequests />
     <CompanyProfiles />
+    <SavedOffers context="EMPLOYER" />
     <section className="fw-card fw-employer-new-offer"><span><strong>Create an offer</strong><br /><small>Approved organization membership is required. Selecting employer does not grant access.</small></span><Link className="fw-small-action" href="/app/add-offer">+ New</Link></section>
     <Link className="fw-secondary" href="/app/work-record">Review work records</Link>
     <Link className="fw-secondary" href="/app/cases">Case review</Link>

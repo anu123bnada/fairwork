@@ -9,14 +9,17 @@ test("registration is gated or uses real email fields without self-assigned auth
     return;
   }
   await page.route("**/api/v1/auth/register", async route => {
-    expect(route.request().postDataJSON()).toEqual({ email: "fresh@example.test", password: "synthetic-password-only" });
+    expect(route.request().postDataJSON()).toEqual({ email: "fresh@example.test", password: "synthetic-password-only", displayName: "Synthetic worker", continuation: "" });
     await route.fulfill({ json: { data: { verificationRequired: true } } });
   });
+  await page.getByRole("button", { name: /I’m a worker/ }).click();
+  await page.getByLabel("Your name").fill("Synthetic worker");
   await page.getByLabel("Email address").fill("fresh@example.test");
   await page.getByLabel("Password", { exact: true }).fill("synthetic-password-only");
+  await page.getByLabel("Confirm password", { exact: true }).fill("synthetic-password-only");
   await page.getByRole("button", { name: "Register with email" }).click();
   await expect(page.getByRole("status")).toContainText("check your email");
-  await expect(page.getByText(/Employer authority requires/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Resend verification email" })).toBeVisible();
 });
 
 test("confirmation needs explicit POST, strips fragment and profile creation survives reload", async ({ page }) => {

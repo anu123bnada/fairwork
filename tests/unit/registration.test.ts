@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ signUp: vi.fn(), verifyOtp: vi.fn(), createClient: vi.fn(), createServer: vi.fn() }));
+const mocks = vi.hoisted(() => ({ signUp: vi.fn(), resend: vi.fn(), verifyOtp: vi.fn(), createClient: vi.fn(), createServer: vi.fn() }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.createClient }));
 vi.mock("@/server/supabase", () => ({ createServerSupabase: mocks.createServer }));
 import { POST as register } from "@/app/api/v1/auth/register/route";
 import { POST as confirm } from "@/app/api/v1/auth/confirm/route";
+import { POST as resend } from "@/app/api/v1/auth/resend/route";
 
 const credentials = { email: "new@example.test", password: "synthetic-password-only" };
 const tokenHash = "a".repeat(64);
@@ -15,13 +16,40 @@ beforeEach(() => {
   vi.stubEnv("AUTH_REGISTRATION_ENABLED", "true"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "sb_publishable_synthetic_configuration_test");
   vi.stubGlobal("fetch", vi.fn(async () => Response.json(settings)));
-  mocks.createClient.mockReturnValue({ auth: { signUp: mocks.signUp } });
+  mocks.createClient.mockReturnValue({ auth: { signUp: mocks.signUp, resend: mocks.resend } });
+  mocks.resend.mockResolvedValue({ error: null });
   mocks.createServer.mockResolvedValue({ auth: { verifyOtp: mocks.verifyOtp } });
   mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 describe("disabled-by-default real registration and email confirmation", () => {
+  it("carries a validated destination in email callbacks and only display metadata", async () => {
+    const continuation = "offerId=40000000-0000-4000-8000-000000000003&workspace=employer";
+    expect((await register(req({ ...credentials, displayName: "Synthetic employer", continuation }))).status).toBe(200);
+    expect(mocks.signUp).toHaveBeenCalledWith({ ...credentials, options: { emailRedirectTo: `https://app.example.test/auth/confirm?${continuation}`, data: { display_name: "Synthetic employer" } } });
+    for (const bad of ["https://evil.invalid", "workspace=operator", "workspace=employer&role=ADMIN", "offerId=invalid", "workspace=employer&workspace=employer"]) {
+      expect((await register(req({ ...credentials, continuation: bad }))).status).toBe(422);
+      expect((await resend(req({ email: credentials.email, continuation: bad }))).status).toBe(422);
+    }
+  });
+  it("resends only signup verification with generic outcomes, origin checks and provider limits", async () => {
+    expect((await resend(req({ email: credentials.email }, "https://evil.invalid"))).status).toBe(403);
+    expect(mocks.resend).not.toHaveBeenCalled();
+    for (const error of [null, { status: 400 }]) {
+      mocks.resend.mockResolvedValue({ error });
+      const response = await resend(req({ email: credentials.email, continuation: "workspace=employer" }));
+      expect(response.status).toBe(200);
+      expect((await response.json()).data).toEqual({ verificationRequired: true });
+    }
+    expect(mocks.resend).toHaveBeenCalledWith({ type: "signup", email: credentials.email, options: { emailRedirectTo: "https://app.example.test/auth/confirm?workspace=employer" } });
+    for (const status of [429, 503]) {
+      mocks.resend.mockResolvedValue({ error: { status } });
+      expect((await resend(req({ email: credentials.email }))).status).toBe(status);
+    }
+    vi.stubEnv("AUTH_REGISTRATION_ENABLED", "false");
+    expect((await resend(req({ email: credentials.email }))).status).toBe(403);
+  });
   it("blocks both mutations while disabled without touching provider", async () => {
     vi.stubEnv("AUTH_REGISTRATION_ENABLED", "false");
     expect((await register(req(credentials))).status).toBe(403);

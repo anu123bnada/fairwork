@@ -7,6 +7,6 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     requireRegistration();
     const input = await readJson(request, registrationSchema);
-    return registerAccount(input.email, input.password);
+    return registerAccount(input.email, input.password, input.continuation, input.displayName);
   }, "auth-registration.v1");
 }

@@ -26,7 +26,7 @@ import { AccountSecurity } from "@/components/fairwork/account-security";
 import { PassportSharing } from "@/components/fairwork/passport-sharing";
 import { AuthInformationLink } from "@/components/fairwork/auth-information-link";
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
-import { participantOfferId, participantWorkflowId, participantWorkId, participantCaseId, participantGrantId, participantAgreementBasisId } from "@/features/offer/participant-path";
+import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { WorkRecordScreen } from "./work-record";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
 import { OfferHistoryPanel } from "./offer-history";
@@ -399,13 +399,7 @@ function ProductGate({ children }: { children: ReactNode }) {
   const { session, loadError, loadingAgreement } = useProduct();
   if (session === "loading") return <p role="status" className="fw-notice">Loading your private ORYQEN session…</p>;
   if (session === "anonymous") {
-    const offerId = participantOfferId(window.location.search);
-    const workflowId = participantWorkflowId(window.location.search);
-    const workId = participantWorkId(window.location.search);
-    const caseId = participantCaseId(window.location.search);
-    const grantId = participantGrantId(window.location.search);
-    const basisId = participantAgreementBasisId(window.location.search);
-    return <div className="fw-card" style={{ padding: 20 }}><h2>Sign in to continue</h2><p>Your offers, agreements and work records are available only to an authenticated account.</p><Link className="fw-primary" href={grantId ? `/sign-in?grantId=${grantId}` : caseId ? `/sign-in?caseId=${caseId}` : workId ? `/sign-in?workId=${workId}` : workflowId ? `/sign-in?workflowId=${workflowId}` : basisId ? `/sign-in?agreementBasisId=${basisId}` : offerId ? `/sign-in?offerId=${offerId}` : window.location.pathname === "/app/employer" ? "/sign-in?workspace=employer" : "/sign-in"}>Sign in</Link></div>;
+    return <div className="fw-card" style={{ padding: 20 }}><h2>Sign in to continue</h2><p>Your offers, agreements and work records are available only to an authenticated account.</p><Link className="fw-primary" href={participantSignInPath(window.location.pathname, window.location.search)}>Sign in</Link></div>;
   }
   if (session === "unavailable") {
     return <div className="fw-card" style={{ padding: 20 }}><h2>Secure service unavailable</h2><p role="alert">We could not verify your session. No offer or agreement action was sent.</p><Link href="/sign-in">Return to sign in</Link></div>;
@@ -1197,6 +1191,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
     setError(null);
     try {
       await appRequest("/api/v1/auth/sign-out", {});
+      try { window.sessionStorage.removeItem("fairwork.offer-selection"); } catch { /* Optional non-secret navigation state. */ }
       router.replace("/sign-in");
       router.refresh();
     } catch (caught) {
@@ -1219,6 +1214,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
       <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
       {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}
+      <Link className="fw-secondary" href="/forgot-password">Reset password securely</Link>
       {profile?.capabilities.includes("privacy_operator") && <details className="fw-list-card"><summary>Review privacy requests</summary><PrivacyRequests operator /></details>}
       <Link className="fw-dark-button" href={routeFor("employer")}>Switch to employer view</Link>
       <Link className="fw-secondary" href={routeFor("cases")}>Case review</Link>
