@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
-import { participantDestination } from "@/features/offer/participant-path";
+import { participantDestination, participantAuthQuery } from "@/features/offer/participant-path";
 import Link from "next/link";
 
 export function SecureSignInForm({ className }: { className?: string }) {
@@ -17,11 +17,14 @@ export function SecureSignInForm({ className }: { className?: string }) {
     setBusy(true);
     setError("");
     try {
-      await appRequest("/api/v1/auth/sign-in", {
+      const result = await appRequest("/api/v1/auth/sign-in", {
         email: data.get("email"),
         password: data.get("password"),
       });
-      router.replace(participantDestination(window.location.search) ?? "/app/intro-welcome");
+      const query = participantAuthQuery(window.location.search);
+      router.replace(result.profileRequired === true
+        ? `/register/profile${query ? `?${query}` : ""}`
+        : participantDestination(window.location.search) ?? "/app/intro-welcome");
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to sign in.");

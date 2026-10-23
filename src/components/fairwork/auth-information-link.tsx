@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { participantDestination } from "@/features/offer/participant-path";
+import { participantAuthQuery } from "@/features/offer/participant-path";
 
 export function AuthInformationLink() {
   const router = useRouter();
@@ -11,8 +11,7 @@ export function AuthInformationLink() {
     event.preventDefault();
     // Carry only an already-validated record identifier, never credentials or an
     // arbitrary redirect. Information is public; the eventual read still authorizes.
-    const destination = participantDestination(window.location.search);
-    const query = new URLSearchParams(destination?.split("?")[1]);
+    const query = new URLSearchParams(participantAuthQuery(window.location.search));
     const path = window.location.pathname;
     query.set("from", path === "/welcome" ? "welcome" : path === "/otp" ? "otp" : "sign-in");
     router.push(`/sign-in/information?${query}`);

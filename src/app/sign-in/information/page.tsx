@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AppBrandHeader } from "@/components/brand/brand";
-import { participantDestination } from "@/features/offer/participant-path";
+import { participantAuthQuery } from "@/features/offer/participant-path";
 import "@/components/fairwork/auth-composition.css";
 
 export const dynamic = "force-dynamic";
@@ -9,12 +9,11 @@ export const metadata = { title: "Sign-in information" };
 export default async function SignInInformation({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;
   const query = new URLSearchParams();
-  for (const key of ["offerId", "workflowId", "workId", "caseId", "grantId", "agreementBasisId"]) {
+  for (const key of ["offerId", "workflowId", "workId", "caseId", "grantId", "agreementBasisId", "workspace"]) {
     const value = params[key];
     if (typeof value === "string") query.set(key, value);
   }
-  const destination = participantDestination(query.toString());
-  const suffix = destination?.split("?")[1];
+  const suffix = participantAuthQuery(query.toString());
   const from = params.from === "welcome" ? "/welcome" : params.from === "otp" ? "/otp" : "/sign-in";
   const back = `${from}${suffix ? `?${suffix}` : ""}`;
   return <main id="main" className="fw-auth-information" tabIndex={-1}>

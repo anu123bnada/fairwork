@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { participantOfferId,participantCaseId,participantDestination,participantGrantId,participantAgreementBasisId } from "@/features/offer/participant-path";
+import { participantOfferId,participantCaseId,participantDestination,participantGrantId,participantAgreementBasisId,participantAuthQuery } from "@/features/offer/participant-path";
 
 describe("participant sign-in selection", () => {
+  it("preserves employer navigation without accepting roles, arbitrary URLs or duplicate hints",()=>{
+    expect(participantDestination("?workspace=employer")).toBe("/app/employer");
+    expect(participantAuthQuery("?workspace=employer&role=ADMIN&next=https://evil.invalid")).toBe("workspace=employer");
+    for(const query of ["?workspace=operator","?workspace=admin","?workspace=//evil.invalid","?workspace=employer&workspace=employer"]){
+      expect(participantDestination(query)).toBeNull();
+      expect(participantAuthQuery(query)).toBe("");
+    }
+    const id="40000000-0000-4000-8000-000000000003";
+    expect(participantDestination(`?workspace=employer&offerId=${id}`)).toBe(`/app/agreement?offerId=${id}`);
+  });
   it("carries only a validated agreement basis to work creation, preserving explicit record priority",()=>{
     const id="40000000-0000-4000-8000-000000000003";
     expect(participantDestination(`?agreementBasisId=${id}&next=https://foreign.invalid`)).toBe(`/app/work-record?agreementBasisId=${id}`);

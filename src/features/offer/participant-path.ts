@@ -28,7 +28,15 @@ export function participantDestination(search:string):string|null {
   const basisId=participantAgreementBasisId(search);
   if(basisId)return `/app/work-record?agreementBasisId=${basisId}`;
   const offerId=participantOfferId(search);
-  return offerId?`/app/agreement?offerId=${offerId}`:null;
+  if(offerId)return `/app/agreement?offerId=${offerId}`;
+  const workspaces=new URLSearchParams(search).getAll("workspace");
+  return workspaces.length===1&&workspaces[0]==="employer"?"/app/employer":null;
+}
+
+// Preserve a fixed navigation hint across public auth pages, never a role or URL.
+export function participantAuthQuery(search:string):string {
+  const destination=participantDestination(search);
+  return destination==="/app/employer"?"workspace=employer":destination?.split("?")[1]??"";
 }
 
 // Navigation hint only. Work Record must re-read and authorize the effective

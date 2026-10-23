@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { appRequest } from "@/features/authority/client";
+import { participantDestination } from "@/features/offer/participant-path";
 
 export function RegistrationForm({ confirmation = false, profile = false }: { confirmation?: boolean; profile?: boolean }) {
   const router = useRouter();
@@ -28,7 +29,7 @@ export function RegistrationForm({ confirmation = false, profile = false }: { co
         router.replace("/register/profile");
       } else {
         await appRequest("/api/v1/me", { displayName: form.get("displayName"), locale: "en", timeZone: "Asia/Colombo" }, profileKey);
-        router.replace("/app/intro-welcome"); router.refresh();
+        router.replace(participantDestination(window.location.search) ?? "/app/intro-welcome"); router.refresh();
       }
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Unable to continue."); }
     finally { setBusy(false); }

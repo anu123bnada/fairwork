@@ -1,2 +1,5 @@
 
 /public/ocr/vendor/** -text
+
+# Migration manifests pin exact reviewed bytes on Windows and Linux.
+/supabase/migrations/** -text whitespace=cr-at-eol
