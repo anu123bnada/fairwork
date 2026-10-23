@@ -3,3 +3,8 @@
 
 # Migration manifests pin exact reviewed bytes on Windows and Linux.
 /supabase/migrations/** -text whitespace=cr-at-eol
+
+/public/figma/auth/shield.svg -text
+
+/public/figma/auth/shield.svg -text
+/public/oryqen/mark.svg -text
