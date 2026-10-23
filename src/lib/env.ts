@@ -35,12 +35,40 @@ export function requirePublicEnvironment() {
   return config;
 }
 
-export function validateServerEnvironment(input: { origin?: string; dataMode?: string }) {
+export function validateServerEnvironment(input: {
+  origin?: string;
+  dataMode?: string;
+}) {
   try {
-    const url = new URL(input.origin ?? "http://localhost:3000");
-    if (url.origin !== (input.origin ?? "http://localhost:3000") ||
-      (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) ||
-      (input.dataMode ?? "synthetic") !== "synthetic") throw new Error();
-    return { origin: url.origin, dataMode: "synthetic" as const };
-  } catch { throw new AppError("SERVICE_UNAVAILABLE", 503); }
+    const origin = input.origin ?? "http://localhost:3000";
+    const url = new URL(origin);
+
+    const validOrigin =
+      url.origin === origin &&
+      (url.protocol === "https:" ||
+        (url.protocol === "http:" &&
+          ["localhost", "127.0.0.1"].includes(url.hostname)));
+
+    if (!validOrigin) {
+      throw new Error("Invalid application origin");
+    }
+
+    const dataMode = input.dataMode ?? "synthetic";
+
+    if (dataMode !== "synthetic" && dataMode !== "supabase") {
+      throw new Error("Invalid data mode");
+    }
+
+    if (dataMode === "supabase") {
+      requirePublicEnvironment();
+    }
+
+    return {
+      origin: url.origin,
+      dataMode,
+    };
+  } catch {
+    throw new AppError("SERVICE_UNAVAILABLE", 503);
+  }
 }
+
