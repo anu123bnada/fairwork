@@ -1,0 +1,71 @@
+// Real local accounts only; preserves all rows and immutable history.
+import { randomUUID } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
+import { expect } from '@playwright/test';
+import { checkLocalDocker } from './local-development-runtime.mjs';
+export async function localDeactivationJourney({worker,employer,request,record,origin,evidence,localSql,grantId,totp}) {
+ checkLocalDocker();
+ const endpoint='/api/v1/auth/deactivate',profile=await request(worker,'/api/v1/me');
+ const body={expectedRevision:profile.revision,confirmation:'DEACTIVATE'};
+ const browser=worker.context.browser(), low={context:await browser.newContext()};
+ await request(low,endpoint,body,[401]);
+ await request(low,'/api/v1/auth/sign-in',{email:worker.email,password:worker.password});
+ await request(low,endpoint,body,[403]);
+ await request(worker,endpoint,{...body,subjectId:employer.id},[422]);
+ await request(worker,endpoint,{...body,expectedRevision:profile.revision+1},[409]);
+ record('Deactivation rejects anonymous, lower-assurance, forged-subject and stale-revision commands');
+ const page=worker.context.pages()[0];await page.goto(origin+'/app/settings');
+ await page.getByText('Account security and deactivation',{exact:true}).click();
+ const panel=page.getByRole('region',{name:'Account security',exact:true});
+ await panel.getByText('Deactivate my account',{exact:true}).click();
+ await expect(panel.getByRole('button',{name:'Deactivate my ORYQEN account'})).toBeDisabled();
+ await panel.getByLabel('Account authenticator code',{exact:true}).fill(totp(worker.factorSecret));
+ await panel.getByRole('button',{name:'Verify account authenticator'}).click();
+ await expect(panel.getByRole('status')).toContainText('Authenticator verified');
+ // Keep an already-issued real JWT solely in memory to test RLS independently
+ // of server cookie removal and Auth global refresh-token revocation.
+ const state=await worker.context.storageState();
+ const parts=state.cookies.filter(c=>/^sb-.+-auth-token(?:\.\d+)?$/.test(c.name)).sort((a,b)=>a.name.localeCompare(b.name));
+ const encoded=parts.map(c=>c.value).join('');
+ if(!encoded.startsWith('base64-'))throw new Error('Unexpected local Auth cookie encoding');
+ const tokens=JSON.parse(Buffer.from(encoded.slice(7),'base64url').toString());
+ if(typeof tokens.access_token!=='string')throw new Error('Missing real local access token');
+ const cli=spawnSync(path.resolve('node_modules/@supabase/cli-windows-x64/bin/supabase.exe'),['status','--workdir',path.resolve('.tmp/oryqen-local-dev'),'-o','json'],{encoding:'utf8',windowsHide:true,timeout:30000});
+ if(cli.status!==0)throw new Error('Local API configuration unavailable');
+ const status=JSON.parse(cli.stdout);
+ if(status.API_URL!=='http://127.0.0.1:55421')throw new Error('Refusing non-local API');
+ const raw=async(name,payload,allowed=[200])=>{
+  const r=await fetch(status.API_URL+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:status.ANON_KEY,Authorization:`Bearer ${tokens.access_token}`,'Content-Type':'application/json','Content-Profile':'api'},body:JSON.stringify({request:payload}),redirect:'error'});
+  const data=await r.json();if(!allowed.includes(r.status))throw new Error(`Stale JWT ${name} status ${r.status}`);return data;
+ };
+ await panel.getByLabel('Type DEACTIVATE to confirm').fill('DEACTIVATE');
+ const completed=page.waitForResponse(r=>r.url().endsWith(endpoint));
+ await panel.getByRole('button',{name:'Deactivate my ORYQEN account'}).click();
+ const response=await completed;if(response.status()!==200)throw new Error(`Deactivation failed ${response.status()}`);
+ const key=response.request().headers()['idempotency-key'];
+ await expect(panel.getByRole('status')).toContainText('account is deactivated and all refresh sessions');
+ await page.screenshot({path:`${evidence}/account-deactivated.png`,fullPage:true});
+ record('Real mobile authenticator verification deactivates only the current synthetic account');
+ if((await raw('account_access',{})).access!=='disabled')throw new Error('Stale JWT retained access');
+ const denied=await raw('get_me',{},[400]);if(denied.message!=='NOT_FOUND')throw new Error('Profile access was not denied');
+ const bootstrap=await raw('create_profile',{displayName:'Unauthorized reactivation',locale:'en',timeZone:'UTC',idempotencyKey:randomUUID()},[400]);
+ if(bootstrap.message!=='ACTION_FORBIDDEN')throw new Error('Profile bootstrap restored account');
+ record('Previously issued real JWT cannot read the profile or reactivate it through profile creation');
+ const receipt=await raw('deactivate_account',{...body,idempotencyKey:key});
+ if(!receipt.deactivated||receipt.revision!==profile.revision+1)throw new Error('Deactivation replay changed receipt');
+ const conflict=await raw('deactivate_account',{...body,idempotencyKey:randomUUID()},[400]);
+ if(conflict.message!=='IDEMPOTENCY_CONFLICT')throw new Error('Conflicting deactivation was accepted');
+ record('Lost-response retry returns one immutable deactivation receipt; changed command is denied');
+ await request(worker,'/api/v1/me',undefined,[401]);
+ await request(low,'/api/v1/me',undefined,[401,404]);
+ await request(low,'/api/v1/auth/sign-in',{email:worker.email,password:worker.password},[403]);
+ await low.context.close();
+ await request(employer,`/api/v1/passport/sharing?grantId=${grantId}&mode=recipient`,undefined,[404]);
+ record('New sign-in is refused, existing sessions lose application access and shared grants stop disclosing');
+ const verified=localSql(`begin transaction read only;
+ select case when (select count(*) from private.account_deactivations where actor_id='${worker.id}')=1 and (select account_state from private.profiles where id='${worker.id}')='suspended' and (select account_state from private.profiles where id='${employer.id}')='active' and exists(select 1 from private.work_records where worker_id='${worker.id}') then 'PASS' else 'FAIL' end;
+ select case when not has_column_privilege('fw_deactivation_exec','private.profiles','display_name','SELECT') and not has_column_privilege('fw_deactivation_exec','private.profiles','display_name','UPDATE') and not has_table_privilege('fw_deactivation_exec','private.work_records','SELECT') and not has_table_privilege('authenticated','private.account_deactivations','SELECT') and not (select rolbypassrls or rolcanlogin from pg_roles where rolname='fw_deactivation_exec') then 'PASS' else 'FAIL' end;rollback;`);
+ if(verified.includes('FAIL')||verified.split('PASS').length!==3)throw new Error('Deactivation retention/role assertion failed');
+ record('PostgreSQL retains historical work and immutable receipt; narrow executor cannot read employment data');
+}

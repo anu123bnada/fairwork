@@ -1,0 +1,48 @@
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env*
+!.env.example
+.vercel/
+supabase/.temp/
+supabase/.branches/
+*.log
+.DS_Store
+
+# Local account and offer demo state
+.tmp/
+
+# Local Android build products and signing material
+mobile/**/.gradle/
+mobile/**/build/
+mobile/**/local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Local database backups and migration staging
+/backups/
+/migration-stage/
+
+# Local review archives
+/oryqen-migrations-review.zip
+/ORYQEN-Full-Source-Review.zip
+
+# Unexpected local artifacts (review separately)
+/Microsoft/
+/-Pattern
+
+# Additional private credentials
+*.pem
+*.key
+*.p12
+*.pfx
+*.sqlite
+*.db
+*service-account*.json
+*credentials*.json

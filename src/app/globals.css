@@ -1,0 +1,15 @@
+/* Inspected in Figma 68:6613 on 2026-10-07. These are text tokens only;
+   no replacement theme, gradients, card radii or full product screen. */
+:root {
+  --fw-text: #0b1b33;
+  --fw-text-secondary: #66728a;
+  --fw-link: #1e4fff;
+  --fw-heading-size: 26px;
+}
+body { font-family: "Manrope", sans-serif; color: var(--fw-text); }
+button, input { font: inherit; }
+a { color: var(--fw-link); }
+h1 { font-size: var(--fw-heading-size); }
+/* Leave native control/focus treatment intact until exact component styling
+   is implemented. No motion or hidden focus states in the technical preview. */
+main { overflow-wrap: anywhere; }

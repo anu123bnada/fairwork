@@ -1,0 +1,18 @@
+{
+  "appId": "org.fairwork.localpoc",
+  "appName": "ORYQEN Local POC",
+  "webDir": "www",
+  "server": {
+    "url": "http://localhost:3102",
+    "cleartext": false,
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SystemBars": { "insetsHandling": "native" },
+    "CapacitorHttp": { "enabled": false },
+    "CapacitorCookies": { "enabled": false }
+  }
+}

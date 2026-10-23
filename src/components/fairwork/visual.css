@@ -1,0 +1,249 @@
+/* Local original 390×844 exports, v4 SVG tokens and October 11 prototype.
+   Functional content stays live; these rules restore the existing visual slots. */
+@font-face { font-family: "Noto Sans Sinhala"; src: url("/fonts/NotoSansSinhala-Regular.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Noto Sans Tamil"; src: url("/fonts/NotoSansTamil-Regular.ttf") format("truetype"); font-display: swap; }
+:root {
+  --fw-blue: #1e4fff;
+  --fw-muted: #66728a;
+  --fw-green: #0f9d6c;
+  --fw-amber: #d9a400;
+  --fw-card: rgba(255,255,255,.66);
+}
+body:has(.fw-intro) { margin: 0; }
+.fw-product, .fw-intro {
+  background: #e4ecff url('/figma/product/background.svg') center top / 100% 844px no-repeat;
+}
+.fw-card, .fw-question-card, .fw-term-card, .fw-profile-card, .fw-analysis-list {
+  border-radius: 20px;
+  background: var(--fw-card);
+  border: 1px solid rgba(255,255,255,.8);
+  box-shadow: 0 4px 16px rgba(11,27,51,.09), inset 0 1px rgba(255,255,255,.6);
+  backdrop-filter: blur(24px);
+}
+.fw-check-question { background: rgba(255,251,230,.94); }
+.fw-question-link { display: block; color: inherit; text-decoration: none; }
+.fw-primary {
+  background: linear-gradient(#4a78ff,#1e4fff);
+  box-shadow: 0 8px 18px rgba(30,79,255,.3);
+  font-size: 15px;
+  font-weight: 800;
+}
+.fw-primary:not(:disabled):active, .fw-dark-button:not(:disabled):active, .fw-secondary:not(:disabled):active { transform: scale(.96); }
+.fw-page-title { font-weight: 800; letter-spacing: -.4px; }
+.fw-back { background: rgba(255,255,255,.7); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
+.fw-product-header { margin-bottom: 16px; }
+.fw-screen-enter { animation: fw-screen-in 300ms ease-out backwards; }
+.fw-slide-enter { animation: fw-screen-in 300ms ease-out both; }
+.fw-device-status { font-weight: 800; padding-right: 46px; }
+.fw-signal {
+  width: 18px; height: 14px;
+  background: linear-gradient(currentColor,currentColor) 0 8px / 3px 6px no-repeat,
+    linear-gradient(currentColor,currentColor) 5px 6px / 3px 8px no-repeat,
+    linear-gradient(currentColor,currentColor) 10px 4px / 3px 10px no-repeat,
+    linear-gradient(currentColor,currentColor) 15px 2px / 3px 12px no-repeat;
+}
+.fw-device-icons { color: var(--fw-navy); gap: 8px; }
+.fw-battery { border-color: currentColor; border-width: 1px; width: 26px; height: 13px; box-sizing: border-box; }
+.fw-battery::before, .fw-battery::after { background: currentColor; }
+.fw-bottom-nav { backdrop-filter: blur(30px); background: rgba(255,255,255,.72); }
+
+/* Use the exported art's full intrinsic dimensions, not a smaller replacement. */
+.fw-onboarding-screen { padding: 0 20px; min-height: max(744px,100dvh); }
+.fw-onboarding-screen .fw-device-status { margin-inline: -20px; }
+.fw-onboarding-screen .fw-intro-skip { position: absolute; top: 60px; right: 30px; font-size: 14px; }
+.fw-onboarding-hero { flex: none; display: block; transform: none; margin-top: 78px; }
+.fw-onboarding-art { box-sizing: border-box; width: min(330px,100%); margin: 0 auto 43px; border-radius: 36px; background: rgba(255,255,255,.66); box-shadow: 0 4px 16px rgba(11,27,51,.09); backdrop-filter: blur(24px); }
+.fw-onboarding-art-icon { width: 160px; height: 160px; background: linear-gradient(#4a78ff,#1e4fff); box-shadow: 0 8px 18px rgba(30,79,255,.3); }
+.fw-onboarding-copy h1 { font-size: 26px; font-weight: 800; line-height: 36px; margin: 0 0 8px; letter-spacing: -.4px; }
+.fw-onboarding-copy p { max-width: 342px; font-size: 15px; line-height: 22px; margin: 0 auto; }
+.fw-onboarding-copy .fw-progress-dots { margin-top: 42px; gap: 16px; }
+.fw-onboarding-screen > .fw-primary { position: absolute; top: 690px; left: 20px; width: calc(100% - 40px); }
+.fw-splash { display: block; padding: 0; background-image: url('/figma/product/splash-background.svg'); background-size: 100% 100%; }
+.fw-splash .fw-intro-status { box-sizing: border-box; height: 42px; padding: 14px 46px 0 24px; align-items: flex-start; }
+.fw-splash .fw-device-icons { color: white; }
+.fw-splash .fw-intro-hero { display: block; padding: 0; }
+.fw-splash .fw-intro-logo { position: absolute; top: calc(50dvh - 114px); left: calc(50% - 65px); width: 128px; height: 128px; margin: 0; background: rgba(255,255,255,.13); animation: fw-logo-pulse 1800ms ease-in-out both; }
+.fw-splash .fw-intro-hero h1 { position: absolute; top: calc(50dvh + 34px); left: 0; width: 100%; font-size: 30px; line-height: 42px; margin: 0; font-weight: 800; }
+.fw-splash .fw-intro-hero p { position: absolute; top: calc(50dvh + 78px); left: 0; width: 100%; max-width: none; margin: 0; color: #c9d5f5; font-size: 14px; }
+.fw-splash .fw-progress-dots { position: absolute; top: calc(100dvh - 148px); left: 0; width: 100%; margin: 0; gap: 7px; }
+@keyframes fw-logo-pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+.fw-language-screen, .fw-otp-screen, .fw-entry-welcome { display: block; padding: 0 20px 40px; }
+.fw-language-screen .fw-device-status, .fw-otp-screen .fw-device-status, .fw-entry-welcome .fw-device-status { margin-inline: -20px; }
+.fw-intro-back { margin-top: 6px; }
+.fw-language-content { padding: 31px 0 0; }
+.fw-language-content h1 { font-size: 28px; line-height: 38px; letter-spacing: -.6px; padding-left: 4px; }
+.fw-language-native { font-family: Manrope,"Noto Sans Sinhala","Noto Sans Tamil",sans-serif; font-size: 11px !important; line-height: 20px !important; margin: 0 4px 30px !important; text-align: right; }
+.fw-language-option { margin: 0 0 16px; font-size: 17px; font-weight: 700; height: 68px; background: rgba(255,255,255,.66); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
+.fw-language-option:last-of-type { font-family: Manrope,"Noto Sans Tamil",sans-serif; }
+.fw-radio.selected { background: var(--fw-blue); border: 0; }
+.fw-radio { width: 24px; height: 24px; }
+.fw-language-unavailable { margin-top: 20px; font-size: 12px !important; }
+.fw-language-screen .fw-intro-bottom { position: absolute; top: max(620px,calc(100dvh - 144px)); left: 20px; width: calc(100% - 40px); padding: 0; }
+.fw-language-screen { min-height: max(744px,100dvh); }
+.fw-otp-screen h1 { margin: 30px 4px 4px; font-size: 28px; }
+.fw-otp-description { font-size: 14px !important; margin: 0 4px 40px !important; }
+.fw-otp-fields input { box-shadow: 0 4px 16px rgba(11,27,51,.09); background: rgba(255,255,255,.66); }
+.fw-entry-content { padding-top: 22px; }
+
+/* Original Welcome hierarchy and two actions; destinations retain real auth. */
+.fw-screen-intro-welcome .fw-product-body { padding-bottom: 40px; }
+.fw-authenticated-welcome { box-sizing: border-box; min-height: calc(100dvh - 77px); padding-top: 20px; }
+.fw-welcome-brand { height: 36px; }
+.fw-welcome-language { font-family: Manrope,"Noto Sans Sinhala","Noto Sans Tamil",sans-serif; }
+.fw-authenticated-welcome .fw-welcome-hero { padding-top: 34px; }
+.fw-authenticated-welcome .fw-welcome-hero h1 { font-size: 34px; font-weight: 800; line-height: 38px; margin: 22px 0 28px; }
+.fw-authenticated-welcome .fw-welcome-hero p { color: #5b667c; font-size: 14.5px; font-weight: 500; line-height: 21.75px; margin: 0 0 24px; }
+.fw-authenticated-welcome .fw-before-during-after { margin-top: 0; padding: 14px 15px; }
+.fw-authenticated-welcome .fw-signature { min-height: 70px; box-sizing: border-box; border-radius: 12px; display: block; box-shadow: none; background: rgba(241,244,249,.75); }
+.fw-authenticated-welcome .fw-signature strong { font-size: 13px; }
+.fw-authenticated-welcome .fw-intro-actions { margin-top: auto; padding-top: 50px; }
+.fw-authenticated-welcome .fw-intro-actions .fw-secondary { min-height: 50px; }
+.fw-authenticated-welcome .fw-intro-actions p { color: #8a94a6; font-size: 11.5px; font-weight: 600; }
+.fw-screen-add-offer .fw-source-panel { min-height: 200px; border-radius: 20px; background: var(--fw-card); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
+.fw-screen-add-offer .fw-source-label textarea { min-height: 135px; }
+.fw-mode-tabs { border-radius: 12px; }
+.fw-analysis-mark { width: 64px; height: 64px; border-width: 4px; margin-top: 28px; }
+.fw-analysis-title { font-size: 18px; }
+.fw-analysis-row small { font-size: 11px; }
+.fw-analysis-row { grid-template-columns: 20px minmax(0,1fr) auto; gap: 12px; }
+.fw-analysis-row strong { font-size: 13px; }
+.fw-analysis-dot { width: 20px; height: 20px; }
+.fw-analysis-row:has(.warning) strong { color: #b27b00; }
+.fw-fixed-action { bottom: calc(96px + env(safe-area-inset-bottom)); border-radius: 16px; background: #eaf0fc; }
+.fw-screen-add-offer .fw-fixed-action { bottom: calc(150px + env(safe-area-inset-bottom)); }
+.fw-term-row { font-size: 13px; grid-template-columns: 90px minmax(0,1fr) 12px; min-height: 44px; }
+.fw-term-row span:first-child { font-size: 12px; }
+.fw-term-row strong { overflow-wrap: anywhere; }
+.fw-state-dot { width: 12px; height: 12px; }
+.fw-screen-agreement .fw-page-title, .fw-screen-questions .fw-page-title { font-size: 22px; }
+.fw-question-category { font-size: 10px; padding: 3px 8px; }
+.fw-question-card textarea { font: inherit; font-size: 13px; color: var(--fw-navy); padding: 12px; border: 1px solid rgba(121,141,176,.24); border-radius: 12px; background: rgba(255,255,255,.66); resize: vertical; }
+.fw-question-actions { display: grid; gap: 10px; }
+.fw-product-body { padding-bottom: calc(164px + env(safe-area-inset-bottom)); }
+.fw-screen-questions .fw-product-body { padding-bottom: calc(224px + env(safe-area-inset-bottom)); }
+.fw-signature-avatar { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 50%; background: #0b1b33; color: white; }
+.fw-screen-agreement .fw-signature { display: flex; align-items: center; gap: 8px; border-radius: 12px; }
+.fw-agreement-tools { margin: 18px 0; }
+.fw-agreement-tools summary { color: var(--fw-muted); cursor: pointer; font-size: 12px; }
+
+/* Original Home places the bell above the avatar, beside the greeting.
+   Keep real workspace/sample labels without inventing a location or activity. */
+.fw-screen-home .fw-home-body:not(.fw-home-demo-body) { position: relative; padding-top: 68px; }
+.fw-home-body:not(.fw-home-demo-body) > .fw-home-topline { position: absolute; top: 12px; right: 30px; min-height: 0; margin: 0; }
+.fw-home-body:not(.fw-home-demo-body) > .fw-home-topline > .fw-eyebrow { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-actions { display: grid; justify-items: center; gap: 16px; }
+.fw-home-body:not(.fw-home-demo-body) .fw-alert-dot { width: 40px; height: 40px; background: rgba(255,255,255,.66); }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-avatar { box-sizing: border-box; width: 44px; height: 44px; border: 0; box-shadow: none; }
+.fw-home-body:not(.fw-home-demo-body) > .fw-home-greeting { padding: 0 56px 0 0; }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-location { display: block; font-size: 12px; line-height: 16px; }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-greeting h2 { font-size: 22px; line-height: 28px; margin: 4px 0 12px; }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-demo-link { top: -44px; right: auto; left: 0; font-size: 10px; }
+
+/* Compact real answer/context controls; no truncation of saved terms or notes. */
+.fw-screen-questions .fw-question-card { margin: 10px 0; padding: 14px 16px; }
+.fw-screen-questions .fw-question-card textarea { margin: 8px 0; }
+.fw-screen-questions .fw-question-card > .fw-secondary { min-height: 44px; padding-block: 10px; }
+.fw-screen-agreement .fw-list-card { padding: 12px 16px; backdrop-filter: blur(24px); }
+.fw-screen-agreement .fw-list-row { align-items: flex-start; padding-block: 9px; }
+.fw-screen-agreement .fw-list-row > * { min-width: 0; overflow-wrap: anywhere; }
+.fw-screen-agreement .fw-signature { min-height: 70px; font-size: 11px; background: rgba(255,255,255,.66); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
+@media(max-height:780px) {
+  .fw-onboarding-hero { margin-top: 42px; }
+  .fw-onboarding-art { width: min(290px,100%); margin-bottom: 24px; }
+  .fw-onboarding-copy .fw-progress-dots { margin-top: 28px; }
+  .fw-onboarding-screen > .fw-primary { top: 654px; }
+  .fw-screen-add-offer .fw-fixed-action { bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
+@media(max-width:360px) {
+  .fw-onboarding-copy h1 { font-size: 23px; }
+  .fw-onboarding-copy p { font-size: 13px; }
+  .fw-language-content h1 { font-size: 24px; }
+  .fw-language-native { font-size: 9px !important; }
+  .fw-term-row { grid-template-columns: 76px minmax(0,1fr) 10px; font-size: 12px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .fw-screen-enter, .fw-slide-enter, .fw-splash .fw-intro-logo, .fw-analysis-mark, .fw-analysis-mark span { animation: none; }
+}
+.fw-screen-agreement-workflow .fw-field input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  margin: 0 8px 0 0;
+  vertical-align: middle;
+  accent-color: #285fe7;
+}
+.fw-screen-agreement-workflow .fw-field,
+.fw-screen-agreement-workflow .fw-term-row strong,
+.fw-screen-agreement-workflow .fw-notice { overflow-wrap: anywhere; }
+.fw-screen-agreement-workflow .fw-offer-detail-card button { margin-top: 12px; }
+.fw-screen-agreement-workflow .fw-signature { display: flex; align-items: center; gap: 8px; border-radius: 12px; }
+.fw-home-body:not(.fw-home-demo-body) .fw-home-avatar { z-index: 2; }
+
+/* Day 5 uses the original Work Record surfaces with persistent data. */
+.fw-live-work { display: grid; gap: 16px; }
+.fw-live-work .fw-work-row { position: relative; border: 0; background: transparent; width: 100%; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+.fw-live-work .fw-work-row-status { position: absolute; right: 0; bottom: -8px; font-size: 10px; color: var(--fw-muted, #6c7c96); }
+.fw-live-work .fw-work-details, .fw-live-work .fw-notice { overflow-wrap: anywhere; }
+.fw-live-work .fw-offer-detail-card > button { margin-top: 12px; }
+.fw-live-work .fw-work-check { display: flex; gap: 10px; margin: 18px 0; }
+.fw-live-work .fw-work-check input { width: 20px; height: 20px; flex-shrink: 0; }
+.fw-live-work .fw-field textarea { min-height: 90px; }
+
+.fw-live-work .fw-work-summary { margin: 0; min-height: 100px; padding: 20px; border: 0; background: linear-gradient(120deg, #0d1e3b, #203f7b); }
+.fw-live-work .fw-work-summary .fw-eyebrow { color: #8fb0ff; font-size: 11px; }
+.fw-live-work .fw-work-summary > div > strong { font-size: 30px; line-height: 1.35; }
+.fw-live-work .fw-work-summary > div > span { font-size: 11px; }
+.fw-live-work .fw-demo-week-card { padding: 9px 19px; margin: 0; }
+.fw-live-work .fw-work-row { min-height: 62px; border-top: 0; grid-template-columns: 44px minmax(35px,1fr) 42px 30px; gap: 12px; }
+.fw-live-work .fw-demo-day-label strong, .fw-live-work .fw-demo-hours { font-size: 12px; }
+.fw-live-work .fw-demo-day-label small { font-size: 11px; }
+.fw-live-work .fw-demo-hours-bar { height: 16px; }
+.fw-live-work .fw-demo-day-status { border-radius: 10px; width: 30px; }
+.fw-live-work .fw-work-row-status { bottom: 3px; font-size: 9px; }
+.fw-live-work .fw-demo-work-note { margin: 0; font-size: 11px; }
+.fw-live-work > .fw-primary { margin-top: 12px; }
+.fw-live-work > .fw-record-passport-link { margin: 12px 0 0; min-height: 54px; }
+@media (max-width: 350px) { .fw-live-work .fw-work-row { grid-template-columns: 38px minmax(24px,1fr) 36px 26px; gap: 7px; } }
+
+.fw-live-work .fw-work-summary { box-sizing: border-box; }
+.fw-live-work .fw-work-summary > div > strong { white-space: nowrap; }
+.fw-live-work .fw-work-row { padding: 0; }
+
+.fw-live-work .fw-work-summary { padding-block: 16px; }
+/* Live private Passport uses the original 390px export's hero and glass cards.
+   Dynamic history is expandable; no sample percentage or skill is fabricated. */
+.fw-live-passport { padding-bottom: 130px; }
+.fw-live-passport .fw-demo-passport-card { box-sizing: border-box; min-height: 200px; padding: 24px 20px 18px; border-radius: 24px; }
+.fw-live-passport .fw-avatar { width: 52px; height: 52px; flex-basis: 52px; }
+.fw-live-passport .fw-passport-person strong { font-size: 18px; }
+.fw-live-passport .fw-demo-role { margin-top: 25px; font-size: 14px; }
+.fw-live-passport .fw-demo-passport-meta { align-items: center; font-size: 12px; }
+.fw-live-passport .fw-demo-passport-meta span:first-child { font-size: 10px; }
+.fw-live-passport .fw-passport-private-note { color: #b7cafa; font-size: 11px; margin: 10px 0 0; }
+.fw-live-passport .fw-demo-skill { min-height: 52px; padding: 12px 14px; text-decoration: none; }
+.fw-live-passport .fw-demo-skill strong { font-size: 14px; overflow-wrap: anywhere; }
+.fw-live-passport .fw-demo-skill > span:last-child { font-size: 11px; white-space: normal; max-width: 35%; overflow-wrap: anywhere; }
+.fw-live-passport .fw-demo-skill .fw-passport-check { display: grid; place-items: center; background: #0ca376; color: white; border-radius: 50%; width: 20px; height: 20px; flex: 0 0 20px; font-size: 12px; }
+.fw-live-passport .fw-demo-previous-role { padding: 16px; gap: 8px; }
+.fw-live-passport .fw-demo-previous-role strong { font-size: 14px; }
+.fw-live-passport .fw-demo-previous-role span { font-size: 12px; }
+.fw-live-passport .fw-passport-entry-detail { padding: 6px 16px 12px; font-size: 12px; overflow-wrap: anywhere; }
+.fw-live-passport .fw-passport-entry-detail p { margin: 6px 0; }
+.fw-live-passport .fw-demo-passport-action { background: linear-gradient(transparent,rgba(234,241,255,.97) 32%); padding-top: 12px; }
+.fw-live-passport .fw-demo-passport-action .fw-primary { min-height: 54px; }
+
+/* Case review extends existing glass cards and controls; no original case export exists. */
+.fw-live-cases { display: grid; gap: 16px; padding-bottom: 110px; }
+.fw-live-cases .fw-progress-card { padding: 22px; }
+.fw-live-cases h2 { font-size: 24px; margin: 10px 0; }
+.fw-live-cases p { line-height: 1.6; }
+.fw-live-cases .fw-card { min-width: 0; overflow-wrap: anywhere; }
+.fw-live-cases form, .fw-live-cases form > div { display: grid; gap: 12px; }
+.fw-live-cases select { width: 100%; min-height: 48px; border: 1px solid #c8d5ed; border-radius: 12px; padding: 10px; font: inherit; background: rgba(255,255,255,.75); }
+.fw-live-cases button { white-space: normal; }
+.fw-case-row { display: grid; text-align: left; gap: 5px; margin-top: 10px; }
+.fw-case-row small { font-size: 10px; overflow-wrap: anywhere; }
+.fw-case-timeline { padding-left: 20px; border-left: 2px solid #cbd8f1; }
+.fw-case-timeline li { margin: 16px 0; padding-left: 5px; }
+.fw-case-timeline small { font-size: 11px; }

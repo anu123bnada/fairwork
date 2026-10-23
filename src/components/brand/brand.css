@@ -1,0 +1,18 @@
+/* These selectors have no rendered targets until approved masters are installed.
+   Never tint, filter, stretch, animate or reconstruct approved artwork. */
+.oq-brand-art { display: block; object-fit: contain; height: auto; max-width: 100%; }
+.oq-brand-logo { width: 180px; }
+.oq-brand-mark { width: 32px; }
+.oq-brand-header {
+  display: flex; align-items: center; min-height: 48px; box-sizing: border-box;
+  padding: 8px max(20px, env(safe-area-inset-right)) 8px max(20px, env(safe-area-inset-left));
+  padding-top: max(8px, env(safe-area-inset-top));
+}
+.oq-brand-header .oq-brand-mobile { display: none; }
+.oq-brand-prominent { justify-content: center; padding-block: 20px; }
+.oq-brand-auth { margin: 0 auto 24px; }
+.oq-brand-splash { position: absolute; top: calc(50dvh - 70px); left: 50%; transform: translateX(-50%); width: min(240px, 80vw); }
+@media (max-width: 767px) {
+  .oq-brand-header .oq-brand-desktop { display: none; }
+  .oq-brand-header .oq-brand-mobile { display: block; }
+}

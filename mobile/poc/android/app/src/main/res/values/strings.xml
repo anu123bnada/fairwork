@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ORYQEN Local POC</string>
+    <string name="title_activity_main">ORYQEN Local POC</string>
+    <string name="package_name">org.fairwork.localpoc</string>
+    <string name="custom_url_scheme">org.fairwork.localpoc</string>
+</resources>

@@ -1,0 +1,29 @@
+/* ORYQEN name, original FAIRWORK visual system. Do not override the screen
+   palette or geometry here. brand.css is retained as rejected design history.
+   Original exports contain no alternate dark theme. */
+html[data-brand="oryqen"] { color-scheme: light; }
+html[data-brand="oryqen"] :is(a,button,input,textarea,select,summary):focus-visible {
+  outline: 3px solid #0b1b33; outline-offset: 4px;
+}
+.oq-profile-editor { display: grid; gap: 16px; margin-block: 24px; padding: 20px; }
+.oq-profile-editor h3 { margin: 0; }
+.oq-profile-editor .fw-field { min-width: 0; }
+.oq-about { box-sizing: border-box; max-width: 390px; min-height: 100dvh; margin: 0 auto; padding: 40px 24px; line-height: 1.75; background: #e4ecff url('/figma/product/background.svg') center top / 100% 844px no-repeat; }
+.fw-auth .oq-build-link { display: inline-flex; min-height: 24px; align-items: center; }
+html[data-brand="oryqen"] .fw-auth .fw-auth-security-note { color: #4b5b73; font-size: 12px; }
+/* Minimum touch geometry for supplementary links and the sheet drag handle.
+   Primary actions retain their original 48–54px targets. */
+html[data-brand="oryqen"] :is(.fw-auth a,.fw-entry-terms a,.fw-entry-employer,.fw-demo-control.is-active > a,.fw-notice a,.fw-live-cases > a) {
+  display: inline-flex; align-items: center; min-height: 24px;
+}
+html[data-brand="oryqen"] .fw-share-handle { min-height: 24px; }
+/* Keep the original blue gradient, with a slightly darker top stop so normal
+   white action text passes 4.5:1 throughout the gradient (original #4a78ff did not). */
+html[data-brand="oryqen"] :is(.fw-primary,.fw-auth form > button) {
+  background-image: linear-gradient(#3d67eb,#1e4fff);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-brand="oryqen"] *, html[data-brand="oryqen"] *::before, html[data-brand="oryqen"] *::after {
+    animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  }
+}

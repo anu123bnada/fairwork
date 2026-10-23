@@ -1,0 +1,18 @@
+{
+  "name": "fairwork-android-local-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local-only Android transport proof of concept; release disabled",
+  "scripts": {
+    "sync": "cap sync android",
+    "build:debug": "cd android && gradlew.bat assembleDebug --no-daemon --no-watch-fs --max-workers=1 --console=plain",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

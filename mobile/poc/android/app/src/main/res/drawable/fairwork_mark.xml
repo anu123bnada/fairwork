@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shield paths from public/figma/auth/shield.svg; original asset untouched. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp" android:height="80dp" android:viewportWidth="80" android:viewportHeight="80">
+    <path android:fillColor="#EAF0FF" android:pathData="M0,0H80V80H0Z" />
+    <group android:translateX="22.57" android:translateY="18.37">
+        <path android:pathData="M17.43,1.68L1.68,7.98V20.58C1.68,30.03 7.98,37.38 17.43,41.58C26.88,37.38 33.18,30.03 33.18,20.58V7.98L17.43,1.68Z"
+            android:strokeColor="#1E4FFF" android:strokeWidth="3.36" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M10.08,21.63L15.33,26.88L24.78,16.38"
+            android:strokeColor="#1E4FFF" android:strokeWidth="3.36" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+</vector>

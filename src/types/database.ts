@@ -1,0 +1,55 @@
+// Narrow Day 1 RPC transport types, aligned with the migration. Regenerate the
+// complete schema with npm run db:types once a local Supabase stack is available.
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Database = {
+  api: {
+    Tables: Record<string, never>; Views: Record<string, never>;
+    Functions: {
+      admin_read: { Args: { request: Json }; Returns: Json };
+      admin_command: { Args: { request: Json }; Returns: Json };
+      create_profile: { Args: { request: Json }; Returns: Json };
+      get_me: { Args: { request: Json }; Returns: Json };
+      update_profile: { Args: { request: Json }; Returns: Json };
+      account_access: { Args: { request: Json }; Returns: Json };
+      deactivate_account: { Args: { request: Json }; Returns: Json };
+      provision_company: { Args: { request: Json }; Returns: Json };
+      decide_membership: { Args: { request: Json }; Returns: Json };
+      platform_notices: { Args: { request: Json }; Returns: Json };
+      case_followup_read: { Args: { request: Json }; Returns: Json };
+      case_followup_command: { Args: { request: Json }; Returns: Json };
+      review_offer: { Args: { payload: Json }; Returns: Json };
+      list_offers: { Args: { request: Json }; Returns: Json };
+      offer_history: { Args: { request: Json }; Returns: Json };
+      request_organization: { Args: { request: Json }; Returns: Json };
+      appeal_organization_request: { Args: { request: Json }; Returns: Json };
+      list_organization_requests: { Args: { request: Json }; Returns: Json };
+      decide_organization_request: { Args: { request: Json }; Returns: Json };
+      list_organization_queue: { Args: { request: Json }; Returns: Json };
+      authorize_ai_transmission: { Args: { request: Json }; Returns: Json };
+      company_profile: { Args: { request: Json }; Returns: Json };
+      find_companies: { Args: { request: Json }; Returns: Json };
+      notifications: { Args: { request: Json }; Returns: Json };
+      privacy_requests: { Args: { request: Json }; Returns: Json };
+      privacy_review: { Args: { request: Json }; Returns: Json };
+      passport_projection: { Args: { request: Json }; Returns: Json };
+      passport_share_list: { Args: { request: Json }; Returns: Json };
+      passport_share_command: { Args: { request: Json }; Returns: Json };
+      confirm_agreement: { Args: { payload: Json }; Returns: Json };
+      answer_offer_question: { Args: { payload: Json }; Returns: Json };
+      get_agreement: { Args: { request: Json }; Returns: Json };
+      agreement_workflow: { Args: { request: Json }; Returns: Json };
+      read_agreement_workflow: { Args: { request: Json }; Returns: Json };
+      work_command: { Args: { request: Json }; Returns: Json };
+      read_work: { Args: { request: Json }; Returns: Json };
+      list_work: { Args: { request: Json }; Returns: Json };
+      read_work_evidence: { Args: { request: Json }; Returns: Json };
+      work_integrity: { Args: { request: Json }; Returns: Json };
+      read_passport: { Args: { request: Json }; Returns: Json };
+      initialize_passport: { Args: { request: Json }; Returns: Json };
+      work_case_command: { Args: { request: Json }; Returns: Json };
+      read_work_case: { Args: { request: Json }; Returns: Json };
+      list_work_cases: { Args: { request: Json }; Returns: Json };
+    };
+    Enums: Record<string, never>; CompositeTypes: Record<string, never>;
+  };
+};

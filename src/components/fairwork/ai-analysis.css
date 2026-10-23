@@ -1,0 +1,244 @@
+/* ORYQEN AI Offer Analysis & Usability Styles
+   Adheres to Figma tokens: blue/cyan/violet gradients, glassmorphism, 24px blur,
+   Manrope typography, and clear advisory badges. */
+
+.fw-ai-section {
+  margin: 16px 0;
+  display: grid;
+  gap: 12px;
+}
+
+.fw-ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(74,120,255,.16), rgba(155,81,224,.16));
+  border: 1px solid rgba(74,120,255,.3);
+  color: #1e4fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+}
+
+.fw-ai-badge.warning {
+  background: rgba(255,244,229,.9);
+  border-color: rgba(217,164,0,.4);
+  color: #b27b00;
+}
+
+.fw-ai-badge.alert {
+  background: rgba(254,237,237,.9);
+  border-color: rgba(224,49,49,.35);
+  color: #c92a2a;
+}
+
+.fw-ai-actions-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.fw-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 0;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.fw-ai-btn-primary {
+  background: linear-gradient(135deg, #3d67eb, #7048e8);
+  color: white;
+  box-shadow: 0 4px 14px rgba(112,72,232,.3);
+}
+
+.fw-ai-btn-primary:hover:not(:disabled) {
+  box-shadow: 0 6px 18px rgba(112,72,232,.4);
+}
+
+.fw-ai-btn-secondary {
+  background: rgba(255,255,255,.8);
+  color: #0b1b33;
+  border: 1px solid rgba(11,27,51,.12);
+}
+
+.fw-ai-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.fw-ai-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(245,248,255,.85);
+  border: 1px solid rgba(74,120,255,.2);
+  color: #0b1b33;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fw-ai-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(30,79,255,.2);
+  border-top-color: #1e4fff;
+  border-radius: 50%;
+  animation: fw-ai-spin 800ms linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes fw-ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+.fw-ai-unconfigured {
+  border-radius: 16px;
+  background: rgba(255,251,230,.92);
+  border: 1px solid rgba(217,164,0,.35);
+  padding: 14px 16px;
+  color: #5c4300;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.fw-ai-unconfigured strong {
+  display: block;
+  font-size: 13.5px;
+  margin-bottom: 4px;
+  color: #7a5800;
+}
+
+.fw-ai-unconfigured code {
+  background: rgba(0,0,0,.06);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.fw-ai-preview-card {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(74,120,255,.3);
+  background: rgba(255,255,255,.85);
+}
+
+.fw-ai-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fw-ai-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  background: rgba(240,244,255,.6);
+  padding: 10px;
+  border-radius: 12px;
+}
+
+.fw-ai-preview-cell {
+  font-size: 12px;
+}
+
+.fw-ai-preview-cell small {
+  display: block;
+  color: #66728a;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.fw-ai-preview-cell strong {
+  font-size: 13px;
+  color: #0b1b33;
+}
+
+.fw-warning-card {
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: rgba(255,248,245,.95);
+  border: 1px solid rgba(240,101,67,.3);
+  color: #0b1b33;
+  margin-top: 8px;
+}
+
+.fw-warning-card.severity-high {
+  background: rgba(255,241,241,.95);
+  border-color: rgba(230,73,128,.35);
+}
+
+.fw-warning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.fw-warning-header strong {
+  font-size: 13px;
+  color: #c92a2a;
+}
+
+.fw-warning-card p {
+  margin: 4px 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #3b4252;
+}
+
+.fw-warning-rec {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0,0,0,.08);
+  font-size: 11.5px !important;
+  color: #4c566a;
+}
+
+.fw-warning-rec strong {
+  color: #0b1b33;
+}
+
+.fw-ai-disclaimer {
+  font-size: 11px;
+  color: #66728a;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+.fw-question-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(30,79,255,.08);
+  border: 1px solid rgba(30,79,255,.2);
+  color: #1e4fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.fw-question-copy-btn:hover {
+  background: rgba(30,79,255,.14);
+}
