@@ -15,6 +15,6 @@ export function SignInScreen() {
       <p className="fw-sign-in-notice">Test accounts only · Synthetic data only</p>
       <AuthInformationLink />
     </div>
-    <p className="fw-sign-in-employer"><Link href="/operator/authority">I’m an employer →</Link></p>
+    <p className="fw-sign-in-employer"><Link href="/app/employer">I’m an employer →</Link></p>
   </AuthShell>;
 }
