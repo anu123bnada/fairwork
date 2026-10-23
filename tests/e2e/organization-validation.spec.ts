@@ -33,7 +33,11 @@ test("organization approval validates date and evidence, then preserves idempote
  await panel.getByRole("button",{name:"Record independent decision"}).click();
  await expect(panel.getByRole("alert")).toBeVisible();
  await panel.getByRole("button",{name:"Record independent decision"}).click();
- await expect(panel.getByRole("status")).toContainText("Independent decision recorded");
+ await expect(
+  panel.getByRole("status").filter({
+    hasText: "Independent decision recorded"
+  })
+).toBeVisible();
  expect(keys).toHaveLength(2);expect(keys[0]).toBe(keys[1]);expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
 });
 
