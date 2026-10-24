@@ -1,5 +1,1071 @@
-import { IntroScreen } from "@/components/fairwork/product-app";
+"use client";
+import { useState, useEffect } from "react";
+import "./landing.css";
+import "@fontsource/dm-sans/400.css";
+import "@fontsource/dm-sans/500.css";
+import "@fontsource/dm-sans/700.css";
+import "@fontsource/dm-sans/800.css";
+import "@fontsource/space-grotesk/500.css";
+import "@fontsource/space-grotesk/700.css";
+import CinematicCore from "@/components/oryqen/cinematic-core";
+import { BrandLogo } from "@/components/brand/brand";
+import { motion, useReducedMotion } from "framer-motion";
+import {
+  ArrowUpRight,
+  ArrowRight,
+  Menu,
+  X,
+  ShieldCheck,
+  ScanSearch,
+  FileCheck2,
+  BriefcaseBusiness,
+  Check,
+  ChevronDown,
+  Download,
+  LockKeyhole,
+  Sparkles,
+  ScanLine,
+  Play,
+  Search,
+  CheckCircle2,
+} from "lucide-react";
+const apk = process.env.NEXT_PUBLIC_APK_URL || "";
+const play = process.env.NEXT_PUBLIC_PLAY_STORE_URL || "";
+const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
+const valid = (url: string) => {
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+const features = [
+  {
+    id: "01",
+    icon: ScanSearch,
+    title: "Offer intelligence",
+    desc: "Turn complex offer details into clear, understandable information before you decide.",
+    label: "UNDERSTAND",
+  },
+  {
+    id: "02",
+    icon: FileCheck2,
+    title: "Agreement clarity",
+    desc: "Review important terms and spot questions worth asking before you sign.",
+    label: "REVIEW",
+  },
+  {
+    id: "03",
+    icon: BriefcaseBusiness,
+    title: "Work Passport",
+    desc: "Keep a structured record of your work journey and important employment milestones.",
+    label: "DOCUMENT",
+  },
+  {
+    id: "04",
+    icon: ShieldCheck,
+    title: "Fairness by design",
+    desc: "A thoughtful workflow built around transparency, context, and informed decisions.",
+    label: "EMPOWER",
+  },
+];
+const faqs = [
+  [
+    "Is ORYQEN free?",
+    "Pricing and availability will be announced when the public release is ready.",
+  ],
+  [
+    "Can ORYQEN guarantee a job offer is safe?",
+    "No. ORYQEN is designed to help you review information and identify questions; it cannot guarantee an employer, offer, or contract is legitimate.",
+  ],
+  [
+    "Where can I download the app?",
+    "Once an official APK or Play Store listing is available, the download buttons on this website can link directly to it.",
+  ],
+  [
+    "Does ORYQEN replace professional advice?",
+    "No. The app provides informational support and should not replace qualified legal, financial, or employment advice.",
+  ],
+];
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      className={className}
+      initial={reduced ? false : { opacity: 0, y: 42 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.14 }}
+      transition={{ duration: 0.75, delay, ease: [0.2, 0.7, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+function Brand() {
+  return (
+    <a className="brand" href="#top" aria-label="ORYQEN home">
+      {/* The approved identity gate replaces this preserved V6 wordmark only
+          once official artwork is supplied; until then the artwork renders as-is. */}
+      <BrandLogo
+        existing={
+          <>
+            <span className="brand-mark">◈</span>ORY<span>Q</span>EN
+            <span className="brand-period">.</span>
+          </>
+        }
+      />
+    </a>
+  );
+}
+function AppScreen({ small = false }: { small?: boolean }) {
+  return (
+    <div className={"phone " + (small ? "phone-small" : "")}>
+      <div className="phone-edge">
+        <div className="phone-island" />
+        <div className="phone-content">
+          <div className="phone-top">
+            <span className="tiny-brand">◈ ORYQEN</span>
+            <span className="avatar">A</span>
+          </div>
+          <div className="phone-greeting">
+            GOOD MORNING <span>✳</span>
+          </div>
+          <h3>
+            Move forward
+            <br />
+            <em>with clarity.</em>
+          </h3>
+          <div className="phone-hero-card">
+            <div className="phc-label">
+              <ScanLine size={13} /> YOUR OPPORTUNITY
+            </div>
+            <div className="phc-title">Review a new offer</div>
+            <div className="phc-sub">
+              Know what matters, before you say yes.
+            </div>
+            <div className="phc-arrow">
+              <ArrowUpRight size={17} />
+            </div>
+          </div>
+          <div className="phone-section-title">
+            Your workspace <span>VIEW ALL →</span>
+          </div>
+          <div className="phone-tiles">
+            <div>
+              <div className="tile-icon">
+                <FileCheck2 size={17} />
+              </div>
+              <b>Agreements</b>
+              <small>Review terms</small>
+            </div>
+            <div>
+              <div className="tile-icon purple">
+                <BriefcaseBusiness size={17} />
+              </div>
+              <b>Work Passport</b>
+              <small>Track your journey</small>
+            </div>
+          </div>
+          <div className="phone-activity">
+            <span className="activity-dot" />
+            <span>READY WHEN YOU ARE</span>
+            <Check size={13} />
+          </div>
+          <div className="phone-nav">
+            <span>⌂</span>
+            <span>▦</span>
+            <span>◈</span>
+            <span>◯</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+function HoloCore() {
+  const [active, setActive] = useState(0);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
+  const labels = ["CLARITY", "TRUST", "CONTROL"];
+  return (
+    <div className="holo-wrap">
+      <div className="holo-caption">
+        <span className="live-dot" /> INTERACTIVE / ORYQEN INTELLIGENCE
+      </div>
+      <div
+        className="holo-stage"
+        onPointerMove={(e) => {
+          if (e.pointerType === "touch") return;
+          const r = e.currentTarget.getBoundingClientRect();
+          setTilt({
+            x: ((e.clientY - r.top) / r.height - 0.5) * -18,
+            y: ((e.clientX - r.left) / r.width - 0.5) * 24,
+          });
+        }}
+        onPointerLeave={() => setTilt({ x: 0, y: 0 })}
+      >
+        <div className="holo-grid" />
+        <div className="holo-glow" />
+        <div
+          className="holo-assembly"
+          style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
+        >
+          <div className="holo-ring ring-a" />
+          <div className="holo-ring ring-b" />
+          <div className="holo-ring ring-c" />
+          <div className="holo-core">
+            <div className="holo-core-inner">◈</div>
+          </div>
+          <div className="holo-satellite sat-a" />
+          <div className="holo-satellite sat-b" />
+        </div>
+        <span className="holo-cross cross-a">+</span>
+        <span className="holo-cross cross-b">+</span>
+        <span className="holo-coord">
+          OQ / CORE 001
+          <br />
+          SYSTEM ONLINE
+        </span>
+      </div>
+      <div className="holo-bottom">
+        <div>
+          <span className="section-tag">EXPLORE THE CORE</span>
+          <h3>
+            {labels[active] ?? ""} <em>BY DESIGN.</em>
+          </h3>
+          <p>
+            {
+              [
+                "Turn complex decisions into understandable next steps.",
+                "Review what matters with transparency and context.",
+                "Stay in charge of your own working journey.",
+              ][active] ?? ""
+            }
+          </p>
+        </div>
+        <div
+          className="holo-tabs"
+          role="group"
+          aria-label="Explore core values"
+        >
+          {labels.map((l, i) => (
+            <button
+              key={l}
+              className={active === i ? "active" : ""}
+              onClick={() => setActive(i)}
+              aria-pressed={active === i}
+            >
+              {String(i + 1).padStart(2, "0")} / {l}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-export default function WelcomePage() {
-  return <IntroScreen screen="splash" />;
+function JourneyLab() {
+  const [step, setStep] = useState(0);
+  const [kind, setKind] = useState("Full-time");
+  const steps = [
+    {
+      name: "Capture the offer",
+      heading: "START WITH THE DETAILS",
+      body: "Keep the role, compensation, working hours and key conditions together in one understandable place.",
+      note: "A single organized view",
+    },
+    {
+      name: "Find the questions",
+      heading: "MAKE THE UNCLEAR VISIBLE",
+      body: "Explore sample questions about payment, working time, notice periods and responsibilities.",
+      note: "Context before commitment",
+    },
+    {
+      name: "Build your record",
+      heading: "KEEP YOUR STORY MOVING",
+      body: "Organize milestones and documents in your Work Passport as your professional journey develops.",
+      note: "Your journey, your control",
+    },
+  ];
+  const currentStep = steps[step] ?? steps[0]!;
+  return (
+    <div className="lab">
+      <div className="lab-head">
+        <span>
+          <span className="live-dot" /> INTERACTIVE PRODUCT WALKTHROUGH
+        </span>
+        <span>SIMULATION / NOT A LIVE ANALYSIS</span>
+      </div>
+      <div className="lab-body">
+        <div className="lab-left">
+          <span className="section-tag">CHOOSE YOUR PATH</span>
+          <h3>
+            YOUR OFFER.
+            <br />
+            <em>YOUR CALL.</em>
+          </h3>
+          <p>
+            Explore how ORYQEN could guide a real-world decision. This is an
+            illustrative preview, not a working offer evaluation.
+          </p>
+          <div
+            className="lab-choice"
+            role="group"
+            aria-label="Example employment type"
+          >
+            {["Full-time", "Part-time", "Freelance"].map((x) => (
+              <button
+                key={x}
+                className={kind === x ? "selected" : ""}
+                onClick={() => setKind(x)}
+                aria-pressed={kind === x}
+              >
+                {x}
+              </button>
+            ))}
+          </div>
+          <div className="lab-stepnav">
+            {steps.map((x, i) => (
+              <button
+                key={x.name}
+                className={step === i ? "selected" : ""}
+                onClick={() => setStep(i)}
+              >
+                <span>0{i + 1}</span>
+                {x.name}
+                <ArrowUpRight size={16} />
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="lab-right">
+          <div className="lab-screen">
+            <div className="lab-screen-top">
+              <span>◈ ORYQEN / DEMO</span>
+              <span>0{step + 1} — 03</span>
+            </div>
+            <div className="lab-bubble">{kind.toUpperCase()} / EXAMPLE</div>
+            <div className="lab-graphic">
+              <div className="lab-circle c1" />
+              <div className="lab-circle c2" />
+              <div className="lab-glyph">
+                {step === 0 ? "◇" : step === 1 ? "✳" : "◈"}
+              </div>
+            </div>
+            <div className="lab-screen-info">
+              <span className="section-tag">STEP 0{step + 1}</span>
+              <h4>{currentStep.heading}</h4>
+              <p>{currentStep.body}</p>
+              <div className="lab-result">
+                <CheckCircle2 size={17} />
+                {currentStep.note}
+              </div>
+            </div>
+          </div>
+          <div className="lab-controls">
+            <button
+              onClick={() => setStep((step + 2) % 3)}
+              aria-label="Previous demo step"
+            >
+              ← PREVIOUS
+            </button>
+            <span>0{step + 1} / 03</span>
+            <button onClick={() => setStep((step + 1) % 3)}>NEXT STEP →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}function CommandPalette() {
+  const [open, setOpen] = useState(false),[q, setQ] = useState("");
+  // The trigger is a fixed overlay: keep it hidden until the hero is scrolled
+  // past so it never covers the hero call to action. Ctrl/Cmd+K still works.
+  const [pastHero, setPastHero] = useState(false);
+  useEffect(() => {
+    const onScroll = () =>
+      setPastHero(window.scrollY > window.innerHeight * 0.85);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  const items = [
+    ["The idea", "#about"],
+    ["3D experience", "#core"],
+    ["Features", "#features"],
+    ["Interactive lab", "#lab"],
+    ["How it works", "#experience"],
+    ["Download", "#download"],
+    ["FAQ", "#faq"],
+  ];
+  useEffect(() => {
+    const fn = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setOpen((v) => !v);
+      }
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", fn);
+    return () => window.removeEventListener("keydown", fn);
+  }, []);
+  return (
+    <>
+      <button
+        className={pastHero ? "command-trigger visible" : "command-trigger"}
+        onClick={() => setOpen(true)}
+        aria-label="Open quick navigation"
+      >
+        <Search size={16} />
+        <span>QUICK NAV</span>
+        <kbd>⌘ K</kbd>
+      </button>
+      {open && (
+        <div className="cmd-backdrop" onClick={() => setOpen(false)}>
+          <div
+            className="cmd-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Quick navigation"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="cmd-input">
+              <Search size={21} />
+              <input
+                autoFocus
+                placeholder="Where would you like to go?"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <button onClick={() => setOpen(false)} aria-label="Close">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="cmd-results">
+              {items
+                .filter((x) =>
+                  (x[0]?.toLowerCase().includes(q.toLowerCase()) ?? false),
+                )
+                .map(([name, href]) => (
+                  <a
+                    key={href}
+                    href={href}
+                    onClick={() => {
+                      setOpen(false);
+                      setQ("");
+                    }}
+                  >
+                    <span>↗</span>
+                    {name}
+                    <ArrowRight size={16} />
+                  </a>
+                ))}
+              {!items.some(
+                (x) => x[0]?.toLowerCase().includes(q.toLowerCase()) ?? false,
+              ) && <p>No matching section.</p>}
+            </div>
+            <div className="cmd-foot">
+              ORYQEN / EXPLORE WITHOUT LIMITS <span>ESC TO CLOSE</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+function ScrollMeter() {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const update = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(max > 0 ? (window.scrollY / max) * 100 : 0);
+    };
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+  return (
+    <div
+      className="scroll-meter"
+      style={{ width: `${progress}%` }}
+      aria-hidden="true"
+    />
+  );
+}
+function MagneticButton({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  const [xy, setXY] = useState({ x: 0, y: 0 });
+  return (
+    <a
+      className="magnetic-link"
+      href={href}
+      onPointerMove={(e) => {
+        if (e.pointerType === "touch") return;
+        const r = e.currentTarget.getBoundingClientRect();
+        setXY({
+          x: (e.clientX - r.left - r.width / 2) * 0.14,
+          y: (e.clientY - r.top - r.height / 2) * 0.14,
+        });
+      }}
+      onPointerLeave={() => setXY({ x: 0, y: 0 })}
+      style={{ transform: `translate(${xy.x}px,${xy.y}px)` }}
+    >
+      {children}
+      <ArrowUpRight size={18} />
+    </a>
+  );
+}
+export default function Home() {
+  const [menu, setMenu] = useState(false),
+    [faq, setFaq] = useState<number | null>(0),
+    [toast, setToast] = useState("");
+  const reduced = useReducedMotion();
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
+  const unavailable = (kind: string) =>
+    setToast(
+      `${kind} isn't available yet. Add its official URL in .env.local to enable downloads.`,
+    );
+  return (
+    <main id="top" className="oryqen-landing">
+      <ScrollMeter />
+      <CommandPalette />
+      <div className="site-shell">
+        <header className="nav">
+          <Brand />
+          <nav
+            className={menu ? "nav-links open" : "nav-links"}
+            aria-label="Main navigation"
+          >
+            <a href="#about" onClick={() => setMenu(false)}>
+              The idea
+            </a>
+            <a href="#core" onClick={() => setMenu(false)}>
+              3D Experience
+            </a>
+            <a href="#features" onClick={() => setMenu(false)}>
+              Features
+            </a>
+            <a href="#lab" onClick={() => setMenu(false)}>
+              Live demo
+            </a>
+            <a href="#experience" onClick={() => setMenu(false)}>
+              Experience
+            </a>
+            <a href="#faq" onClick={() => setMenu(false)}>
+              FAQ
+            </a>
+          </nav>
+          <div className="nav-actions">
+            <span className="nav-status">
+              <i /> A NEW WAY FORWARD
+            </span>
+            <a href="/sign-in" className="nav-signin">
+              SIGN IN <ArrowRight size={14} />
+            </a>
+            <a href="#download" className="nav-cta">
+              GET THE APP <ArrowUpRight size={15} />
+            </a>
+          </div>
+          <button
+            className="mobile-menu"
+            aria-label={menu ? "Close menu" : "Open menu"}
+            aria-expanded={menu}
+            onClick={() => setMenu(!menu)}
+          >
+            {menu ? <X /> : <Menu />}
+          </button>
+        </header>
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-grid" />
+          <div className="cinematic-noise" />
+          <div className="hero-aura" />
+          <div className="hero-kicker">
+            <span className="kicker-line" /> THE FUTURE OF FAIR WORK{" "}
+            <span className="kicker-num">/ 001</span>
+          </div>
+          <h1 id="hero-title" className="hero-title">
+            OPPORTUNITY
+            <br />
+            <span>REIMAGINED</span>
+            <span className="hero-dot">.</span>
+          </h1>
+          <div className="hero-art">
+            <div className="orbit orbit-1" />
+            <div className="orbit orbit-2" />
+            <div className="orbit orbit-3" />
+            <div className="glass-blob blob-a" />
+            <div className="glass-blob blob-b" />
+            <motion.div
+              className="main-phone"
+              animate={reduced ? {} : { y: [0, -13, 0], rotate: [-9, -7, -9] }}
+              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <AppScreen />
+            </motion.div>
+            <div className="float-card float-one">
+              <div className="float-icon">
+                <ShieldCheck size={19} />
+              </div>
+              <div>
+                <b>More confidence</b>
+                <small>Understand before you decide</small>
+              </div>
+              <span className="float-check">✓</span>
+            </div>
+            <div className="float-card float-two">
+              <div className="float-icon purple">
+                <FileCheck2 size={19} />
+              </div>
+              <div>
+                <b>Clearer agreements</b>
+                <small>Know what to ask</small>
+              </div>
+            </div>
+            <div className="float-pill">
+              <span className="live-dot" /> BUILT FOR REAL PEOPLE{" "}
+              <ArrowUpRight size={14} />
+            </div>
+          </div>
+          <div className="hero-bottom">
+            <div className="hero-copy">
+              <span className="eyebrow">WELCOME TO ORYQEN</span>
+              <p>
+                Better opportunities start with{" "}
+                <strong>better information.</strong> Explore a smarter way to
+                navigate work.
+              </p>
+              <MagneticButton href="#core">
+                EXPLORE THE EXPERIENCE
+              </MagneticButton>
+            </div>
+            <div className="hero-right">
+              <span className="hero-right-index">01 — 04</span>
+              <p>
+                Technology with a human purpose.
+                <br />
+                Clarity at every step.
+              </p>
+              <a
+                href="#download"
+                className="round-arrow"
+                aria-label="Go to download section"
+              >
+                <ArrowRight />
+              </a>
+            </div>
+          </div>
+          <div className="hero-side-label">
+            SCROLL TO DISCOVER <span>↓</span>
+          </div>
+        </section>
+        <div className="ticker" aria-label="ORYQEN product values">
+          <div className="ticker-inner">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <div className="ticker-set" key={i}>
+                <span>CLARITY FIRST</span>
+                <b>✳</b>
+                <span>PEOPLE FIRST</span>
+                <b>✳</b>
+                <span>FAIRER FUTURES</span>
+                <b>✳</b>
+                <span>BUILT FOR WHAT'S NEXT</span>
+                <b>✳</b>
+              </div>
+            ))}
+          </div>
+        </div>
+        <section className="intro section-pad" id="about">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">01 / THE IDEA</span>
+              <span className="section-tag right">MORE THAN AN APP ↗</span>
+            </div>
+            <div className="intro-layout">
+              <h2 className="display-heading">
+                WORK SHOULD
+                <br />
+                FEEL <em>CLEARER.</em>
+              </h2>
+              <div className="intro-aside">
+                <div className="asterisk">✳</div>
+                <p>
+                  Important decisions shouldn't begin with uncertainty. ORYQEN
+                  helps bring structure, understanding, and perspective to the
+                  moments that shape your working life.
+                </p>
+                <a href="#features" className="pill-link">
+                  DISCOVER WHAT'S INSIDE <ArrowUpRight size={17} />
+                </a>
+              </div>
+            </div>
+          </Reveal>
+          <Reveal>
+            <div className="statement-card">
+              <div className="statement-orb" />
+              <div className="statement-top">
+                <span>◈ ORYQEN / OUR PURPOSE</span>
+                <span>HUMAN-CENTERED TECHNOLOGY</span>
+              </div>
+              <div className="statement-copy">
+                THE RIGHT
+                <br />
+                INFORMATION.
+                <br />
+                <span>THE POWER TO CHOOSE.</span>
+              </div>
+              <div className="statement-bottom">
+                <span>Less confusion. More confidence.</span>
+                <div className="statement-arrow">
+                  <ArrowUpRight size={27} />
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </section>
+        <section className="core-section section-pad" id="core">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">02 / THE INTELLIGENCE</span>
+              <span className="section-tag right">
+                MOVE YOUR CURSOR TO INTERACT ↗
+              </span>
+            </div>
+            <div className="core-heading">
+              <h2 className="display-heading">
+                A NEW KIND OF
+                <br />
+                <em>INTELLIGENCE.</em>
+              </h2>
+              <p>
+                Not just a beautiful interface. An interactive vision for
+                human-centered decisions.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <CinematicCore />
+          </Reveal>
+          <Reveal>
+            <HoloCore />
+          </Reveal>
+        </section>
+        <section className="features section-pad" id="features">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">02 / THE PLATFORM</span>
+              <span className="section-tag right">DESIGNED AROUND YOU</span>
+            </div>
+            <div className="features-head">
+              <h2 className="display-heading">
+                SMART TOOLS.
+                <br />
+                <em>REAL CLARITY.</em>
+              </h2>
+              <p>
+                Four thoughtful ways to bring more understanding to your next
+                opportunity.
+              </p>
+            </div>
+          </Reveal>
+          <div className="feature-grid">
+            {features.map((f, i) => (
+              <Reveal key={f.id} delay={i * 0.08}>
+                <article className={"feature-card feature-" + i}>
+                  <div className="feature-top">
+                    <span>
+                      {f.id} / {f.label}
+                    </span>
+                    <ArrowUpRight size={18} />
+                  </div>
+                  <div className="feature-art">
+                    <div className="feature-orbit" />
+                    <div className="feature-icon">
+                      <f.icon size={43} strokeWidth={1.3} />
+                    </div>
+                  </div>
+                  <div className="feature-bottom">
+                    <h3>{f.title}</h3>
+                    <p>{f.desc}</p>
+                  </div>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+        <section className="lab-section section-pad" id="lab">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">03 / INTERACTIVE LAB</span>
+              <span className="section-tag right">TRY THE EXPERIENCE ↗</span>
+            </div>
+            <div className="lab-heading">
+              <h2 className="display-heading">
+                DON’T JUST LOOK.
+                <br />
+                <em>EXPLORE.</em>
+              </h2>
+              <p>
+                A hands-on preview of the thinking behind ORYQEN. Choose a path
+                and navigate the journey.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal>
+            <JourneyLab />
+          </Reveal>
+        </section>
+        <section className="experience section-pad" id="experience">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">03 / THE EXPERIENCE</span>
+              <span className="section-tag right">INTUITIVE BY DESIGN</span>
+            </div>
+            <h2 className="display-heading">
+              YOUR NEXT MOVE.
+              <br />
+              <em>MADE SIMPLE.</em>
+            </h2>
+          </Reveal>
+          <div className="experience-grid">
+            <Reveal className="experience-visual">
+              <div className="experience-rings" />
+              <div className="experience-phone">
+                <AppScreen small />
+              </div>
+              <div className="experience-label">A CLEARER WAY FORWARD ↗</div>
+            </Reveal>
+            <div className="steps">
+              <Reveal>
+                <p className="steps-intro">
+                  A more confident decision starts with a few simple steps.
+                </p>
+              </Reveal>
+              {[
+                [
+                  "01",
+                  "ADD AN OPPORTUNITY",
+                  "Bring your offer details together in one place.",
+                ],
+                [
+                  "02",
+                  "EXPLORE THE DETAILS",
+                  "Review useful context and important terms.",
+                ],
+                [
+                  "03",
+                  "ASK BETTER QUESTIONS",
+                  "Identify what needs clarification before committing.",
+                ],
+                [
+                  "04",
+                  "KEEP MOVING",
+                  "Build your work record as your journey grows.",
+                ],
+              ].map(([n, t, d]) => (
+                <Reveal key={n}>
+                  <div className="step">
+                    <span>{n}</span>
+                    <div>
+                      <h3>{t}</h3>
+                      <p>{d}</p>
+                    </div>
+                    <ArrowUpRight size={19} />
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="manifesto">
+          <div className="manifesto-grain" />
+          <Reveal>
+            <div className="manifesto-top">
+              <span>THE ORYQEN PHILOSOPHY</span>
+              <span>04 / WHAT DRIVES US</span>
+            </div>
+            <p>
+              THE FUTURE OF WORK
+              <br />
+              SHOULD BE <em>MORE HUMAN.</em>
+            </p>
+            <div className="manifesto-bottom">
+              <span>◈</span>
+              <p>
+                We believe people deserve tools that make important decisions
+                easier to understand—not harder.
+              </p>
+            </div>
+          </Reveal>
+        </section>
+        <section className="download section-pad" id="download">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">05 / GET STARTED</span>
+              <span className="section-tag right">YOUR NEXT CHAPTER</span>
+            </div>
+            <div className="download-panel">
+              <div className="download-glow" />
+              <div className="download-copy">
+                <div className="download-eyebrow">
+                  <span className="live-dot" /> THE FUTURE IS TAKING SHAPE
+                </div>
+                <h2>
+                  READY FOR
+                  <br />
+                  <em>WHAT'S NEXT?</em>
+                </h2>
+                <p>
+                  Take ORYQEN with you. Official Android download options will
+                  appear here when the app is released.
+                </p>
+                <div className="download-buttons">
+                  <a
+                    className="download-btn primary"
+                    href="/downloads"
+                  >
+                    WINDOWS &amp; ANDROID RELEASE STATUS
+                  </a>
+                  {valid(apk) ? (
+                    <a
+                      className="download-btn primary"
+                      href={apk}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download size={19} /> DOWNLOAD APK{" "}
+                      <ArrowUpRight size={17} />
+                    </a>
+                  ) : (
+                    <button
+                      className="download-btn primary"
+                      onClick={() => unavailable("The APK")}
+                    >
+                      <Download size={19} /> APK COMING SOON{" "}
+                      <ArrowUpRight size={17} />
+                    </button>
+                  )}
+                  {valid(play) ? (
+                    <a
+                      className="download-btn secondary"
+                      href={play}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Play size={17} /> GOOGLE PLAY <ArrowUpRight size={17} />
+                    </a>
+                  ) : (
+                    <button
+                      className="download-btn secondary"
+                      onClick={() => unavailable("Google Play")}
+                    >
+                      <Play size={17} /> PLAY STORE SOON{" "}
+                      <ArrowUpRight size={17} />
+                    </button>
+                  )}
+                </div>
+                <p className="download-account">
+                  Already have an account? <a href="/sign-in">Sign in</a> or{" "}
+                  <a href="/register">create one</a>.
+                </p>
+                <div className="download-note">
+                  <LockKeyhole size={13} /> Use only official ORYQEN release
+                  links.
+                </div>
+              </div>
+              <div className="download-visual">
+                <div className="download-circle" />
+                <AppScreen small />
+              </div>
+            </div>
+          </Reveal>
+        </section>
+        <section className="faq section-pad" id="faq">
+          <Reveal>
+            <div className="section-top">
+              <span className="section-tag">06 / GOOD TO KNOW</span>
+              <span className="section-tag right">QUESTIONS & ANSWERS</span>
+            </div>
+            <div className="faq-grid">
+              <div>
+                <h2 className="display-heading">
+                  A FEW
+                  <br />
+                  <em>GOOD QUESTIONS.</em>
+                </h2>
+                <p>Everything you need to know as we build toward launch.</p>
+              </div>
+              <div className="faq-items">
+                {faqs.map(([q, a], i) => (
+                  <div className="faq-item" key={q}>
+                    <button
+                      aria-expanded={faq === i}
+                      onClick={() => setFaq(faq === i ? null : i)}
+                    >
+                      <span>{String(i + 1).padStart(2, "0")}</span>
+                      {q}
+                      <ChevronDown
+                        className={faq === i ? "chevron rotated" : "chevron"}
+                        size={20}
+                      />
+                    </button>
+                    {faq === i && <div className="faq-answer">{a}</div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </section>
+        <footer className="footer">
+          <div className="footer-top">
+            <Brand />
+            <span>CLARITY FOR EVERY OPPORTUNITY.</span>
+            <a href="#top">BACK TO TOP ↑</a>
+          </div>
+          <div className="footer-giant">
+            ORYQEN<span>.</span>
+          </div>
+          <div className="footer-bottom">
+            <span>
+              © {new Date().getFullYear()} ORYQEN. ALL RIGHTS RESERVED.
+            </span>
+            <span>MADE FOR A FAIRER FUTURE ✳</span>
+            {email ? (
+              <a href={`mailto:${email}`}>CONTACT ↗</a>
+            ) : (
+              <span>CONTACT DETAILS COMING SOON</span>
+            )}
+          </div>
+        </footer>
+      </div>
+      {toast && (
+        <div className="toast" role="status">
+          <Sparkles size={17} />
+          {toast}
+          <button
+            aria-label="Dismiss notification"
+            onClick={() => setToast("")}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+    </main>
+  );
 }

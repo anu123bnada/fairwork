@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ signUp: vi.fn(), resend: vi.fn(), verifyOtp: vi.fn(), createClient: vi.fn(), createServer: vi.fn() }));
+const mocks = vi.hoisted(() => ({ signUp: vi.fn(), resend: vi.fn(), verifyOtp: vi.fn(), getUser: vi.fn(), refreshSession: vi.fn(), commitCookies: vi.fn(), createClient: vi.fn(), createServer: vi.fn() }));
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.createClient }));
-vi.mock("@/server/supabase", () => ({ createServerSupabase: mocks.createServer }));
+vi.mock("@/server/supabase", () => ({ createStagedServerSupabase: mocks.createServer }));
 import { POST as register } from "@/app/api/v1/auth/register/route";
 import { POST as confirm } from "@/app/api/v1/auth/confirm/route";
 import { POST as resend } from "@/app/api/v1/auth/resend/route";
 
 const credentials = { email: "new@example.test", password: "synthetic-password-only" };
 const tokenHash = "a".repeat(64);
+const user = { id: "40000000-0000-4000-8000-000000000001", email_confirmed_at: "2026-10-24", is_anonymous: false };
+const tokens = { accessToken: "synthetic.access.signature", refreshToken: "synthetic-refresh" };
+const session = { access_token: "private-access", refresh_token: "private-refresh", user };
 const req = (body: unknown, origin = "https://app.example.test") => new Request("https://app.example.test/api/v1/auth/register", { method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify(body) });
 const settings = { disable_signup: false, mailer_autoconfirm: false, external: { email: true, anonymous_users: false } };
 beforeEach(() => {
@@ -18,7 +21,9 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json(settings)));
   mocks.createClient.mockReturnValue({ auth: { signUp: mocks.signUp, resend: mocks.resend } });
   mocks.resend.mockResolvedValue({ error: null });
-  mocks.createServer.mockResolvedValue({ auth: { verifyOtp: mocks.verifyOtp } });
+  mocks.createServer.mockResolvedValue({ client: { auth: { verifyOtp: mocks.verifyOtp, getUser: mocks.getUser, refreshSession: mocks.refreshSession } }, commitCookies: mocks.commitCookies });
+  mocks.getUser.mockResolvedValue({ data: { user }, error: null });
+  mocks.refreshSession.mockResolvedValue({ data: { user, session }, error: null });
   mocks.signUp.mockResolvedValue({ data: { session: null }, error: null });
   vi.spyOn(console, "error").mockImplementation(() => {});
 });
@@ -110,9 +115,9 @@ describe("disabled-by-default real registration and email confirmation", () => {
     }
   });
   it("confirms a real email token with cookie writes but never returns a session", async () => {
-    mocks.verifyOtp.mockResolvedValue({ data: { user: { email_confirmed_at: "2026-10-16", is_anonymous: false }, session: { access_token: "secret" } }, error: null });
+    mocks.verifyOtp.mockResolvedValue({ data: { user, session }, error: null });
     const response = await confirm(req({ tokenHash })); expect(response.status).toBe(200);
-    expect(mocks.createServer).toHaveBeenCalledWith(true);
+    expect(mocks.commitCookies).toHaveBeenCalledOnce();
     expect(mocks.verifyOtp).toHaveBeenCalledWith({ token_hash: tokenHash, type: "email" });
     expect((await response.json()).data).toEqual({ confirmed: true });
   });
@@ -120,5 +125,64 @@ describe("disabled-by-default real registration and email confirmation", () => {
     mocks.verifyOtp.mockResolvedValue({ data: { user: null }, error: { status: 403, message: "secret token" } });
     const response = await confirm(req({ tokenHash })); expect(response.status).toBe(401); expect(await response.text()).not.toContain("secret token");
     for (const body of [{ tokenHash, type: "recovery" }, { tokenHash, next: "https://evil.example" }, { tokenHash: "invalid" }]) expect((await confirm(req(body))).status).toBe(422);
+  });
+  it("requires a confirmed non-anonymous user and authenticated session", async () => {
+    for (const data of [{ user, session: null }, { user: { ...user, email_confirmed_at: null }, session }, { user: { ...user, is_anonymous: true }, session }]) {
+      mocks.verifyOtp.mockResolvedValue({ data, error: null });
+      expect((await confirm(req({ tokenHash }))).status).toBe(401);
+    }
+    expect((await confirm(req({}))).status).toBe(422);
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
+  it("accepts default confirmation only after validating access and rotating a matching refresh token", async () => {
+    const response = await confirm(req(tokens));
+    expect(response.status).toBe(200);
+    expect(mocks.getUser).toHaveBeenCalledWith(tokens.accessToken);
+    expect(mocks.refreshSession).toHaveBeenCalledWith({ refresh_token: tokens.refreshToken });
+    expect(mocks.verifyOtp).not.toHaveBeenCalled();
+    expect(mocks.commitCookies).toHaveBeenCalledOnce();
+    expect(mocks.commitCookies.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.refreshSession.mock.invocationCallOrder[0]!);
+    expect((await response.json()).data).toEqual({ confirmed: true });
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
+  it("rejects invalid, expired and foreign-project access tokens before refresh or cookie writes", async () => {
+    for (const status of [401, 403, 429, 503]) {
+      mocks.getUser.mockResolvedValue({ data: { user: null }, error: { status, message: "private-access" } });
+      const response = await confirm(req(tokens));
+      expect(response.status).toBe(status === 403 ? 401 : status);
+      expect(await response.text()).not.toContain("private-access");
+    }
+    expect(mocks.refreshSession).not.toHaveBeenCalled();
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
+  it("rejects unconfirmed/anonymous identities, mismatched refresh identity and absent sessions", async () => {
+    for (const invalid of [{ ...user, email_confirmed_at: null }, { ...user, is_anonymous: true }]) {
+      mocks.getUser.mockResolvedValue({ data: { user: invalid }, error: null });
+      expect((await confirm(req(tokens))).status).toBe(401);
+    }
+    expect(mocks.refreshSession).not.toHaveBeenCalled();
+    mocks.getUser.mockResolvedValue({ data: { user }, error: null });
+    const other = { ...user, id: "40000000-0000-4000-8000-000000000002" };
+    for (const data of [{ user: other, session: { ...session, user: other } }, { user, session: null }, { user, session: { ...session, user: other } }]) {
+      mocks.refreshSession.mockResolvedValue({ data, error: null });
+      expect((await confirm(req(tokens))).status).toBe(401);
+    }
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
+  it("rejects revoked refresh tokens and transport failures without committing cookies", async () => {
+    mocks.refreshSession.mockResolvedValue({ data: { user: null, session: null }, error: { status: 400 } });
+    expect((await confirm(req(tokens))).status).toBe(401);
+    mocks.refreshSession.mockRejectedValue(new Error("private-refresh"));
+    const response = await confirm(req(tokens));
+    expect(response.status).toBe(500);
+    expect(await response.text()).not.toContain("private-refresh");
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
+  it("rejects cross-origin, mixed and incomplete session submissions", async () => {
+    expect((await confirm(req(tokens, "https://evil.invalid"))).status).toBe(403);
+    for (const input of [{ ...tokens, tokenHash }, { accessToken: tokens.accessToken }, { ...tokens, accessToken: "not-a-jwt" }, { ...tokens, refreshToken: "x".repeat(4097) }, { ...tokens, role: "operator" }]) {
+      expect((await confirm(req(input))).status).toBe(422);
+    }
+    expect(mocks.createServer).not.toHaveBeenCalled();
   });
 });

@@ -6,6 +6,7 @@
   "scripts": {
     "sync": "cap sync android",
     "build:debug": "cd android && gradlew.bat assembleDebug --no-daemon --no-watch-fs --max-workers=1 --console=plain",
+    "build:online": "cd android && gradlew.bat assembleOnline --no-daemon --no-watch-fs --max-workers=1 --console=plain",
     "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {

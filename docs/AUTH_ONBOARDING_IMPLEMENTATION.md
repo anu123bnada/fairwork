@@ -1,5 +1,7 @@
 # ORYQEN authentication and onboarding
 
+> Updated 24 October 2026: signup now also supports the default Supabase email callback without custom SMTP or template edits. See [Default email confirmation compatibility](DEFAULT_EMAIL_CONFIRMATION.md). The custom-template requirement below describes the earlier implementation.
+
 Implemented 2026-10-23. No deployment, push, database migration, RLS change, or hosted provider setting change is included.
 
 ## Completed flows

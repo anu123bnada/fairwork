@@ -124,20 +124,20 @@ it("never falls back to a second provider or leaks failure content", async () =>
 });
 it("validates provider schema and exact quotations; fixes authoritative disclaimer", async () => {
  const fixture = extractOfferTermsRuleBased(source).data;
- vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(fixture) } }] })));
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(fixture) } }] })));
  const result = await executeAiOfferAnalysis(source);
  expect(result.status).toBe("SUCCESS"); expect(result.data?.companyClaimNotice).toContain("unverified");
  const body = JSON.parse(vi.mocked(fetch).mock.calls[0]?.[1]?.body as string);
  expect(body.store).toBe(false); expect(body.max_completion_tokens).toBe(3000); expect(body.tools).toBeUndefined();
  fixture.salary.quote = "invented evidence";
- vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(fixture) } }] })));
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(fixture) } }] })));
  expect((await executeAiOfferAnalysis(source)).status).toBe("ERROR");
 });
 it("records only bounded token counts from validated provider output",async()=>{
  const fixture=extractOfferTermsRuleBased(source).data,observe=vi.fn();
- vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(fixture)}}],usage:{prompt_tokens:120,completion_tokens:60,private_field:"never recorded"}})));
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({choices:[{finish_reason:"stop",message:{content:JSON.stringify(fixture)}}],usage:{prompt_tokens:120,completion_tokens:60,private_field:"never recorded"}})));
  expect((await executeAiOfferAnalysis(source,"WORKER",observe)).status).toBe("SUCCESS");expect(observe).toHaveBeenLastCalledWith({inputTokens:120,outputTokens:60});
- vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({choices:[{message:{content:JSON.stringify(fixture)}}],usage:{prompt_tokens:-1,completion_tokens:10000001}})));
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({choices:[{finish_reason:"stop",message:{content:JSON.stringify(fixture)}}],usage:{prompt_tokens:-1,completion_tokens:10000001}})));
  await executeAiOfferAnalysis(source,"WORKER",observe);expect(observe).toHaveBeenLastCalledWith({});
 });
 it("rejects a missing durable consent receipt before provider execution",async()=>{
@@ -198,4 +198,34 @@ it("does not let observer failures, missing bodies or stream failures replace th
   expect(result.message).toContain("model or resource");expect(JSON.stringify(result)).not.toContain("private");
  }
  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it.each(["length", "content_filter", "tool_calls", ""])("rejects OpenAI %s even when partial content is valid JSON", async finish => {
+ const fixture = extractOfferTermsRuleBased(source).data;
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ choices: [{ finish_reason: finish, message: { content: JSON.stringify(fixture) } }] })));
+ const observe = vi.fn();
+ const result = await executeAiOfferAnalysis(source, "WORKER", observe);
+ expect(result.status).toBe("ERROR"); expect(result.data).toBeNull();
+ expect(observe).not.toHaveBeenCalled(); expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+it("rejects OpenAI refusals and bounds its streamed response before parsing", async () => {
+ const fixture = extractOfferTermsRuleBased(source).data;
+ vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(fixture), refusal: "private refusal" } }] })));
+ const refused = await executeAiOfferAnalysis(source);
+ expect(refused.status).toBe("ERROR"); expect(JSON.stringify(refused)).not.toContain("private refusal");
+ const cancel = vi.fn();
+ vi.mocked(fetch).mockResolvedValueOnce(new Response(new ReadableStream({ start(c) { c.enqueue(new Uint8Array(256 * 1024 + 1)); }, cancel })));
+ expect((await executeAiOfferAnalysis(source)).status).toBe("ERROR");
+ expect(cancel).toHaveBeenCalledTimes(1); expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it("classifies argument-message signals without copying any provider message", async () => {
+ vi.stubEnv("ORYQEN_AI_PROVIDER", "gemini");
+ const observe = vi.fn();
+ vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ error: { status: "INVALID_ARGUMENT", message: 'Unknown field exclusiveMinimum in responseFormat; private@example.test secret-token' } }), { status: 400 }));
+ await executeAiOfferAnalysis(source, "WORKER", undefined, observe);
+ expect(observe).toHaveBeenCalledExactlyOnceWith({ status: "INVALID_ARGUMENT", reasons: ["SCHEMA_EXCLUSIVE_MINIMUM", "RESPONSE_FORMAT_MENTIONED", "UNKNOWN_FIELD_MENTIONED"], fields: [] });
+ expect(JSON.stringify(observe.mock.calls)).not.toContain("private@example.test");
+ expect(JSON.stringify(observe.mock.calls)).not.toContain("secret-token");
 });

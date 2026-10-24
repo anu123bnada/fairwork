@@ -1,19 +1,18 @@
 /* Scoped authentication composition from the original 390×844 exports.
    Email/password and six-digit TOTP remain real; never imitate a phone flow. */
-.fw-auth.fw-sign-in { padding: 94px 20px 40px; }
 .fw-sign-in .fw-auth-skip { position: absolute; left: -10000px; top: 8px; padding: 8px 12px; z-index: 2; background: white; }
 .fw-sign-in .fw-auth-skip:focus { left: 20px; }
 .fw-auth.fw-sign-in h1 { font-size: 26px; line-height: 36px; font-weight: 800; }
 .fw-auth.fw-sign-in .fw-auth-subtitle { margin: 4px 0 0; font-size: 13px; line-height: 20px; font-weight: 500; }
-.fw-auth.fw-sign-in form { margin: 40px 0 0; gap: 12px; }
+.fw-auth.fw-sign-in form { margin: 20px 0 0; gap: 12px; }
 .fw-auth.fw-sign-in label { gap: 4px; font-size: 12px; line-height: 18px; color: #66728a; }
 .fw-auth.fw-sign-in input { min-height: 56px; border-radius: 16px; padding: 12px 14px; font-size: 16px; font-weight: 600; }
 .fw-auth.fw-sign-in form > button { margin-top: 12px; min-height: 54px; border-radius: 16px; }
-.fw-auth.fw-sign-in .fw-sign-in-back { position: absolute; left: 20px; top: 52px; width: 40px; height: 40px; justify-content: center; border-radius: 50%; color: #0b1b33; background: rgba(255,255,255,.7); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
+.fw-auth.fw-sign-in .fw-sign-in-back { position: absolute; left: 0; top: 8px; width: 40px; height: 40px; justify-content: center; border-radius: 50%; color: #0b1b33; background: rgba(255,255,255,.7); box-shadow: 0 4px 16px rgba(11,27,51,.09); }
 .fw-auth.fw-sign-in .fw-sign-in-information { margin-top: 20px; text-align: center; }
 .fw-auth.fw-sign-in .fw-sign-in-notice { margin: 0; color: #40516d; font-size: 11px; line-height: 18px; }
 .fw-auth.fw-sign-in .fw-sign-in-information a { margin-top: 2px; font-size: 12px; }
-.fw-auth.fw-sign-in .fw-sign-in-employer { margin: 32px 0 0; }
+.fw-auth.fw-sign-in .fw-sign-in-employer { margin: 20px 0 0; }
 .fw-auth.fw-sign-in .fw-sign-in-employer a { min-height: 30px; font-size: 14px; font-weight: 800; text-decoration: none; }
 .fw-auth.fw-sign-in input:focus { border-color: #1e4fff; }
 .fw-intro.fw-otp-screen h1 { margin: 34px 4px 0; font-size: 28px; line-height: 38px; font-weight: 800; }

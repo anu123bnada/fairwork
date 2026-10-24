@@ -1,0 +1,42 @@
+{
+  "name": "oryqen-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ORYQEN online Windows application — unsigned preview",
+  "author": "ORYQEN",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test policy.test.cjs",
+    "build:windows": "electron-builder --win nsis --x64 --publish never"
+  },
+  "build": {
+    "appId": "app.oryqen.desktop",
+    "productName": "ORYQEN Preview",
+    "directories": {
+      "output": "../test-results/windows-artifacts"
+    },
+    "files": [
+      "main.cjs",
+      "policy.cjs",
+      "offline.html",
+      "package.json"
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "runAfterFinish": false
+    },
+    "artifactName": "ORYQEN-Preview-${version}-${arch}-Setup.${ext}"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  }
+}

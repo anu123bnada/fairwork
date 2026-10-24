@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const authScreens = new Set(["settings", "add-offer", "work-record", "cases", "passport", "notifications", "share", "agreement", "agreement-workflow", "check", "questions"]);
+const authScreens = new Set(["guidance", "opportunities", "settings", "add-offer", "work-record", "cases", "passport", "notifications", "share", "agreement", "agreement-workflow", "check", "questions"]);
 
 // Only a record identifier is carried across sign-in, never an arbitrary redirect.
 // The destination still authenticates and authorizes its participant read.

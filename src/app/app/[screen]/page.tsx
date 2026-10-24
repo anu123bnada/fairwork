@@ -2,6 +2,8 @@ import { FairworkScreen } from "@/components/fairwork/product-app";
 
 const screens = new Set([
   "home",
+  "opportunities",
+  "guidance",
   "add-offer",
   "analyzing",
   "check",

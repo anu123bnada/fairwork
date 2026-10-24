@@ -1,0 +1,8 @@
+{
+  "appId": "org.fairwork.localpoc.online",
+  "appName": "ORYQEN Online Preview",
+  "webDir": "www",
+  "server": { "url": "https://oryqen.vercel.app/sign-in", "cleartext": false, "errorPath": "offline.html" },
+  "android": { "allowMixedContent": false },
+  "plugins": { "SystemBars": { "insetsHandling": "native" }, "CapacitorHttp": { "enabled": false }, "CapacitorCookies": { "enabled": false } }
+}

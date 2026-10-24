@@ -29,6 +29,8 @@ import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-s
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { WorkRecordScreen } from "./work-record";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
+import { OpportunitiesScreen } from "./opportunities";
+import { GuidanceScreen } from "./guidance";
 import { OfferHistoryPanel } from "./offer-history";
 import { OfferScreenshot } from "./offer-screenshot";
 import { RuleAnalysis } from "./rule-analysis";
@@ -303,6 +305,8 @@ function Icon({ name, size = 22 }: { name: string; size?: number }) {
 
 const screenTitle: Record<string, string> = {
   home: "Home",
+  opportunities: "Opportunities",
+  guidance: "Guidance",
   "add-offer": "Add offer",
   analyzing: "Understanding",
   check: "ORYQEN Check",
@@ -320,6 +324,8 @@ const screenTitle: Record<string, string> = {
 };
 
 const backTarget: Record<string, string> = {
+  opportunities: "home",
+  guidance: "home",
   "add-offer": "home",
   analyzing: "add-offer",
   check: "home",
@@ -452,6 +458,8 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {["work-record", "passport"].includes(screen) && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" ? <HomeScreen profile={profile} demoPreview={demoPreview} /> : null}
+      {screen === "opportunities" && profile ? <OpportunitiesScreen /> : null}
+      {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}
       {screen === "analyzing" ? <AnalyzingScreen /> : null}
@@ -572,6 +580,8 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-hint-card"><strong>Before you accept — verify.</strong><br />ORYQEN shows what’s clear and what’s missing. It does not make the decision for you.</div>
       <OpenSavedAgreement />
       <SavedOffers />
+      <Link className="fw-secondary" href="/app/opportunities">Discover opportunities</Link>
+      <Link className="fw-secondary" href="/app/guidance">Private guidance</Link>
       <CompanyProfiles />
     </>
   );

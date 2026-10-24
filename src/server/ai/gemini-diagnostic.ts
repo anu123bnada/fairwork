@@ -12,6 +12,17 @@ const fields = new Set([
   "generation_config.response_format.text.mime_type", "generation_config.response_format.text.schema",
   "generation_config.temperature", "generation_config.candidate_count", "generation_config.max_output_tokens",
 ]);
+// Fixed labels only. The provider sometimes puts argument errors in its message
+// rather than google.rpc.BadRequest. Never return that free-form message.
+const messageSignals = [
+  [/\bexclusiveMinimum\b/, "SCHEMA_EXCLUSIVE_MINIMUM"],
+  [/\bminLength\b|\bmaxLength\b/, "SCHEMA_STRING_LENGTH"],
+  [/\bresponseFormat\b|\bresponse_format\b/, "RESPONSE_FORMAT_MENTIONED"],
+  [/\btemperature\b/i, "TEMPERATURE_MENTIONED"],
+  [/\bmaxOutputTokens\b|\bmax_output_tokens\b/, "OUTPUT_LIMIT_MENTIONED"],
+  [/\bnot supported\b|\bunsupported\b/i, "UNSUPPORTED_ARGUMENT_MENTIONED"],
+  [/\bunknown name\b|\bunknown field\b/i, "UNKNOWN_FIELD_MENTIONED"],
+] as const;
 
 export type GeminiDiagnostic = { status: string | null; reasons: string[]; fields: string[] };
 const object = (value: unknown): Record<string, unknown> | null =>
@@ -24,6 +35,9 @@ export function sanitizeGeminiDiagnostic(value: unknown): GeminiDiagnostic {
   const error = object(object(value)?.error);
   if (!error) return result;
   if (typeof error.status === "string" && statuses.has(error.status)) result.status = error.status;
+  if (typeof error.message === "string") {
+    for (const [pattern, label] of messageSignals) if (pattern.test(error.message.slice(0, 4096))) result.reasons.push(label);
+  }
   if (!Array.isArray(error.details)) return result;
   for (const raw of error.details.slice(0, 32)) {
     const detail = object(raw);

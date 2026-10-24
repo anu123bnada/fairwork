@@ -2690,3 +2690,47 @@ body:has(.fw-product) {
     min-height: 38px;
   }
 }
+.fw-offer-comparison { margin-top: 20px; min-width: 0; }
+.fw-offer-comparison h4 { font-size: 18px; margin-bottom: 8px; }
+.fw-offer-comparison p { color: var(--fw-text-secondary); line-height: 1.6; }
+.fw-comparison-scroll { overflow-x: auto; max-width: 100%; margin: 16px 0; border: 1px solid #dce7f7; border-radius: 16px; }
+.fw-comparison-scroll:focus-visible { outline: 3px solid var(--fw-link); outline-offset: 3px; }
+.fw-comparison-scroll table { width: 100%; table-layout: fixed; border-collapse: collapse; text-align: left; font-size: 14px; }
+.fw-comparison-scroll caption { padding: 12px; text-align: left; color: var(--fw-text-secondary); }
+.fw-comparison-scroll th, .fw-comparison-scroll td { padding: 12px; border-bottom: 1px solid #e5edf8; vertical-align: top; overflow-wrap: anywhere; max-width: 240px; }
+.fw-comparison-scroll thead { background: #edf5ff; }
+.fw-comparison-scroll small { display: block; margin-top: 6px; font-weight: 400; }
+.fw-comparison-scroll tr[data-differs="true"] { background: #f2fbff; }
+.fw-opportunities { min-width: 0; }
+.fw-opportunities fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
+.fw-opportunities .fw-list-card { margin: 16px 0; padding: 18px; }
+.fw-opportunities input, .fw-opportunities select, .fw-opportunities textarea { max-width: 100%; box-sizing: border-box; }
+.fw-opportunities p, .fw-opportunities li { line-height: 1.6; overflow-wrap: anywhere; }
+.fw-opportunities ul { padding-left: 20px; }
+.fw-opportunities li { margin-bottom: 12px; }
+.fw-discovery-tabs, .fw-discovery-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.fw-discovery-tabs .fw-secondary { flex: 1; min-width: 86px; }
+.fw-discovery-tabs [aria-pressed="true"] { background: #e9efff; color: #2454ff; outline: 2px solid #2454ff; }
+
+/* Product windows use their available space; the OS supplies its own status bar. */
+.fw-product > .fw-device-status { display: none; }
+.fw-product { width: 100%; }
+.fw-product .fw-product-body { padding-bottom: 112px; }
+.fw-opportunities > .fw-secondary { margin-block: 4px; }
+@media (min-width: 768px) {
+  .fw-product { min-height: 100dvh; padding-left: 164px; }
+  .fw-product .fw-product-body { width: 100%; max-width: 1120px; margin-inline: auto; padding: 32px 40px 56px; box-sizing: border-box; }
+  .fw-product .fw-bottom-nav { left: 0; top: 0; bottom: 0; transform: none; width: 164px; height: 100dvh; grid-template-columns: 1fr; grid-auto-rows: 64px; align-content: start; gap: 12px; padding: 32px 16px; border-right: 1px solid var(--fw-line); border-top: 0; }
+  .fw-product .fw-nav-link { flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 13px; padding: 12px; border-radius: 16px; }
+  .fw-product .fw-nav-link.active { background: var(--fw-blue-soft); }
+  .fw-product .fw-nav-link.active::before { display: none; }
+  .fw-product:not(:has(.fw-bottom-nav)) { padding-left: 0; }
+  .fw-product .fw-field { max-width: 100%; }
+  .fw-product .fw-opportunities { max-width: 960px; margin-inline: auto; }
+  .fw-opportunities fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
+  .fw-opportunities fieldset > button, .fw-opportunities fieldset > small { grid-column: 1 / -1; }
+  .fw-discovery-tabs .fw-secondary { min-height: 48px; }
+}
+@media (max-width: 767px) {
+  .fw-product .fw-bottom-nav { width: 100%; }
+}

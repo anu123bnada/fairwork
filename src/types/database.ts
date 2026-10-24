@@ -5,6 +5,9 @@ export type Database = {
   api: {
     Tables: Record<string, never>; Views: Record<string, never>;
     Functions: {
+      guidance: { Args: { request: Json }; Returns: Json };
+      opportunity_read: { Args: { request: Json }; Returns: Json };
+      opportunity_command: { Args: { request: Json }; Returns: Json };
       admin_read: { Args: { request: Json }; Returns: Json };
       admin_command: { Args: { request: Json }; Returns: Json };
       create_profile: { Args: { request: Json }; Returns: Json };

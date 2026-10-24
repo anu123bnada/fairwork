@@ -19,7 +19,7 @@ test("registration is gated or uses real email fields without self-assigned auth
   await page.getByLabel("Confirm password", { exact: true }).fill("synthetic-password-only");
   await page.getByRole("button", { name: "Register with email" }).click();
   await expect(page.getByRole("status")).toContainText("check your email");
-  await expect(page.getByRole("button", { name: "Resend verification email" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Resend available in/ })).toBeDisabled();
 });
 
 test("confirmation needs explicit POST, strips fragment and profile creation survives reload", async ({ page }) => {
@@ -54,6 +54,6 @@ test("invalid email confirmation remains an error, never a successful session cl
   await page.goto(`/auth/confirm#token_hash=${"b".repeat(64)}`);
   await page.getByRole("button", { name: "Confirm my email" }).click();
   await expect(page.getByRole("main").getByRole("alert")).toBeVisible();
-  await expect(page).toHaveURL(/\/auth\/confirm#/);
+  await expect(page).toHaveURL(/\/auth\/confirm$/);
   await expect(page.getByRole("button", { name: "Create my profile" })).toHaveCount(0);
 });

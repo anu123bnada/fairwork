@@ -6,6 +6,7 @@ import { workCommandSchema,workReadSchema,workListSchema,type WorkRecord,type Wo
 import { workflowReadSchema,type AgreementWorkflow } from "@/features/offer/workflow-schema";
 import { participantWorkId, participantAgreementBasisId } from "@/features/offer/participant-path";
 import { integrityCommandSchema } from "@/features/work/integrity-schema";
+import { EvidenceDocumentImport } from "./evidence-document-import";
 const labels={draft:"Draft",submitted:"Pending",verified:"Verified",disputed:"Disputed",rejected:"Rejected",superseded:"Superseded",withdrawn:"Withdrawn",invalidated:"Verification retracted"};
 
 export function WorkRecordScreen({actorId}:{actorId:string}) {
@@ -84,7 +85,8 @@ export function WorkRecordScreen({actorId}:{actorId:string}) {
    <label className="fw-field">Hours<input required inputMode="decimal" value={hours} onChange={e=>setHours(e.target.value)} pattern="(0|[1-9][0-9]{0,4})(\.[0-9]{1,2})?"/></label>
    <label className="fw-field">Work performed<textarea required value={tasks} maxLength={4000} onChange={e=>setTasks(e.target.value)}/></label>
    {evidence.map((text,index)=><div key={index}><label className="fw-field">Text evidence {index+1}<textarea required maxLength={2000} value={text} onChange={e=>setEvidence(values=>values.map((value,i)=>i===index?e.target.value:value))}/></label><button type="button" className="fw-secondary" onClick={()=>setEvidence(values=>values.filter((_,i)=>i!==index))}>Remove statement {index+1}</button></div>)}
-   <button type="button" className="fw-secondary" disabled={evidence.length>=10} onClick={()=>setEvidence(values=>[...values,""])}>Add text evidence</button><p>Statements are saved privately with your identity and server time. File uploads are not available.</p>
+   <button type="button" className="fw-secondary" disabled={evidence.length>=10} onClick={()=>setEvidence(values=>[...values,""])}>Add text evidence</button><p>Statements are saved privately with your identity and server time. Original file storage is not available.</p>
+   <EvidenceDocumentImport capacity={10-evidence.filter(value=>value.trim()).length} disabled={busy} append={notes=>setEvidence(values=>[...values.filter(value=>value.trim()),...notes])}/>
    <button className="fw-primary" disabled={busy||!basis}>{busy?"Saving…":"Save private draft"}</button><button type="button" className="fw-secondary" disabled={busy} onClick={()=>setEditing(false)}>Cancel edit</button>
   </form>}
   <Link className="fw-dark-button fw-record-passport-link" href="/app/passport">View Work Passport <span aria-hidden>→</span></Link>

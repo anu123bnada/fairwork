@@ -3,6 +3,7 @@
 import { chromium, expect } from '@playwright/test';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { checkLocalDocker } from './local-development-runtime.mjs';
 import { redactStartupOutput } from './local-development-diagnostics.mjs';
@@ -13,8 +14,12 @@ import { localPrivacyJourney } from './local-privacy-journey.mjs';
 import { localSharingJourney } from './local-sharing-journey.mjs';
 import { localDeactivationJourney } from './local-deactivation-journey.mjs';
 import { localOfferHistoryJourney } from './local-offer-history-journey.mjs';
+import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
+if (!existsSync('test-results/activation-plan/constraints-stage-6.sql')) {
+  throw new Error('Missing native PostgreSQL constraint baseline. Run node scripts/test-day7-postgres.mjs --extended-setup before creating acceptance accounts.');
+}
 const origin = 'http://127.0.0.1:3100';
 const mail = 'http://127.0.0.1:55424';
 const results = [], actors = [];
@@ -91,8 +96,11 @@ try {
     actors.push(actor);
     const page = await actor.context.newPage();
     await page.goto(`${origin}/register`);
+    await page.getByRole('button', { name: role === 'employer' ? /I’m an employer/ : /I’m a worker/ }).click();
+    await page.getByLabel('Your name', { exact: true }).fill(`Synthetic local ${role}`);
     await page.getByLabel('Email address').fill(actor.email);
     await page.getByLabel('Password', { exact: true }).fill(actor.password);
+    await page.getByLabel('Confirm password', { exact: true }).fill(actor.password);
     const registration = page.waitForResponse(r => r.url().endsWith('/api/v1/auth/register'));
     await page.getByRole('button', { name: 'Register with email' }).click();
     if ((await registration).status() !== 200) throw new Error('Registration failed');
@@ -100,10 +108,10 @@ try {
     record(`${role}: browser registration does not grant an unconfirmed session`);
     await page.goto(await confirmationLink(actor.email));
     await page.getByRole('button', { name: 'Confirm my email' }).click();
-    await page.waitForURL('**/register/profile');
+    await page.waitForURL(url => url.pathname === '/register/profile');
     await page.getByLabel('Display name').fill(`Synthetic local ${role}`);
     await page.getByRole('button', { name: 'Create my profile' }).click();
-    await page.waitForURL('**/app/intro-welcome');
+    await page.waitForURL(url => url.pathname === (role === 'employer' ? '/app/employer' : '/app/intro-welcome'));
     actor.id = (await request(actor, '/api/v1/me')).id;
     record(`${role}: delivered local email confirmation and authorized profile creation`);
     await request(actor, '/api/v1/auth/sign-out', {});
@@ -165,8 +173,16 @@ try {
   const ownRequest = await request(operator, '/api/v1/organizations', organization);
   await request(operator, '/api/v1/operator/organization-requests', { ...decision, requestId: ownRequest.requestId }, [403]);
   record('Forged applicant, unauthorized reviewer and self-approval denied');
-  const queue = await request(operator, '/api/v1/operator/organization-requests');
-  must(queue.items.some(r => r.requestId === submitted.requestId && r.subjectId === employer.id), 'Authorized independent operator sees the immutable applicant');
+  let queueCursor = null, queuedRequest;
+  const visitedCursors = new Set();
+  do {
+    const queue = await request(operator, `/api/v1/operator/organization-requests${queueCursor ? `?cursor=${queueCursor}` : ''}`);
+    queuedRequest = queue.items.find(r => r.requestId === submitted.requestId);
+    queueCursor = queue.nextCursor;
+    if (queueCursor && visitedCursors.has(queueCursor)) throw new Error('Organization queue cursor repeated');
+    if (queueCursor) visitedCursors.add(queueCursor);
+  } while (!queuedRequest && queueCursor && visitedCursors.size < 100);
+  must(queuedRequest?.subjectId === employer.id, 'Authorized independent operator sees the immutable applicant across retained queue pages');
   const approvals = await Promise.all([request(operator, '/api/v1/operator/organization-requests', decision), request(operator, '/api/v1/operator/organization-requests', decision)]);
   must(approvals[0].companyId === approvals[1].companyId, 'Concurrent duplicate approval creates one company and one membership decision');
   await request(operator, '/api/v1/operator/organization-requests', { ...decision, decision: 'reject', expiresAt: null, reviewedEvidenceRefs: [] }, [409]);
@@ -235,6 +251,20 @@ try {
   must(!(await request(worker, `/api/v1/companies?companyId=${company.id}`)).canEdit, 'Worker may read linked company claims without gaining edit authority');
   await request(employer, `/api/v1/agreements?offerId=${privateOfferId}`, undefined, [403, 404]);
   record('Employer denied another account’s private worker draft');
+  stage = 'offer persistence after logout and fresh login';
+  await workerPage.reload();
+  await request(worker, '/api/v1/auth/sign-out', {});
+  await request(worker, `/api/v1/agreements?offerId=${privateOfferId}`, undefined, [401]);
+  await workerPage.goto(`${origin}/sign-in`);
+  await workerPage.getByLabel('Email address').fill(worker.email);
+  await workerPage.getByLabel('Password', { exact: true }).fill(worker.password);
+  await workerPage.getByRole('button', { name: 'Continue securely' }).click();
+  await workerPage.waitForURL('**/app/intro-welcome');
+  const recovered = await request(worker, `/api/v1/agreements?offerId=${privateOfferId}`);
+  must(recovered.offer.termHash === privateOffer.offer.termHash && recovered.offer.version === privateOffer.offer.version && JSON.stringify(recovered.offer.snapshot) === JSON.stringify(privateOffer.offer.snapshot), 'Same persisted offer revision and terms retrieved after reload, logout and fresh login; rules result, not AI');
+  await request(worker, '/api/v1/auth/mfa', { action: 'verify', factorId: worker.factorId, code: totp(worker.factorSecret) });
+  stage = 'real discovery and private guidance';
+  await localDiscoveryJourney({ worker, employer, outsider: approver, companyId: company.id, offerId: privateOfferId, request, record, origin, evidence });
   stage = 'saved offer discovery';
   const notices = await request(worker, '/api/v1/notifications');
   must(['agreement_decision','work_decision'].every(kind => notices.items.some(n => n.kind === kind)), 'Participant activity includes real agreement confirmations and work verification');
@@ -291,7 +321,7 @@ try {
     writeFileSync(`${evidence}/${file}.txt`, output);
     record(`Real PostgreSQL authorization/catalog assertions: ${file}`);
   }
-  const expectedVersions = readdirSync('supabase/migrations').map(name => name.match(/^([0-9]{12})_/)[1]).sort();
+  const expectedVersions = readdirSync('supabase/migrations').map(name => name.match(/^([0-9]{12}|[0-9]{14})_/)[1]).sort();
   const triggerChecks = localSql(`begin transaction read only;
     select case when array_agg(version order by version)=array[${expectedVersions.map(v => `'${v}'`).join(',')}] then 'PASS' else 'FAIL' end from supabase_migrations.schema_migrations;
     select case when count(*)=2 and bool_and(p.prosecdef and pg_get_userbyid(p.proowner)='fw_user_exec' and p.proconfig @> array['search_path=""'] and not has_function_privilege('authenticated',p.oid,'EXECUTE')) then 'PASS' else 'FAIL' end from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='private' and p.proname in ('agreement_check_pointers','work_check_pointer'); rollback;`);

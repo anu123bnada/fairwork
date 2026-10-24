@@ -41,6 +41,13 @@ const geminiEnvelope = z.object({
   })).max(1).optional(),
   usageMetadata: z.object({ promptTokenCount: z.unknown().optional(), candidatesTokenCount: z.unknown().optional() }).optional(),
 });
+const openAiEnvelope = z.object({
+  choices: z.array(z.object({
+    finish_reason: z.string(),
+    message: z.object({ content: z.string().nullable(), refusal: z.string().nullable().optional() }),
+  })).length(1),
+  usage: z.object({ prompt_tokens: z.unknown().optional(), completion_tokens: z.unknown().optional() }).optional(),
+});
 import { redactOfferForAi } from "@/features/offer/ai-redaction";
 
 import {
@@ -298,8 +305,11 @@ async function callOpenAiProvider(
 
   checkProviderStatus(response);
 
-  const result = await response.json();
-  const rawJson = result?.choices?.[0]?.message?.content;
+  const result = openAiEnvelope.parse(await readProviderJson(response));
+  const candidate = result.choices[0]!;
+  if (candidate.finish_reason === "length") throw new ProviderFailure("incomplete");
+  if (candidate.finish_reason !== "stop" || candidate.message.refusal) throw new ProviderFailure("blocked");
+  const rawJson = candidate.message.content;
   if (!rawJson) throw new Error("Empty response from OpenAI.");
 
   const parsed = JSON.parse(rawJson);

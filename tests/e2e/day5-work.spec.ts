@@ -5,6 +5,23 @@ const worker="40000000-0000-4000-8000-000000000012",representative="40000000-000
 const time="2026-10-14T01:00:00+00:00",hash="a".repeat(64),evidenceHash="b".repeat(64);
 function version(state:WorkVersion["state"]="draft"):WorkVersion{return {version:1,state,contentHash:hash,evidenceHash,createdAt:time,submittedAt:state==="draft"?null:time,decision:null,content:{schemaVersion:"work-record.v1",agreement:{id,version:1,contentHash:hash,authorityDecisionId:company,effectiveAt:time,scope:"Engineering"},role:"Engineer",periodStart:"2026-10-12",periodEnd:"2026-10-12",hours:"8",tasks:"Maintenance completed",evidence:[{id:company,ownerId:worker,text:"Checked maintenance log",recordedAt:time}]}};}
 function fixture(state:WorkVersion["state"]="draft"):WorkRecord{return {workId:id,agreementId:id,workerId:worker,companyId:company,representativeId:representative,currentVersion:1,versions:[version(state)]};}
+
+test("document excerpts stay local until reviewed, then persist through the private work API",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:390,height:844}}),model:{record:WorkRecord|null}={record:null},requests:Record<string,unknown>[]=[];
+ try {
+  await session(context,worker,model,requests);const page=await context.newPage();await page.goto("/app/work-record");
+  await page.getByRole("button",{name:"Log work",exact:true}).click();
+  await page.getByLabel("Text document",{exact:true}).setInputFiles({name:"synthetic-maintenance.txt",mimeType:"text/plain",buffer:Buffer.from("Synthetic maintenance log. Machine inspected on October 12.")});
+  await expect(page.getByRole("button",{name:"Add excerpts to draft"})).toBeVisible();expect(requests).toHaveLength(0);
+  await page.getByRole("button",{name:"Add excerpts to draft"}).click();
+  await expect(page.getByRole("textbox",{name:"Text evidence 1",exact:true})).toHaveValue(/Original SHA-256/);
+  await page.getByLabel("Effective agreement ID").fill(id);await page.getByRole("button",{name:"Load agreement basis"}).click();
+  await page.getByLabel("Role",{exact:true}).fill("Engineer");await page.getByLabel("Period start").fill("2026-10-12");await page.getByLabel("Period end").fill("2026-10-12");await page.getByLabel("Hours",{exact:true}).fill("8");await page.getByLabel("Work performed").fill("Maintenance completed");
+  await page.getByRole("button",{name:"Save private draft"}).click();await expect(page.getByRole("status").filter({hasText:"Record version"})).toContainText("Draft");
+  await page.reload();await expect(page.getByText(/Imported excerpt 1\/1: synthetic-maintenance.txt/).first()).toBeVisible();
+  expect(JSON.stringify(requests)).toContain("original file not stored");expect(JSON.stringify(requests)).not.toContain('"file"');
+ } finally {await context.close();}
+});
 // Browser transport fixtures only. Real PostgreSQL tests enforce authorization,
 // state transitions and durability. No fixture is used by production code.
 async function session(context:BrowserContext,actor:string,model:{record:WorkRecord|null},requests:Record<string,unknown>[]){

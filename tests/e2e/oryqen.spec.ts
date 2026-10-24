@@ -96,9 +96,11 @@ test("ORYQEN metadata and restored icons survive reload; rejected dark preferenc
   await page.reload();
   await expect(page.getByLabel("Appearance", { exact: false })).toHaveCount(0);
   await expect(page.locator("html")).toHaveCSS("color-scheme", "light");
-  await expect(page.locator(".fw-auth")).toHaveCSS("max-width", "520px");
+  await expect(page.locator(".fw-auth-aside")).toBeVisible();
+  await expect(page.locator(".fw-auth-content")).toHaveCSS("max-width", "440px");
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator(".fw-auth")).toHaveCSS("max-width", "390px");
+  await expect(page.locator(".fw-auth-aside")).toBeHidden();
+  await expect(page.locator(".fw-auth")).toHaveCSS("width", "390px");
   await expect(page.locator(".fw-auth-brand img").first()).toHaveAttribute("src", "/figma/auth/logo-glass.svg");
   // Optional old device preference is preserved, but no unapproved dark theme is applied.
   expect(await page.evaluate(() => localStorage.getItem("oryqen.appearance"))).toBe("dark");

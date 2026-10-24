@@ -6,7 +6,8 @@ test.use({ ...devices["Pixel 7"] });
 test("mobile startup and real API transport fail closed without Supabase", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto("/");
+  // "/" is the public cinematic landing page; startup begins at /intro/splash.
+  await page.goto("/intro/splash");
   await expect(page).toHaveURL(/\/intro\/onboarding$/);
   await expect(page.getByRole("heading", { name: "See what’s clear" })).toBeVisible();
   await page.goto("/app/home");

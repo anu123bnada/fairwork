@@ -39,7 +39,9 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "test-results/android-next/types/**/*.ts",
-    "test-results/android-next/dev/types/**/*.ts"
+    "test-results/android-next/dev/types/**/*.ts",
+    "test-results/day2-next/types/**/*.ts",
+    "test-results/day2-next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

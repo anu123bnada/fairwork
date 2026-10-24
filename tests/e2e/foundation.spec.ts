@@ -4,7 +4,8 @@ test("ORYQEN restores splash-to-onboarding and supports keyboard navigation", as
   // Keep the 1800ms transition from racing keyboard assertions on busy hosts.
   await page.clock.install();
   await page.clock.pauseAt(new Date());
-  await page.goto("/");
+  // "/" is the public cinematic landing page; the product splash stays at /intro/splash.
+  await page.goto("/intro/splash");
   await expect(page.getByRole("heading", {name:"ORYQEN",exact:true})).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link",{name:"Skip to content"})).toBeFocused();

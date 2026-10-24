@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 const pins = new Map();
 for (const source of ['scripts/prepare-local-development.mjs','scripts/activation-checks.mjs']) {
-  for (const [,name,hash] of readFileSync(source,'utf8').matchAll(/\['([0-9]{12}_[a-z0-9_]+\.sql)', '([a-f0-9]{64})'\]/g)) {
+  for (const [,name,hash] of readFileSync(source,'utf8').matchAll(/\['((?:[0-9]{12}|[0-9]{14})_[a-z0-9_]+\.sql)', '([a-f0-9]{64})'\]/g)) {
     if (pins.has(name) && pins.get(name)!==hash) throw new Error('Conflicting migration pins');
     pins.set(name,hash);
   }
@@ -14,8 +14,8 @@ const migrations=files.map((filename,index)=>{
   const bytes=readFileSync(`supabase/migrations/${filename}`),sha256=createHash('sha256').update(bytes).digest('hex');
   if(pins.get(filename)!==sha256)throw new Error(`Migration checksum mismatch: ${filename}`);
   const sql=bytes.toString('utf8');
-  return {order:index+1,filename,version:filename.slice(0,12),sha256,
-    dependsOn:index?files[index-1].slice(0,12):null,
+  return {order:index+1,filename,version:filename.split('_')[0],sha256,
+    dependsOn:index?files[index-1].split('_')[0]:null,
     reviewFlags:[...new Set(sql.match(/\b(?:drop\s+(?:table|column|constraint|policy|function)|truncate|delete\s+from|create\s+or\s+replace\s+function|alter\s+table)\b/gi)??[])],
     reviewNote:'Keyword inventory is not a safety proof; read full SQL and test the exact restored baseline.'};
 });

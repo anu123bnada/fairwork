@@ -27,8 +27,7 @@ test("registration validates confirmation and preserves the invited destination 
   await page.getByRole("button", { name: "Register with email" }).click();
   await expect(page.getByRole("heading", { name: "Check your inbox" })).toBeVisible();
   expect(registrations).toBe(1);
-  await page.getByRole("button", { name: "Resend verification email" }).click();
-  await expect(page.getByRole("main").getByRole("alert")).toContainText("wait a minute");
+  await expect(page.getByRole("button", { name: /Resend available in/ })).toBeDisabled();
   await page.route("**/api/v1/auth/confirm", route => route.fulfill({ json: { data: { confirmed: true } } }));
   await page.goto(`/auth/confirm?${continuation}#token_hash=${"a".repeat(64)}`);
   await page.getByRole("button", { name: "Confirm my email" }).click();
@@ -53,7 +52,7 @@ test("expired verification can request another email without claiming verificati
   await page.getByLabel("Email address").fill("synthetic@example.test");
   await page.getByRole("button", { name: "Resend verification email" }).click();
   await expect(page.getByRole("status")).toContainText("If this address has an unconfirmed account");
-  await expect(page).toHaveURL(/auth\/confirm\?workspace=employer#/);
+  await expect(page).toHaveURL("/auth/confirm?workspace=employer");
 });
 
 test("organization onboarding submits existing contract and reports pending, rejected and active states", async ({ page }) => {
@@ -148,10 +147,18 @@ test("a protected settings destination survives login and registration links", a
 for (const width of [320, 768, 1440]) {
   test(`auth layouts fit ${width}px and retain visible labels`, async ({ page }) => {
     await page.setViewportSize({ width, height: 960 });
-    for (const path of ["/sign-in", "/register", "/register/profile", "/forgot-password", "/auth/recover"]) {
+    for (const path of ["/sign-in", "/register", "/register/profile", "/forgot-password", "/auth/recover", "/auth/confirm"]) {
       await page.goto(path);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      const content = await page.locator(".fw-auth-content").boundingBox();
+      expect(content!.width).toBeGreaterThanOrEqual(width === 320 ? 288 : 400);
+      expect(content!.width).toBeLessThanOrEqual(440);
+      if (width >= 900) {
+        await expect(page.locator(".fw-auth-aside")).toBeVisible();
+        const panel = await page.locator(".fw-auth-main").boundingBox();
+        expect(Math.abs(content!.x + content!.width / 2 - (panel!.x + panel!.width / 2))).toBeLessThan(2);
+      } else await expect(page.locator(".fw-auth-aside")).toBeHidden();
     }
     await page.goto("/register");
     if (process.env.AUTH_REGISTRATION_ENABLED === "true") {
