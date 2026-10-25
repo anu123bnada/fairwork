@@ -1,17 +1,17 @@
 import { apiResponse, assertSameOrigin, readJson } from "@/server/http";
-import { guidanceRead, guidanceSend, guidancePage } from "@/features/guidance/schema";
+import { guidanceRead, guidanceCommand, guidancePage, guidanceDeleteReceipt } from "@/features/guidance/schema";
 import { createServerSupabase } from "@/server/supabase";
 import { AppError, mapDatabaseError } from "@/lib/errors";
 import type { Json } from "@/types/database";
 export const dynamic = "force-dynamic";
-async function command(request: Json) {
+async function command(request: Json, erase = false) {
   const client = await createServerSupabase(true);
   const { data, error } = await client.auth.getUser();
   if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
   if (error || !data.user || data.user.is_anonymous) throw new AppError("AUTH_REQUIRED", 401);
-  const result = await client.rpc("guidance", { request });
+  const result = await client.rpc(erase ? "guidance_delete" : "guidance", { request });
   if (result.error) throw mapDatabaseError(result.error);
-  const parsed = guidancePage.safeParse(result.data);
+  const parsed = (erase ? guidanceDeleteReceipt : guidancePage).safeParse(result.data);
   if (!parsed.success) throw new AppError("SERVICE_UNAVAILABLE", 503);
   return parsed.data;
 }
@@ -22,4 +22,4 @@ export async function GET(request: Request) { return apiResponse(async () => {
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", 422);
   return command(parsed.data);
 }, "guidance.v1"); }
-export async function POST(request: Request) { return apiResponse(async () => { assertSameOrigin(request); return command(await readJson(request, guidanceSend)); }, "guidance.v1"); }
+export async function POST(request: Request) { return apiResponse(async () => { assertSameOrigin(request); const body = await readJson(request, guidanceCommand); return command(body, body.operation === "delete"); }, "guidance.v1"); }

@@ -2,12 +2,12 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
-import { guidancePage, guidanceRead, guidanceSend, type GuidancePage } from "@/features/guidance/schema";
+import { guidanceDeleteReceipt, guidancePage, guidanceRead, guidanceSend, type GuidancePage } from "@/features/guidance/schema";
 
 export function GuidanceScreen() {
   const [data, setData] = useState<GuidancePage | null>(null), [error, setError] = useState("");
   const [question, setQuestion] = useState(""), [topic, setTopic] = useState("offer"), [offerId, setOfferId] = useState("");
-  const [busy, setBusy] = useState(true), [thread, setThread] = useState<string | null>(null);
+  const [busy, setBusy] = useState(true), [thread, setThread] = useState<string | null>(null), [confirming, setConfirming] = useState(false), [notice, setNotice] = useState("");
   const keys = useRef(new Map<string, string>()), generation = useRef(0);
   useEffect(() => {
     let active = true;
@@ -25,6 +25,17 @@ export function GuidanceScreen() {
       if (current === generation.current) { setData(result); setThread(id); window.history.replaceState(window.history.state, "", `/app/guidance${id ? `?threadId=${id}` : ""}`); }
     } catch (caught) { if (current === generation.current) setError(caught instanceof Error ? caught.message : "History is unavailable. Check access to linked offers."); }
     finally { if (current === generation.current) setBusy(false); }
+  }
+  async function erase() {
+    if (!thread) return;
+    setBusy(true); setError(""); setNotice("");
+    try {
+      const receipt = guidanceDeleteReceipt.parse(await appRequest("/api/v1/guidance", { operation: "delete", threadId: thread }));
+      setConfirming(false); setNotice(receipt.deleted > 0 ? "Conversation deleted. Its questions and replies were permanently removed." : "That conversation was already empty.");
+      setThread(null); window.history.replaceState(window.history.state, "", "/app/guidance");
+      setData(guidancePage.parse(await appRequest("/api/v1/guidance")));
+    } catch (caught) { setError(caught instanceof Error ? caught.message : "The conversation could not be deleted. Retry; nothing was reported as deleted."); }
+    finally { setBusy(false); }
   }
   async function send(event: FormEvent) {
     event.preventDefault();
@@ -44,6 +55,10 @@ export function GuidanceScreen() {
     <p>Only you can access this history. Do not include passwords, identification numbers or other unnecessary personal details.</p>
     <button className="fw-secondary" disabled={busy} onClick={() => void load(null)}>New conversation</button>
     <button className="fw-secondary" disabled={busy} onClick={() => void load(thread)}>Reload conversation</button>
+    {!!thread && !!data?.turns.length && (confirming
+      ? <span role="group" aria-label="Confirm deleting this conversation"><button className="fw-secondary" disabled={busy} onClick={() => void erase()}>Permanently delete this conversation</button><button className="fw-secondary" disabled={busy} onClick={() => setConfirming(false)}>Keep it</button></span>
+      : <button className="fw-secondary" disabled={busy} onClick={() => { setConfirming(true); setNotice(""); }}>Delete this conversation</button>)}
+    {notice && <p role="status">{notice}</p>}
     {!!data?.threads.length && <details><summary>Recent conversations</summary>{data.threads.map((item, index) => <button key={item.id} className="fw-secondary" disabled={busy} onClick={() => void load(item.id)}>Conversation {index + 1} · {new Date(item.updatedAt).toLocaleString()}</button>)}</details>}
     {busy && <p role="status">Loading or saving guidance…</p>}{error && <p role="alert">{error}</p>}
     <div aria-label="Conversation history">{data?.turns.map(turn => <article className="fw-list-card" key={turn.ordinal}>
