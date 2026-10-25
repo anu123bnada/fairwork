@@ -56,7 +56,7 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 ## Next exact task
 
-Build the **Trust Chain** claim model (tracker, "Next batches" 1): migration for claims, issuers,
-evidence references, status, expiry, revocation and audit events; RPCs with forced RLS; a "who claims,
-who verified, is it valid" view over offers, agreements, work records and the Passport; SQL, API and
-browser tests. Then verifiable credentials (needs an owner decision on signing-key custody).
+Trust Chain read model and the credential core are built (see tracker). Next: (1) credentials register
+migration + status endpoint + issuance API + verify page/QR once the owner decides key custody
+(`docs/ORYQEN_CREDENTIALS_DESIGN.md`); (2) entitlements model; (3) Evidence Vault file storage; (4) add a
+Trust Chain step to the real-stack harness (`scripts/test-local-real-workflows.mjs`) so it runs on real rows.

@@ -3,7 +3,7 @@ import {readFileSync} from "node:fs";
 const id="40000000-0000-4000-8000-000000000001",second="40000000-0000-4000-8000-000000000002",time="2026-10-18T00:00:00Z",hash="a".repeat(64);
 if(process.env.ORYQEN_TEST_LOCAL_RUNNING==="1")test.use({baseURL:"http://127.0.0.1:3100"});
 test.use({viewport:{width:390,height:844}});
-async function identity(page:Page){await page.route("**/api/v1/me/employment-history**",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));await page.route("**/api/v1/offers/drafts",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));await page.route("**/api/v1/me",r=>r.fulfill({json:{data:{id,displayName:"Synthetic test owner",locale:"en",timeZone:"UTC",revision:1,capabilities:[]}}}));}
+async function identity(page:Page){await page.route("**/api/v1/trust-chain",r=>r.fulfill({json:{data:{generatedAt:"2026-10-26T00:00:00Z",claims:[],counts:{total:0,independentlyReviewed:0,counterpartyAcknowledged:0,selfReported:0,needsAttention:0},sources:{employmentEntries:0,workRecords:0,offers:0},truncated:false,limitations:["Test fixture."]}}}));await page.route("**/api/v1/me/employment-history**",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));await page.route("**/api/v1/offers/drafts",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));await page.route("**/api/v1/me",r=>r.fulfill({json:{data:{id,displayName:"Synthetic test owner",locale:"en",timeZone:"UTC",revision:1,capabilities:[]}}}));}
 function passport(later:boolean){return {policyVersion:"private-work-passport.v1",passportId:id,ownerId:id,createdAt:time,nextCursor:later?null:id,entries:[{workId:later?second:id,version:1,role:later?"Later-page technician":"First-page technician",periodStart:"2026-10-01",periodEnd:"2026-10-10",hours:"40",summary:"Synthetic tasks",companyId:id,companyName:"Synthetic company",agreementId:id,agreementVersion:1,agreementHash:hash,agreementEffectiveAt:time,verificationId:id,verifiedAt:time,verifierId:second,authorityDecisionId:id,evidenceCount:1,evidenceHash:hash}]};}
 test("sharing reaches later records and clears selections on denied refresh",async({page})=>{
  await identity(page);let deny=false;
@@ -19,7 +19,7 @@ test("private download includes later pages and never creates a partial denied e
  page.on("download",()=>downloads++);await page.goto("/app/passport");await page.getByText("Download a private copy",{exact:true}).click();
  const waiting=page.waitForEvent("download");await page.getByRole("button",{name:"Download private JSON"}).click();const download=await waiting;
  const file=JSON.parse(readFileSync((await download.path())!,"utf8"));expect(file.records.map((r:{role:string})=>r.role)).toEqual(["First-page technician","Later-page technician"]);expect(JSON.stringify(file)).not.toContain(id);
- deny=true;await page.getByRole("button",{name:"Download private JSON"}).click();await expect(page.locator("p[role=alert]")).toBeVisible();expect(downloads).toBe(1);
+ deny=true;await page.getByRole("button",{name:"Download private JSON"}).click();await expect(page.locator("p[role=alert]",{hasText:"This action is not available."})).toBeVisible();expect(downloads).toBe(1);
 });
 test("real local WASM OCR extracts synthetic text without external requests or automatic submission",async({page})=>{
  test.setTimeout(90000);await identity(page);const external:string[]=[],writes:string[]=[];

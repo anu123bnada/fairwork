@@ -160,3 +160,18 @@ connection pooler or raise the limit before production.
 
 Screenshots of Sinhala and Tamil settings screens were reviewed: glyphs render with correct conjuncts in
 Chromium on Windows. Android WebView rendering is unverified.
+
+### Trust Chain and credential core (26 Oct)
+
+| Check | Result |
+|---|---|
+| New unit tests | Trust Chain builders 8, route 5, credentials 11 (tampering, algorithm confusion, wrong key, expiry, not-yet-valid, revocation, oversize, schema-valid-but-unacceptable payloads) |
+| New browser tests | Trust Chain 3 (reviewed, self-reported, disputed, retracted; filters; empty and error states; German heading and mobile layout) |
+| Defect found by review before release | `list_work` also returns records the caller reviews as a representative; they would have appeared as "You submitted this record". Fixed by filtering to `workerId === caller`; regression test added |
+| New dependency | `jose@6.2.13` (MIT), audit 0 vulnerabilities |
+
+Final gates for this batch: browser suite **182 passed, 0 failed, 0 skipped, exit 0 (8.5 min)**; Vitest 86 files,
+**563 passed, 17 skipped, 0 failed**; typecheck and lint clean; audit 0 vulnerabilities. One earlier full run in this
+batch had a single failure (`stage9` passport download) because the new Trust Chain panel raised an extra alert when
+unmocked, the same class of fixture problem as before. The assertion now targets the specific download error and
+the new endpoint is mocked.

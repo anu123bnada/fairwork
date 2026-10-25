@@ -22,6 +22,7 @@ export const en = {
   "employment.title": "Employment history",
   "skills.title": "Self-reported skills (unverified)",
   "team.title": "Organization team",
+  "trust.title": "Trust Chain",
   "analysis.title": "Saved analysis history",
   "analysis.save": "Save this analysis",
 } as const;
@@ -37,7 +38,7 @@ export const si: Partial<Messages> = {
   "language.reviewNote": "පරිවර්තන යනු මව් භාෂාව කතා කරන්නන්ගේ සමාලෝචනය බලාපොරොත්තුවෙන් සිටින කෙටුම්පත් වේ.",
   "language.coverageNote": "මෙතෙක් පරිවර්තනය කර ඇත්තේ අතුරුමුහුණත් පාඨ {count} ක් පමණි; බොහෝ තිර තවමත් ඉංග්‍රීසියෙන් පවතී.",
   "research.title": "සේවායෝජකයෙකු පිළිබඳව පර්යේෂණය කරන්න", "research.companyName": "සමාගමේ නම", "research.country": "රට", "research.search": "ලේඛනය සොයන්න",
-  "employment.title": "රැකියා ඉතිහාසය", "skills.title": "ස්වයං-වාර්තා කළ කුසලතා (සත්‍යාපනය නොකළ)", "team.title": "සංවිධාන කණ්ඩායම",
+  "employment.title": "රැකියා ඉතිහාසය", "skills.title": "ස්වයං-වාර්තා කළ කුසලතා (සත්‍යාපනය නොකළ)", "team.title": "සංවිධාන කණ්ඩායම", "trust.title": "විශ්වාස දාමය",
   "analysis.title": "සුරකින ලද විශ්ලේෂණ ඉතිහාසය", "analysis.save": "මෙම විශ්ලේෂණය සුරකින්න",
 };
 export const ta: Partial<Messages> = {
@@ -49,7 +50,7 @@ export const ta: Partial<Messages> = {
   "language.reviewNote": "மொழிபெயர்ப்புகள் தாய்மொழி பேசுபவர்களின் மதிப்பாய்வுக்காகக் காத்திருக்கும் வரைவுகள்.",
   "language.coverageNote": "இதுவரை {count} இடைமுக உரைகள் மட்டுமே மொழிபெயர்க்கப்பட்டுள்ளன; பெரும்பாலான திரைகள் ஆங்கிலத்திலேயே உள்ளன.",
   "research.title": "ஒரு முதலாளியைப் பற்றி ஆய்வு செய்யுங்கள்", "research.companyName": "நிறுவனத்தின் பெயர்", "research.country": "நாடு", "research.search": "பதிவேட்டில் தேடு",
-  "employment.title": "வேலை வரலாறு", "skills.title": "சுயமாகத் தெரிவித்த திறன்கள் (சரிபார்க்கப்படாதவை)", "team.title": "நிறுவனக் குழு",
+  "employment.title": "வேலை வரலாறு", "skills.title": "சுயமாகத் தெரிவித்த திறன்கள் (சரிபார்க்கப்படாதவை)", "team.title": "நிறுவனக் குழு", "trust.title": "நம்பிக்கைச் சங்கிலி",
   "analysis.title": "சேமித்த பகுப்பாய்வு வரலாறு", "analysis.save": "இந்தப் பகுப்பாய்வைச் சேமிக்கவும்",
 };
 export const de: Partial<Messages> = {
@@ -61,6 +62,6 @@ export const de: Partial<Messages> = {
   "language.reviewNote": "Die Übersetzungen sind Entwürfe, die noch von Muttersprachlern geprüft werden müssen.",
   "language.coverageNote": "Bisher sind nur {count} Oberflächentexte übersetzt; die meisten Bildschirme bleiben auf Englisch.",
   "research.title": "Arbeitgeber recherchieren", "research.companyName": "Firmenname", "research.country": "Land", "research.search": "Register durchsuchen",
-  "employment.title": "Berufsverlauf", "skills.title": "Selbst angegebene Fähigkeiten (nicht verifiziert)", "team.title": "Organisationsteam",
+  "employment.title": "Berufsverlauf", "skills.title": "Selbst angegebene Fähigkeiten (nicht verifiziert)", "team.title": "Organisationsteam", "trust.title": "Vertrauenskette",
   "analysis.title": "Gespeicherter Analyseverlauf", "analysis.save": "Diese Analyse speichern",
 };

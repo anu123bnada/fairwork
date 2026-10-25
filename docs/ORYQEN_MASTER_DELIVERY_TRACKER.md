@@ -9,14 +9,24 @@ known limitations, hosted approval pack, signing guide) remain valid and are ref
 verification, so nothing is marked VERIFIED without that qualifier.** "IMPLEMENTED (local)" means
 UI, backend, database, authorization, validation, errors and automated tests all exist and pass locally.
 
-## The signature innovation: Trust Chain — NOT STARTED as a unified model
+## The signature innovation: Trust Chain, read model PARTIAL (built 26 Oct)
 
-The pieces exist separately (offers with revision and term hash, agreement acknowledgments, work
-records with verification states, Passport grants, append-only history, immutability triggers) but
-there is **no claim model** that gives every important claim an identifier, subject, issuer,
-evidence references, verification method/status/time, expiry, revocation and visibility, nor the
-user-facing "what is claimed, who verified it, is it still valid" view. This is the top remaining
-priority (see "Next batches").
+**Built:** a read-only Trust Chain (`GET /api/v1/trust-chain`, `src/features/trust/`, Passport screen) derived from the
+authorized records: work records (with decisions, evidence references, content/evidence hashes, withdrawals,
+corrections, retractions), agreement acknowledgments, and self-reported employment entries. For every claim it answers:
+what is claimed, who provided it, who verified it and how and when, what evidence supports it, whether it is still valid
+(state, expiry, who ended it and why), whether it can be challenged (and where), and who can see it and where to revoke
+access. Assurance is always stated in words: reviewed by an employer representative / acknowledged by both parties /
+self-reported / not reviewed. Reviewed claims carry the demo-authority caveat. Records the caller only reviews as an employer
+representative are excluded. 20 unit tests (builders, route) and 3 browser tests.
+
+**Not built:** a stored claim ledger. The chain stores nothing, so it adds no integrity guarantee beyond the source
+records' hashes and append-only rules; claims have no expiry; offer acknowledgments have no event timestamps; it does not
+yet include Passport grants as claims, evidence files (none exist), disputes as linked events, or employer-side views. It was
+not exercised against real database rows (it reuses the already-validated service schemas); the real-stack harness needs
+a step for it.
+
+**Next:** verifiable credentials on top of it (`docs/ORYQEN_CREDENTIALS_DESIGN.md`).
 
 ## Module status
 
@@ -28,10 +38,10 @@ priority (see "Next batches").
 | 04 | Offer Intelligence Workspace | IMPLEMENTED (local) | Create, drafts, edit, compare, decisions, archive/restore, history, analysis history; SQL, API and browser tests; real-stack harness (70 checks passed earlier this week) | Free-text search, supporting documents, notes, export |
 | 05 | Digital Agreement Center | PARTIAL | Versioned proposals, independent acknowledgments, decisions, history; no legal-signature claim | Clause editor, side-by-side diff, amendments, expiry reminders, documents, dispute links |
 | 06 | Employment Evidence Vault | PARTIAL | Employment history (self-reported, revisioned), agreement-backed work records, text evidence, corrections | **No file storage or signed URLs**; certificates and letters; export and deletion |
-| 07 | ORYQEN Work Passport | PARTIAL | Verified Passport, named-recipient sharing with revocation, export; owner-only self-reported skills panel | QR proof, PDF export, credential verification page, skills in shared Passport |
+| 07 | ORYQEN Work Passport | PARTIAL | Verified Passport, named-recipient sharing with revocation, export; owner-only self-reported skills panel; **Trust Chain panel** | QR proof, PDF export, credential verification page, skills in shared Passport |
 | 08 | Organization & Recruiter Portal | PARTIAL | Organization requests, independent operator approval, representative offers, **read-only team roster** | Recruiter accounts, roles beyond representative, team changes (operator-reviewed only) |
 | 09 | Dispute & Appeals Center | IMPLEMENTED (local) | Cases, reviewer assignment with conflict checks, follow-ups, appeals, notifications; SQL and browser tests | Categories and confidential attachments; files |
-| 10 | Trust Ledger & Audit Engine | PARTIAL | Append-only triggers, hash-bound term snapshots, integrity checks, admin audit; guarantees documented | No cross-record hash chain, no audit export, no unified claim ledger (see Trust Chain) |
+| 10 | Trust Ledger & Audit Engine | PARTIAL | Append-only triggers, hash-bound term snapshots, integrity checks, admin audit; guarantees documented; **Trust Chain read model** over claims | No cross-record hash chain, no audit export, no stored claim ledger |
 | 11 | AI Career Copilot | PARTIAL | Rules-based private guidance, **conversation deletion**, user-chosen offer context | No Gemini copilot, interview/negotiation prep, multilingual answers |
 | 12 | Security & Privacy Command | PARTIAL | Auth, email confirmation, recovery, TOTP MFA, forced RLS, quotas, origin checks, telemetry; 0 production vulnerabilities | Passkeys, data export, retention controls, account-deletion workflow are requests only; rate limits are per-process and database quotas |
 | 13 | Administration & Trust Operations | IMPLEMENTED (local) | Capability- and MFA-gated queues, settings, audit | Abuse reports, hosted operator procedures |
@@ -39,7 +49,7 @@ priority (see "Next batches").
 | 15 | Global Localization Engine | PARTIAL | **New:** English, Sinhala, Tamil, German catalogs with computed coverage and English fallback; device-persisted switcher; locale-aware dates and currencies; pay-period normalization; unit + browser tests | **Coverage is 22 strings per locale (nav, settings, language screen, new panels); all else stays English**; translations are unreviewed drafts; server-side preference needs a migration; phone/address formats, localized notifications |
 | 16 | Country-Aware Employment Intelligence | PARTIAL | **New:** Germany (ArbZG §3 daily time, §4 breaks) with exact quotes, URLs, retrieval dates, scope; Sri Lanka and all others show an explicit limitation | Only 1 supported country, 2 rules; source is an unofficial consolidation with no date; Sri Lankan primary text could not be retrieved |
 | 17 | Recruiter Scam Protection | PARTIAL | Offer-text indicators (upfront fees, document retention) in rules and AI | Domain mismatch, impersonation checks, reporting |
-| 18 | Verifiable Credentials & QR Proof | NOT STARTED | — | Issuer keys, signing, status list, QR, verification endpoint |
+| 18 | Verifiable Credentials & QR Proof | PARTIAL | **Core built:** Ed25519 JWS via `jose`, eligibility tied to the Trust Chain (self-reported can never be issued), mandatory demo-authority caveat, strict payload schema, 11 tests incl. tampering, alg-confusion, expiry, revocation, wrong key; design in `ORYQEN_CREDENTIALS_DESIGN.md` | No signing key (owner decision), no register or status endpoint, issuance API, QR or verification page |
 | 19 | Fairness & Salary Benchmarking | PARTIAL | **New:** pay-period normalization with explicit assumptions and same-currency or sourced-rate comparison (no invented rates) | Not yet in the UI; no benchmark datasets |
 | 20 | Smart Alerts & Timeline | PARTIAL | In-app notification center and workflow notifications | Expiry reminders, email, Android push, preferences |
 | 21 | Developer API & Integrations | NOT STARTED | — | Everything |
@@ -70,8 +80,8 @@ priority (see "Next batches").
 
 ## Next batches (priority order)
 
-1. **Trust Chain model** (claims, issuers, evidence references, status, expiry, revocation, audit) with a user-facing "who claims, who verified, is it valid" view over existing offers, agreements, work records and Passport.
-2. Verifiable credentials: Ed25519 signatures with a server-held key, status and revocation list, QR verification endpoint (key custody is an owner decision).
+1. ~~Trust Chain read model~~ done (see above); next: stored claim ledger with expiry, linked disputes and Passport grants.
+2. Verifiable credentials: register, status endpoint, issuance API, QR and verification page (core and design done; **signing-key custody is an owner decision**).
 3. Evidence Vault file storage with private bucket, signed short-lived URLs, malware and type validation.
 4. Entitlements model (free worker protection tier fixed in code), usage metering, admin plan controls; no billing.
 5. Research history persistence, employer-claim versus registry contradiction detection, recruiter checks.

@@ -30,6 +30,7 @@ import { participantOfferId, participantSignInPath } from "@/features/offer/part
 import { EmploymentHistory } from "./employment-history";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
+import { TrustChain } from "./trust-chain";
 import { LanguageSwitcher } from "./language-switcher";
 import { useI18n } from "@/i18n/use-i18n";
 import { LOCALES } from "@/i18n";
@@ -479,7 +480,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "agreement-workflow" && profile ? <AgreementWorkflowScreen actorId={profile.id} /> : null}
       {screen === "cases" && profile ? <CaseReviewScreen /> : null}
       {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /></> : null : null}
-      {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <><WorkPassportScreen displayName={profile.displayName} /><SelfReportedSkills /></> : null : null}
+      {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <><WorkPassportScreen displayName={profile.displayName} /><TrustChain /><SelfReportedSkills /></> : null : null}
       {screen === "settings" ? <SettingsScreen profile={profile} /> : null}
       {screen === "employer" ? demoPreview ? <PreviewScreen screen="employer" profile={profile} /> : <EmployerWorkspace /> : null}
       {screen === "notifications" ? <NotificationsScreen /> : null}

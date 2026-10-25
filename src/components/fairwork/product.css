@@ -2705,6 +2705,13 @@ body:has(.fw-product) {
 .fw-opportunities fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
 .fw-employment { margin: 16px 0; }
 .fw-research { margin: 16px 0; }
+.fw-trust { margin: 16px 0; }
+.fw-trust dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 10px 0; font-size: 14px; }
+.fw-trust dt { font-weight: 600; }
+.fw-trust dd { margin: 0; overflow-wrap: anywhere; }
+.fw-trust [role="group"] { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.fw-trust [aria-pressed="true"] { outline: 2px solid currentColor; outline-offset: 1px; font-weight: 700; }
+@media (max-width: 520px) { .fw-trust dl { grid-template-columns: 1fr; } }
 .fw-research dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 10px 0; font-size: 14px; }
 .fw-research dd { margin: 0; overflow-wrap: anywhere; }
 .fw-research ul[aria-label="Findings"] { padding-left: 18px; display: grid; gap: 6px; }
