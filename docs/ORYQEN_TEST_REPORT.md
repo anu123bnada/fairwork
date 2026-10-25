@@ -134,3 +134,13 @@ connection pooler or raise the limit before production.
 | Windows release config | refuses to build without certificate and approved icon (verified) |
 | Hosted probe (read-only) | `/` 200, `/sign-in` 200, `/api/v1/me` 401, HSTS present; `/downloads` 404 (deployment is older than the branch) |
 | New SQL tests | guidance deletion (3) |
+
+### Missing-functionality session (26 Oct), final gates
+
+| Check | Result |
+|---|---|
+| Browser suite (isolated runner) | **173 passed, 0 failed, 0 skipped, exit 0 (10.1 min)**; generated files clean |
+| Vitest | 79 files; **510 passed, 17 skipped, 0 failed** (the 17 pass via the PostgreSQL scripts) |
+| Typecheck / lint / production audit | pass / pass 0 warnings / 0 vulnerabilities (new dependency `pdfjs-dist@6.4.299`) |
+| New migrations on real local Supabase PostgreSQL | all 7 applied in order (39 total); privilege error in the roster migration found there and fixed |
+| Real-database calls (role `authenticated`, demo account) | guidance delete (0 for an empty thread), employment list (3 entries), foreign-offer analysis refused, both `list_offers` shapes, direct table read denied |

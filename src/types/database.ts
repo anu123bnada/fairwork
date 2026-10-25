@@ -26,6 +26,8 @@ export type Database = {
       offer_drafts: { Args: { request: Json }; Returns: Json };
       employment_history: { Args: { request: Json }; Returns: Json };
       guidance_delete: { Args: { request: Json }; Returns: Json };
+      analysis_history: { Args: { request: Json }; Returns: Json };
+      company_team: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

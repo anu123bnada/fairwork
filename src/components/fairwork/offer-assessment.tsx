@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { appRequest } from "@/features/authority/client";
 import { assessOfferTerms, savedAssessmentSchema, type assessmentSchema } from "@/features/offer/assessment";
 import type { z } from "zod";
+import { AnalysisHistory } from "./analysis-history";
 
 export function OfferAssessment({offerId,version,termHash}:{offerId:string;version:number;termHash:string}) {
  const [result,setResult]=useState<z.infer<typeof savedAssessmentSchema>|null>(null);
@@ -19,7 +20,7 @@ export function OfferAssessment({offerId,version,termHash}:{offerId:string;versi
  const assessment=result?.offerId===offerId&&result.offerVersion===version&&result.termHash===termHash?result.assessment:null;
  return <section className="fw-list-card" aria-label="Offer fairness indicators">
   <h3>Offer fairness indicators</h3>
-  {error?<><p role="alert">{error}</p><button type="button" className="fw-secondary" onClick={()=>{setError("");setResult(null);setAttempt(n=>n+1);}}>Retry assessment</button></>:!assessment?<p role="status">Loading assessment of saved terms…</p>:<AssessmentDetails assessment={assessment} basis={`Revision ${version}`} />}
+  {error?<><p role="alert">{error}</p><button type="button" className="fw-secondary" onClick={()=>{setError("");setResult(null);setAttempt(n=>n+1);}}>Retry assessment</button></>:!assessment?<p role="status">Loading assessment of saved terms…</p>:<><AssessmentDetails assessment={assessment} basis={`Revision ${version}`} /><AnalysisHistory offerId={offerId} version={version} termHash={termHash} /></>}
  </section>;
 }
 

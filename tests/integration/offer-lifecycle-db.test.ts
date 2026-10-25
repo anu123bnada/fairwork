@@ -58,3 +58,14 @@ it("revoked representatives cannot retry or see lifecycle records", async () => 
   await expect(rpc("offer_lifecycle", change, representative)).rejects.toThrow();
   expect((await list(representative, "all")).items).toEqual([]);
 });
+it("legacy callers without a view keep the original response shape and still see every offer", async () => {
+  const current = (await list(worker, "all")).items as { lifecycleRevision: number }[];
+  await rpc("offer_lifecycle", { offerId: offer, archived: true, decision: "declined", expectedRevision: current[0]!.lifecycleRevision, idempotencyKey: randomUUID() });
+  expect((await list()).items).toEqual([]);
+  const legacy = await rpc("list_offers", { context: "WORKER", cursor: null });
+  const items = legacy.items as Record<string, unknown>[];
+  expect(items).toHaveLength(1);
+  expect(Object.keys(items[0]!).sort()).toEqual(["companyId", "createdAt", "offerId", "questions", "role", "version"]);
+  expect(Object.keys(legacy).sort()).toEqual(["items", "nextCursor"]);
+  expect(Object.keys(((await list(worker, "all")).items as object[])[0]!).sort()).toEqual(["archived", "companyId", "createdAt", "decision", "lifecycleRevision", "offerId", "questions", "role", "version"]);
+});

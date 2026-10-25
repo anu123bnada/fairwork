@@ -170,3 +170,23 @@ Platform builds (26 Oct):
   and approved icon; existing installer remains the unsigned Preview.
 - Hosted backend: reachable (`/` 200, unauthenticated API 401, HSTS and security headers
   present) but older than this branch (`/downloads` is 404).
+
+## Missing-functionality session (26 Oct): what was built and verified
+
+| Item | Built | Evidence |
+|---|---|---|
+| PDF upload (module 1) | Local, in-browser text extraction of text-based PDFs (<= 5 MB, 20 pages, 10,000 characters), content-sniffed, reviewed in an editable box before use; nothing uploaded; scans and disguised files refused. New dependency `pdfjs-dist@6.4.299` (audit clean) | Vitest 4 (real pdf.js parse); browser test in a production build (worker bundles and runs) |
+| Saved analysis history (module 1) | Immutable, private snapshots recomputed **on the server** from the authorized offer and bound to offer revision and term hash; list and save UI | SQL 3, API 3, browser 1; applied to real Postgres |
+| Work Passport skills (module 7) | Owner-only "Self-reported skills (unverified)" panel from employment history; not exported or shared; the verified Passport is unchanged | Unit 2, browser 1 |
+| Organization team roster (module 8) | Read-only roster for approved representatives (role, status, expiry, "You"); same NOT_FOUND answer for unknown orgs and unauthorized callers; no names (would need a column grant) and no change actions | SQL 3, API 3, browser 1; real-Postgres privilege path verified |
+| Compatibility fix | `list_offers` keeps the old response shape for clients that send no `view` | SQL 1; real-Postgres call |
+
+Defects found while building: (1) the lifecycle migration alone would break the old hosted
+app's offer lists (fixed by migration 5; ordering rule documented); (2) real PostgreSQL rejected
+the roster migration's ownership transfer where the in-memory database did not (fixed with the
+repository's grant-then-revoke pattern); (3) analysis-hash format was not validated before the
+revision comparison (fixed).
+
+Not built: billing/entitlements; names in the team roster; scanned-PDF OCR (use the screenshot
+reader); verification path for self-reported employment history; Passport sharing of skills.
+See `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md` for the hosted approval pack.

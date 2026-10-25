@@ -28,6 +28,7 @@ import { AuthInformationLink } from "@/components/fairwork/auth-information-link
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { EmploymentHistory } from "./employment-history";
+import { SelfReportedSkills } from "./self-reported-skills";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
 import { OfferDrafts } from "./offer-drafts";
@@ -36,6 +37,7 @@ import { OpportunitiesScreen } from "./opportunities";
 import { GuidanceScreen } from "./guidance";
 import { OfferHistoryPanel } from "./offer-history";
 import { OfferScreenshot } from "./offer-screenshot";
+import { OfferPdf } from "./offer-pdf";
 import { RuleAnalysis } from "./rule-analysis";
 import { AiAnalysis } from "./ai-analysis";
 import { DraftOfferAssessment, OfferAssessment } from "./offer-assessment";
@@ -472,7 +474,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "agreement-workflow" && profile ? <AgreementWorkflowScreen actorId={profile.id} /> : null}
       {screen === "cases" && profile ? <CaseReviewScreen /> : null}
       {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /></> : null : null}
-      {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <WorkPassportScreen displayName={profile.displayName} /> : null : null}
+      {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <><WorkPassportScreen displayName={profile.displayName} /><SelfReportedSkills /></> : null : null}
       {screen === "settings" ? <SettingsScreen profile={profile} /> : null}
       {screen === "employer" ? demoPreview ? <PreviewScreen screen="employer" profile={profile} /> : <EmployerWorkspace /> : null}
       {screen === "notifications" ? <NotificationsScreen /> : null}
@@ -625,7 +627,7 @@ function AuthenticatedWelcome({ profile }: { profile: Profile | null }) {
 function AddOfferScreen() {
   const router = useRouter();
   const { profile, offer, setOffer, terms, setTerms, companyId, setCompanyId, workerId, setWorkerId, role, setRole, sourceText, setSourceText, ensureOfferId, startSeparateOffer } = useProduct();
-  const [tab, setTab] = useState<"paste" | "screenshot" | "manual">("paste");
+  const [tab, setTab] = useState<"paste" | "screenshot" | "pdf" | "manual">("paste");
   const [extraction, setExtraction] = useState<{ text: string; filled: number; preserved: number } | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [busy, setBusy] = useState(false);
@@ -723,10 +725,13 @@ function AddOfferScreen() {
       <div className="fw-mode-tabs" role="tablist" aria-label="Offer input method">
         <button type="button" role="tab" aria-selected={tab === "paste"} className={tab === "paste" ? "active" : ""} onClick={() => setTab("paste")}>Paste text</button>
         <button type="button" role="tab" aria-selected={tab === "screenshot"} className={tab === "screenshot" ? "active" : ""} onClick={() => setTab("screenshot")}>Screenshot</button>
+        <button type="button" role="tab" aria-selected={tab === "pdf"} className={tab === "pdf" ? "active" : ""} onClick={() => setTab("pdf")}>PDF</button>
         <button type="button" role="tab" aria-selected={tab === "manual"} className={tab === "manual" ? "active" : ""} onClick={() => setTab("manual")}>Enter manually</button>
       </div>
       {tab === "screenshot" ? (
         <OfferScreenshot onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
+      ) : tab === "pdf" ? (
+        <OfferPdf onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
       ) : (
         <form noValidate onSubmit={(event) => void analyze(event)}>
           {error && <ErrorMessage error={error} />}

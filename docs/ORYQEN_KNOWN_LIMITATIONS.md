@@ -72,3 +72,16 @@ copy; items marked "labeled" are disclosed to users in the product.
   fails with browser/Docker resource errors that are not application defects.
 - Entitlements and billing are not implemented. Self-reported employment history has no
   verification path and does not appear on the Passport.
+
+## Added in the missing-functionality session (26 Oct)
+
+- PDF reading covers text-based PDFs only (5 MB, 20 pages, 10,000 characters). Scanned PDFs have no
+  text layer and are refused with a pointer to the screenshot reader. No PDF is uploaded or stored.
+- Saved analyses are the user's own rules-based snapshots, bound to the offer revision and hash;
+  they are not employer verification and are not shareable.
+- The Passport skills panel is private and self-reported; skills are not included when a Passport is shared.
+- The team roster shows role, status and expiry only (no member names: that needs a reviewed
+  column grant to a privileged role). Adding, renewing or removing representatives stays an
+  operator-reviewed request; there is no self-service team management.
+- Hosted rollout order matters: apply all seven migrations first, then deploy
+  (`docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
