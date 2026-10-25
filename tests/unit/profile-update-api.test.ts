@@ -14,7 +14,7 @@ describe("profile editing transport preserves identity and revision boundary", (
     const response = await PATCH(request(input));
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(mocks.identityCommand).toHaveBeenCalledWith("update_profile", { ...input, idempotencyKey: key });
+    expect(mocks.identityCommand).toHaveBeenCalledWith("update_profile", { ...input, idempotencyKey: key }, response.headers.get("x-request-id"));
   });
   it("denies forged actor and capabilities before the command", async () => {
     for (const extra of [{ id: key }, { capabilities: ["reviewer"] }, { role: "ADMIN" }]) expect((await PATCH(request({ ...input, ...extra }))).status).toBe(422);

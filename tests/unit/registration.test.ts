@@ -29,6 +29,19 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 describe("disabled-by-default real registration and email confirmation", () => {
+  it.each(["", "TRUE", "true ", "false"])("requires the exact registration flag, rejecting %j", async flag => {
+    vi.stubEnv("AUTH_REGISTRATION_ENABLED", flag);
+    expect((await register(req(credentials))).status).toBe(403);
+    expect((await confirm(req({ tokenHash }))).status).toBe(403);
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
+  it("rejects cross-site fetch metadata even with the canonical Origin header", async () => {
+    const request = req(credentials);
+    request.headers.set("sec-fetch-site", "cross-site");
+    expect((await register(request)).status).toBe(403);
+    expect(mocks.signUp).not.toHaveBeenCalled();
+  });
   it("carries a validated destination in email callbacks and only display metadata", async () => {
     const continuation = "offerId=40000000-0000-4000-8000-000000000003&workspace=employer";
     expect((await register(req({ ...credentials, displayName: "Synthetic employer", continuation }))).status).toBe(200);

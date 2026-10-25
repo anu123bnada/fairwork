@@ -53,6 +53,20 @@ beforeAll(async () => {
 afterAll(async () => { await db.close(); });
 
 describe("Day 1 PostgreSQL security", () => {
+  it("creates a scalar DTO and atomically records one audit and receipt across retries", async () => {
+    const subject = "10000000-0000-4000-8000-000000000005";
+    await db.query("insert into auth.users(id) values ($1)", [subject]);
+    const request = input("New release account");
+    const created = await rpc(subject, "create_profile", request);
+    expect(created).toEqual({ id: subject, displayName: request.displayName, locale: "en", timeZone: "UTC", revision: 1, capabilities: [] });
+    expect(await rpc(subject, "create_profile", request)).toEqual(created);
+    expect(await rpc(subject, "get_me", {})).toEqual(created);
+    await expect(rpc(subject, "create_profile", { ...request, displayName: "Changed retry" })).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+    const counts = await db.query(`select
+      (select count(*)::integer from private.audit_logs where actor_id=$1) as audits,
+      (select count(*)::integer from private.command_receipts where actor_id=$1) as receipts`, [subject]);
+    expect(counts.rows).toEqual([{ audits: 1, receipts: 1 }]);
+  });
   it("owns all five tables with FORCE RLS and no runtime owner/BYPASSRLS", async () => {
     const tables = await db.query<{ relname: string; relrowsecurity: boolean; relforcerowsecurity: boolean; owner: string }>(`select c.relname,c.relrowsecurity,c.relforcerowsecurity,r.rolname as owner from pg_class c join pg_namespace n on n.oid=c.relnamespace join pg_roles r on r.oid=c.relowner where n.nspname='private' and c.relkind='r'`);
     expect(tables.rows).toHaveLength(5);

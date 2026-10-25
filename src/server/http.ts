@@ -30,10 +30,10 @@ export async function readJson<T>(request: Request, schema: z.ZodType<T>): Promi
   if (!parsed.success) throw new AppError("VALIDATION_FAILED", 422);
   return parsed.data;
 }
-export async function apiResponse(action: () => Promise<unknown>, schemaVersion = "identity.v1") {
+export async function apiResponse(action: (requestId: string) => Promise<unknown>, schemaVersion = "identity.v1") {
   const requestId = crypto.randomUUID();
   const headers: Record<string, string> = { "Cache-Control": "private, no-store", "X-Request-Id": requestId };
-  try { return Response.json({ data: await action(), meta: { requestId, schemaVersion } }, { headers }); }
+  try { return Response.json({ data: await action(requestId), meta: { requestId, schemaVersion } }, { headers }); }
   catch (error) {
     const safe = error instanceof AppError ? error : new AppError("INTERNAL_ERROR", 500);
     await recordRuntimeEvent({id:requestId,kind:"api_failure",operation:schemaVersion,code:safe.code});

@@ -7,7 +7,8 @@ import type { Json } from "@/types/database";
 
 export async function identityCommand(
   command: "get_me" | "create_profile" | "update_profile",
-  request: Json
+  request: Json,
+  requestId?: string
 ) {
   const supabase = await createServerSupabase(true);
 
@@ -22,15 +23,18 @@ export async function identityCommand(
     throw new AppError("AUTH_REQUIRED", 401);
   }
 
-  const { data, error } = await supabase.rpc(command, { request });
+  const { data, error, status } = await supabase.rpc(command, { request });
 
   if (error) {
     console.error(
       "[ORYQEN_PROFILE_RPC_DIAGNOSTIC]",
       JSON.stringify({
         command,
-        code: error.code ?? null,
-        status: "status" in error ? error.status : null,
+        requestId,
+        phase: "rpc",
+        // Provider text can contain row contents. Keep only structured codes.
+        code: /^(?:[0-9A-Z]{5}|PGRST\d{3})$/.test(error.code) ? error.code : null,
+        status,
       })
     );
 
@@ -40,6 +44,9 @@ export async function identityCommand(
   const result = meSchema.safeParse(data);
 
   if (!result.success) {
+    console.error("[ORYQEN_PROFILE_RPC_DIAGNOSTIC]", JSON.stringify({
+      command, requestId, phase: "response_schema", status,
+    }));
     throw new AppError("INTERNAL_ERROR", 500);
   }
 
