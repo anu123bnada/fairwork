@@ -14,8 +14,9 @@ test("cinematic landing page is the public entry point with truthful release con
 
   // Release controls are truthful: no fabricated binary URLs are exposed.
   const download = page.locator("#download");
-  await expect(download.getByRole("link", { name: /WINDOWS & ANDROID RELEASE STATUS/ })).toHaveAttribute("href", "/downloads");
-  await expect(download.getByRole("button", { name: /APK COMING SOON/ })).toBeVisible();
+  await expect(download.getByRole("link", { name: /RELEASE DETAILS & CHECKSUMS/ })).toHaveAttribute("href", "/downloads");
+  await expect(download.getByRole("button", { name: /ANDROID RELEASE PENDING/ })).toBeDisabled();
+  await expect(download.getByRole("button", { name: /WINDOWS RELEASE PENDING/ })).toBeDisabled();
   await expect(page.locator('a[href$=".apk"], a[href$=".exe"], a[href$=".msi"]')).toHaveCount(0);
 });
 
@@ -33,7 +34,7 @@ test("landing page is responsive without horizontal overflow", async ({ page }) 
 
 test("landing page navigates to downloads and back to sign-in", async ({ page }) => {
   await page.goto("/");
-  await page.locator("#download").getByRole("link", { name: /WINDOWS & ANDROID RELEASE STATUS/ }).click();
+  await page.locator("#download").getByRole("link", { name: /RELEASE DETAILS & CHECKSUMS/ }).click();
   await expect(page).toHaveURL(/\/downloads$/);
   await expect(page.getByRole("heading", { name: "ORYQEN applications" })).toBeVisible();
   await expect(page.getByRole("button", { name: /release pending/ }).first()).toBeDisabled();

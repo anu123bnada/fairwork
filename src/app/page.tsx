@@ -9,6 +9,7 @@ import "@fontsource/space-grotesk/500.css";
 import "@fontsource/space-grotesk/700.css";
 import CinematicCore from "@/components/oryqen/cinematic-core";
 import { BrandLogo } from "@/components/brand/brand";
+import { androidRelease, windowsRelease, releaseUrls, type Release } from "@/features/releases/releases";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ArrowUpRight,
@@ -29,7 +30,6 @@ import {
   Search,
   CheckCircle2,
 } from "lucide-react";
-const apk = process.env.NEXT_PUBLIC_APK_URL || "";
 const play = process.env.NEXT_PUBLIC_PLAY_STORE_URL || "";
 const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 const valid = (url: string) => {
@@ -40,6 +40,34 @@ const valid = (url: string) => {
     return false;
   }
 };
+function ReleaseCard({ release, url }: { release: Release; url: string | null }) {
+  const short = `${release.sha256.slice(0, 12)}…${release.sha256.slice(-8)}`;
+  return (
+    <li className="release-card">
+      <div className="release-head">
+        <strong>{release.name}</strong>
+        <span className="release-badge">{release.signed ? "SIGNED" : "PREVIEW · UNSIGNED"}</span>
+      </div>
+      <dl>
+        <dt>Version</dt><dd>{release.version}</dd>
+        <dt>For</dt><dd>{release.platform}</dd>
+        <dt>Size</dt><dd>{release.size.split(" (")[0]}</dd>
+        <dt>SHA-256</dt><dd><code title={release.sha256}>{short}</code></dd>
+      </dl>
+      <p className="release-sign">{release.signing}</p>
+      {url ? (
+        <a className="download-btn primary" href={url} target="_blank" rel="noopener noreferrer">
+          <Download size={18} /> DOWNLOAD {release.name.toUpperCase()}
+        </a>
+      ) : (
+        <button type="button" className="download-btn primary" disabled aria-disabled="true">
+          <Download size={18} /> {release.name.toUpperCase()} RELEASE PENDING
+        </button>
+      )}
+    </li>
+  );
+}
+
 const features = [
   {
     id: "01",
@@ -932,35 +960,19 @@ export default function Home() {
                   <em>WHAT'S NEXT?</em>
                 </h2>
                 <p>
-                  Take ORYQEN with you. Official Android download options will
-                  appear here when the app is released.
+                  Take ORYQEN with you. Windows and Android builds are preview
+                  releases; each download unlocks only when its official HTTPS
+                  link is published.
                 </p>
+                <ul className="release-cards" aria-label="ORYQEN applications">
+                  {[windowsRelease, androidRelease].map((release) => (
+                    <ReleaseCard key={release.key} release={release} url={releaseUrls[release.key]} />
+                  ))}
+                </ul>
                 <div className="download-buttons">
-                  <a
-                    className="download-btn primary"
-                    href="/downloads"
-                  >
-                    WINDOWS &amp; ANDROID RELEASE STATUS
+                  <a className="download-btn primary" href="/downloads">
+                    RELEASE DETAILS &amp; CHECKSUMS <ArrowUpRight size={17} />
                   </a>
-                  {valid(apk) ? (
-                    <a
-                      className="download-btn primary"
-                      href={apk}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Download size={19} /> DOWNLOAD APK{" "}
-                      <ArrowUpRight size={17} />
-                    </a>
-                  ) : (
-                    <button
-                      className="download-btn primary"
-                      onClick={() => unavailable("The APK")}
-                    >
-                      <Download size={19} /> APK COMING SOON{" "}
-                      <ArrowUpRight size={17} />
-                    </button>
-                  )}
                   {valid(play) ? (
                     <a
                       className="download-btn secondary"

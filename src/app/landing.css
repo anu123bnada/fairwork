@@ -62,3 +62,18 @@ html:has(.oryqen-landing){scroll-behavior:smooth} .scroll-meter{position:fixed;t
    action at every viewport height. Reveal it once the hero has been scrolled past. */
 .command-trigger{opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s}
 .command-trigger.visible{opacity:1;visibility:visible}
+
+
+/* Release cards: real manifest facts; the control stays disabled until an https URL exists. */
+.oryqen-landing .release-cards{list-style:none;margin:22px 0 4px;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.oryqen-landing .release-card{border:1px solid rgba(23,108,233,.28);border-radius:18px;padding:16px;background:rgba(255,255,255,.72);color:var(--ink);display:flex;flex-direction:column;gap:10px}
+.oryqen-landing .release-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.oryqen-landing .release-badge{font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 8px;border-radius:999px;border:1px solid #9a5b00;color:#7a4700;background:#fff4dc}
+.oryqen-landing .release-card dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;font-size:13px}
+.oryqen-landing .release-card dt{color:#42586e}
+.oryqen-landing .release-card dd{margin:0;overflow-wrap:anywhere}
+.oryqen-landing .release-card code{font-size:12px}
+.oryqen-landing .release-sign{margin:0;font-size:12px;color:#42586e}
+.oryqen-landing .release-card .download-btn{width:100%;justify-content:center;margin-top:auto}
+.oryqen-landing .release-card .download-btn:disabled{background:#d7e3ef;color:#33485c;border:1px dashed #7d93a8;cursor:not-allowed;box-shadow:none}
+@media(max-width:760px){.oryqen-landing .release-cards{grid-template-columns:1fr}}

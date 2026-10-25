@@ -52,7 +52,7 @@ Unpacked runtime used for smoke acceptance: `test-results/windows-artifacts/win-
 | Original source (preserved, unchanged) | `landing/v6/` |
 | Integrated route | `/` → `src/app/page.tsx`, styles `src/app/landing.css`, WebGL core `src/components/oryqen/cinematic-core.tsx` |
 | Design | V6 cinematic layout, typography, colour and motion preserved; global selectors scoped under `.oryqen-landing` |
-| Downloads | `/downloads` — truthful controls, both binaries still marked pending |
+| Downloads | Landing `#download` section and `/downloads` both read `src/features/releases/releases.ts` (checked against this manifest and the built files by `tests/unit/release-data.test.ts`). Controls stay disabled until `NEXT_PUBLIC_WINDOWS_URL` / `NEXT_PUBLIC_APK_URL` are valid https URLs |
 | Deployed | **No.** Not built into any hosted environment; public URLs remain pending approval |
 
 ## Backend target

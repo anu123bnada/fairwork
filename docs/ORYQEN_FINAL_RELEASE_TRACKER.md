@@ -124,3 +124,15 @@ passport, agreement, cases, notifications, settings, share, employer) were loade
 demo worker at 390, 768 and 1440 px: no horizontal overflow, no duplicate headings, no
 console errors (39 of 39 loads). This is a programmatic check plus screenshots of the
 employment card only; other screens were not visually reviewed.
+
+## Landing downloads (26 Oct)
+
+Landing `#download` now shows Windows and Android cards (version, platform, size, short
+SHA-256, signing state, "PREVIEW · UNSIGNED") from `src/features/releases/releases.ts`,
+shared with `/downloads`. Buttons are disabled until `NEXT_PUBLIC_WINDOWS_URL` /
+`NEXT_PUBLIC_APK_URL` hold https URLs. Values were verified against the real files
+(hashes and sizes match `docs/RELEASE_MANIFEST.md`). Tests: `release-data.test.ts` (5),
+`landing-downloads.spec.ts` (3), updated `landing.spec.ts` wording (3); targeted browser
+run 8 passed. Not re-run: the full 164-test browser suite after this change.
+Still true: Windows installer is unsigned Electron; APK is debug-signed with package id
+`org.fairwork.localpoc.online`; neither is hosted or production-ready.

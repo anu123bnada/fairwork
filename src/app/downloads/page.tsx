@@ -1,32 +1,20 @@
 import Link from 'next/link';
 import { AppBrandHeader } from '@/components/brand/brand';
+import { androidRelease, windowsRelease, releaseUrls, type Release } from '@/features/releases/releases';
 
-// Release metadata mirrors docs/RELEASE_MANIFEST.md. Every value below was measured
-// from the local preview artifacts; the controls stay disabled until an approved
-// release host exists, so no binary URL is ever fabricated here.
-const windows = {
-  version: '0.1.0 (preview)',
-  platform: 'Windows 10 / 11, x64',
-  type: 'EXE installer (NSIS, per-user)',
-  size: '121,260,491 bytes (115.6 MiB)',
-  sha256: '64925b35e269250bd68aff8672398abe0e19eee024baf0d65456f6a36911fae7',
-  signing: 'Unsigned — Windows SmartScreen will warn.',
-};
-const android = {
-  version: '1.0-online-preview (build 1)',
-  platform: 'Android 7.0 (API 24) or newer',
-  type: 'APK, universal, Capacitor shell',
-  size: '4,121,000 bytes (3.9 MiB)',
-  sha256: '03e650b4242fc524be5585d56d96247e6c6c2c061fe59d7e08e4baa619c07446',
-  signing: 'Debug certificate only — internal testing artifact, not production-signed.',
-};
+// Release facts come from src/features/releases/releases.ts (checked against
+// docs/RELEASE_MANIFEST.md by a test). Controls stay disabled until an https URL is
+// configured, so no binary URL is ever fabricated here.
+const windows = windowsRelease;
+const android = androidRelease;
 
 const panel = { border: '1px solid #d5e2f0', borderRadius: 16, padding: 20, marginTop: 16, background: '#f8fbff' } as const;
 const meta = { display: 'grid', gridTemplateColumns: 'max-content 1fr', gap: '6px 18px', margin: '14px 0', fontSize: 14 } as const;
 const hash = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, overflowWrap: 'anywhere' } as const;
 const warning = { background: '#fff7e6', border: '1px solid #f0d9a8', borderRadius: 12, padding: '12px 14px', fontSize: 14, margin: '14px 0 0' } as const;
 
-function Release({ title, data }: { title: string; data: typeof windows }) {
+function ReleasePanel({ title, data }: { title: string; data: Release }) {
+  const url = releaseUrls[data.key];
   return <section style={panel}>
     <h2 style={{ marginTop: 0 }}>{title}</h2>
     <dl style={meta}>
@@ -37,11 +25,10 @@ function Release({ title, data }: { title: string; data: typeof windows }) {
       <dt>SHA-256</dt><dd style={{ margin: 0 }}><code style={hash}>{data.sha256}</code></dd>
       <dt>Signing</dt><dd style={{ margin: 0 }}>{data.signing}</dd>
     </dl>
-    <button disabled>{title} download — release pending</button>
+    {url ? <a href={url} rel="noopener noreferrer">Download {title}</a> : <button disabled>{title} download — release pending</button>}
     <p style={{ ...warning }} role="note">
-      No public download is published yet. These values describe the local preview
-      build. When an approved release is hosted, verify its SHA-256 before installing
-      and compare it with the published manifest.
+      {url ? 'Verify the SHA-256 above before installing.' : 'No public download is published yet.'} These values describe the preview build. Compare
+      the checksum with the published manifest before installing.
     </p>
   </section>;
 }
@@ -57,8 +44,8 @@ export default function DownloadsPage() {
       service rather than a local copy.
     </p>
 
-    <Release title="Windows" data={windows} />
-    <Release title="Android" data={android} />
+    <ReleasePanel title="Windows" data={windows} />
+    <ReleasePanel title="Android" data={android} />
 
     <h2>Installation</h2>
     <p>
