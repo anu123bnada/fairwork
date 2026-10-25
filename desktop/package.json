@@ -8,7 +8,8 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test policy.test.cjs",
-    "build:windows": "electron-builder --win nsis --x64 --publish never"
+    "build:windows": "electron-builder --win nsis --x64 --publish never",
+    "build:windows:release": "electron-builder --config electron-builder.release.cjs --win nsis --x64 --publish never"
   },
   "build": {
     "appId": "app.oryqen.desktop",

@@ -55,3 +55,21 @@ uncommitted. Nothing was committed, pushed or deployed.
 Decide the Gemini path: confirm generation works from another network or console, then
 make the separate policy-approval decision. Then approve a reviewed staging migration
 and deployment so section 6 of the deployment checklist can run.
+
+## V1.0 session addendum (26 Oct)
+
+- **Verdict: NOT READY for production.** Final local gates: browser 169 passed / 0 failed;
+  Vitest 491 passed / 17 skipped (the 17 pass via the PostgreSQL scripts); typecheck, lint and
+  production audit clean.
+- **Added:** user-controlled deletion of assistant conversations (with receipts); landing
+  download cards fed by the verified release manifest; guarded Android release variant and
+  Windows release configuration (both refuse to produce a release without the owner's
+  inputs); `docs/ORYQEN_RELEASE_SIGNING.md`.
+- **Defect found and fixed:** telemetry connection exhaustion (per-route pools vs a 4-connection
+  role) silently dropped login events; found by the real-stack harness.
+- **Not achieved:** no signed Android or Windows release; no hosted verification (the deployment
+  is older than the branch); the real-stack harness did not complete end to end (resource
+  exhaustion on this machine); entitlements/billing not built; Gemini unproven.
+- **Owner actions required:** see `docs/ORYQEN_RELEASE_SIGNING.md` (application ID, production
+  domain, approved icons, signing certificate and keystore) and approve deploying the branch
+  and applying four migrations to hosted Supabase.

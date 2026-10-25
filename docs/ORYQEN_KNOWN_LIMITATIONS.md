@@ -57,3 +57,18 @@ copy; items marked "labeled" are disclosed to users in the product.
   leaked-password protection disabled) are open for owner review.
 - No security headers beyond those in `next.config.ts`; there is no HSTS header set by
   the application and no script-src restriction in the global CSP.
+
+## Added 26 Oct
+
+- No signed or production-identified Android/Windows release exists; the only installable
+  builds are the unsigned Windows Preview and the debug-signed Android preview.
+- The hosted deployment (`https://oryqen.vercel.app`) predates this branch; desktop and
+  Android apps therefore exercise older code. The apps pin that origin.
+- Brand: no owner-approved logo master or icon set exists; launcher and installer icons must be
+  supplied before release.
+- Telemetry on serverless hosting can exceed its 4-connection role limit with many concurrent
+  instances; use a pooler or raise the limit.
+- The local real-stack harness needs roughly 3 GB or more of free memory; at 0.6 to 1.6 GB it
+  fails with browser/Docker resource errors that are not application defects.
+- Entitlements and billing are not implemented. Self-reported employment history has no
+  verification path and does not appear on the Passport.

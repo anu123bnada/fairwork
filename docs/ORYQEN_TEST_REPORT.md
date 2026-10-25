@@ -92,3 +92,45 @@ the same receipts; signing in and opening the work-record screen displayed the e
 Hosted environment, live Gemini, accessibility audit (keyboard and contrast), 390/768/
 1440 px visual review of the new employment screen, load or performance testing,
 penetration testing, native Android.
+
+## V1.0 verification session (26 Oct)
+
+### Real local stack harness (`node scripts/test-local-real-workflows.mjs`)
+
+Real Supabase Auth, local mail confirmation, TOTP MFA, PostgreSQL and the Next.js app; four
+synthetic accounts (worker, employer, approver, operator) per run.
+
+| Run | Result | Cause |
+|---|---|---|
+| 1 and 2 | 30 PASS, then FAIL: "login/MFA telemetry persists for all four actors" | **Defect, fixed.** The telemetry role allows 4 connections, but each API route bundle made its own pool of 2, so `too many connections for role "oryqen_telemetry_writer"` dropped 3 of 4 login events (reproduced identically twice; DB log evidence) |
+| 3 (after fix) | **70 PASS**, then FAIL `net::ERR_INSUFFICIENT_RESOURCES` at "saved offer discovery" | Environment: the browser ran out of memory (about 1.6 GB free of 16 GB) |
+| 4 | 20 PASS, then FAIL "Docker Desktop is unavailable" | Environment: the machine was exhausted (0.57 GB free; shell could not fork) |
+
+The harness has **not** completed end to end in this session, so its later stages (passport
+sharing with a named recipient, account deactivation, etc.) were not re-run; the earlier
+121-check pass of 18 Oct (`docs/STAGE8_INTEGRATION.md`) is historical, not re-verified.
+Passing in run 3 (real stack): registration without an unconfirmed session, TOTP enrollment,
+independent operator approval, persisted offers with missing-term questions, assessment denial
+for unrelated accounts, offer persistence across logout/login, private guidance with foreign
+history denied, scoped employer/worker dashboards, private Passport with an eligible verified
+record, and mobile-width layout checks.
+
+Fix: `src/server/telemetry.ts` now keeps one process-wide state (pool, in-flight count, last
+write) on `globalThis`; regression test in `tests/unit/runtime-telemetry.test.ts`. Hosted
+serverless deployments can still exceed the role limit with many concurrent instances; use a
+connection pooler or raise the limit before production.
+
+### Other results this session
+
+| Check | Result |
+|---|---|
+| Browser suite, first rerun from `6ef1c61` | **167 passed, 0 failed** (10.4 min) |
+| Guidance deletion browser spec | 2 passed |
+| **Browser suite, final full run (after telemetry fix, Android/Windows config)** | **169 passed, 0 failed, 0 skipped, exit 0 (9.7 min)**; `next-env.d.ts`/`tsconfig.json` clean |
+| Vitest after all changes | 73 files; 491 passed, 17 skipped, 0 failed |
+| Typecheck / lint / `npm audit --omit=dev` | pass / pass 0 warnings / 0 vulnerabilities |
+| Desktop policy tests (`node --test desktop/policy.test.cjs`) | 2 passed |
+| Android release pipeline | `assembleRelease` with a throwaway ID: BUILD SUCCESSFUL, unsigned APK; guard verified (no release task without parameters) |
+| Windows release config | refuses to build without certificate and approved icon (verified) |
+| Hosted probe (read-only) | `/` 200, `/sign-in` 200, `/api/v1/me` 401, HSTS present; `/downloads` 404 (deployment is older than the branch) |
+| New SQL tests | guidance deletion (3) |

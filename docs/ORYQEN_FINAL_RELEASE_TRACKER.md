@@ -136,3 +136,37 @@ shared with `/downloads`. Buttons are disabled until `NEXT_PUBLIC_WINDOWS_URL` /
 run 8 passed. Not re-run: the full 164-test browser suite after this change.
 Still true: Windows installer is unsigned Electron; APK is debug-signed with package id
 `org.fairwork.localpoc.online`; neither is hosted or production-ready.
+
+## V1.0 module audit (26 Oct) against the 14-module vision
+
+Evidence legend: **L** = local automated tests (SQL/API/browser fixtures); **R** = real local
+stack (local Supabase Auth, mail, PostgreSQL) via `scripts/test-local-real-workflows.mjs`;
+**H** = hosted. No module has H evidence; the hosted deployment is older than this branch.
+
+| # | Module | Built and tested (evidence) | Missing against the vision |
+|---|---|---|---|
+| 1 | AI employment intelligence | Paste text, local OCR of screenshots, manual entry, rules extraction, salary/hours/missing-term/warning output, follow-up questions, numeric grounding (L) | PDF/DOCX upload and extraction; saved generated-analysis history; Gemini generation unproven |
+| 2 | Company research/verification | Company profiles, representative claims with history, organization requests/appeals, operator review (L, R) | Public-source research with citations; verification expiry and revocation; source freshness |
+| 3 | Career recommendations | Persisted listings, preferences, saved/hidden choices, rules matching with explanations (L) | Side-by-side opportunity comparison; imported-vs-employer-vs-synthetic labels beyond current copy |
+| 4 | Offer management | Create/edit, private drafts, revision history, compare, decisions, archive/restore (L, R for history) | Free-text search across offers |
+| 5 | Digital agreements | Versioned proposals, independent acknowledgments, decisions, history; not described as legal signatures (L, R) | Structured clause editor; supporting documents; dispute links |
+| 6 | Work records/evidence | Agreement-backed work records, text evidence, revisions, verification states; **self-reported employment history** (L, R) | Document file storage; milestone events; verification requests for self-reported history |
+| 7 | Work Passport | Eligible-evidence profile, named-recipient grants, revocation, export (L, R) | Skills/achievements/self-reported history in the Passport |
+| 8 | Employer/organization portals | Organization requests, operator-approved membership, representative offers/work review (L, R) | Team member management UI; organization audit view |
+| 9 | Disputes/appeals | Cases, assigned reviewers with conflict checks, follow-ups, appeals (L, R) | none identified beyond hosted acceptance |
+| 10 | Audit/tamper resistance | Append-only history by trigger, hash-bound records, admin audit views (L); guarantees documented as policy-level only | none beyond the documented limits |
+| 11 | AI assistant | Rules-based private history, **user conversation deletion with receipts** (new, L) | Gemini conversation (blocked); user-controlled context selection |
+| 12 | Security/privacy | Auth, MFA, RLS, origin checks, quotas, privacy-request records (L, R) | Automated retention/deletion for accounts (requests are recorded, fulfilled manually); network-level rate limiting |
+| 13 | Admin control center | Capability- and MFA-gated queues, settings, audit (L) | Hosted operator procedures |
+| 14 | Premium UX | Responsive screens checked at 390/768/1440; landing with real release cards | Dark theme; accessibility audit; no new design-system overhaul |
+
+Entitlements/billing (item 5 of the V1.0 brief): **not built.** No payment provider or
+billing exists and none is claimed. Worker protections are all free today.
+
+Platform builds (26 Oct):
+- Android: guarded release variant added; unsigned verification APK built (see
+  `docs/ORYQEN_RELEASE_SIGNING.md`); the APK is not distributable.
+- Windows: production config added that refuses to build without the owner's certificate
+  and approved icon; existing installer remains the unsigned Preview.
+- Hosted backend: reachable (`/` 200, unauthenticated API 401, HSTS and security headers
+  present) but older than this branch (`/downloads` is 404).

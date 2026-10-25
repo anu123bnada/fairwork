@@ -1,9 +1,25 @@
 apply plugin: 'com.android.application'
 
-// server.url is a development transport, never a release architecture.
+// server.url to localhost is a development transport, never a release architecture.
+// The release variant stays disabled unless the owner supplies, as build parameters,
+// a production application ID and an https origin:
+//   gradlew assembleRelease -PoryqenReleaseAppId=<id> -PoryqenReleaseOrigin=https://<host>
+// The development ID (org.fairwork.*) and any non-https origin are always refused.
+// Signing material is never stored in the repository: see docs/ORYQEN_RELEASE_SIGNING.md.
+def oryqenReleaseAppId = (project.findProperty("oryqenReleaseAppId") ?: "").toString().trim()
+def oryqenReleaseOrigin = (project.findProperty("oryqenReleaseOrigin") ?: "").toString().trim().replaceAll('/+$', '')
+def oryqenVersionCode = ((project.findProperty("oryqenVersionCode") ?: "1").toString()) as int
+def oryqenVersionName = (project.findProperty("oryqenVersionName") ?: "1.0.0").toString()
+def releaseConfigured = oryqenReleaseAppId ==~ /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/ &&
+        !oryqenReleaseAppId.startsWith("org.fairwork.") &&
+        oryqenReleaseOrigin ==~ /^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/
+logger.lifecycle("ORYQEN release variant: " + (releaseConfigured ? "enabled for " + oryqenReleaseAppId + " -> " + oryqenReleaseOrigin : "disabled (appId='" + oryqenReleaseAppId + "', origin='" + oryqenReleaseOrigin + "')"))
 androidComponents {
     beforeVariants(selector().withBuildType("release")) { variantBuilder ->
-        variantBuilder.enable = false
+        variantBuilder.enable = releaseConfigured
+    }
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.applicationId.set(oryqenReleaseAppId)
     }
 }
 
@@ -14,8 +30,8 @@ android {
         applicationId "org.fairwork.localpoc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode oryqenVersionCode
+        versionName oryqenVersionName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -33,9 +49,42 @@ android {
         }
         release {
             minifyEnabled false
+            debuggable false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            versionNameSuffix ""
+            def keystorePath = System.getenv("ORYQEN_ANDROID_KEYSTORE_PATH")
+            if (keystorePath && file(keystorePath).exists()) {
+                signingConfig signingConfigs.create("oryqenRelease") {
+                    storeFile file(keystorePath)
+                    storePassword System.getenv("ORYQEN_ANDROID_KEYSTORE_PASSWORD")
+                    keyAlias System.getenv("ORYQEN_ANDROID_KEY_ALIAS")
+                    keyPassword System.getenv("ORYQEN_ANDROID_KEY_PASSWORD")
+                }
+            }
         }
     }
+}
+
+// Release configuration is generated from the parameters above so the committed
+// project never contains a production origin or identifier by accident.
+tasks.register("oryqenReleaseConfig") {
+    def target = file("src/release/assets/capacitor.config.json")
+    inputs.property("appId", oryqenReleaseAppId)
+    inputs.property("origin", oryqenReleaseOrigin)
+    outputs.file(target)
+    doLast {
+        if (!releaseConfigured) throw new GradleException("Release needs -PoryqenReleaseAppId and an https -PoryqenReleaseOrigin")
+        target.parentFile.mkdirs()
+        target.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+            appId: oryqenReleaseAppId, appName: "ORYQEN", webDir: "www",
+            server: [url: oryqenReleaseOrigin + "/sign-in", cleartext: false, errorPath: "offline.html"],
+            android: [allowMixedContent: false],
+            plugins: [SystemBars: [insetsHandling: "native"], CapacitorHttp: [enabled: false], CapacitorCookies: [enabled: false]]
+        ]))
+    }
+}
+tasks.configureEach { task ->
+    if (task.name != "oryqenReleaseConfig" && task.name.contains("Release")) task.dependsOn("oryqenReleaseConfig")
 }
 
 repositories {
