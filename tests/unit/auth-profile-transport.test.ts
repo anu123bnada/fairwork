@@ -50,6 +50,15 @@ async function login() {
   expect(jar.size).toBeGreaterThan(0);
 }
 
+it("maps a real SDK fetch failure to unavailable without installing a session", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Synthetic network outage"); }));
+  const response = await signIn(request("/api/v1/auth/sign-in", credentials));
+  expect(response.status).toBe(503);
+  expect((await response.json()).error.code).toBe("SERVICE_UNAVAILABLE");
+  expect(jar.size).toBe(0);
+  expect(rpcCalls).toEqual([]);
+});
+
 it("signs in with registration disabled and carries SSR cookies into scalar profile RPCs", async () => {
   await login();
   const created = await createProfile(request("/api/v1/me", input));

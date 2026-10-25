@@ -14,6 +14,12 @@ beforeEach(() => {
   mocks.updateUser.mockResolvedValue({ error: null }); mocks.signOut.mockResolvedValue({ error: null });
 });
 afterEach(() => vi.unstubAllEnvs());
+it("does not claim recovery email was requested during a provider network outage", async () => {
+  mocks.resetPasswordForEmail.mockResolvedValue({ error: { name: "AuthRetryableFetchError", status: 0 } });
+  expect((await requestRecovery(request({ email: "local@example.test" }))).status).toBe(503);
+  mocks.verifyOtp.mockResolvedValue({ data: {}, error: { name: "AuthRetryableFetchError", status: 0 } });
+  expect((await confirm(request({ tokenHash: "a".repeat(64) }))).status).toBe(503);
+});
 it("rejects cross-origin recovery and extra trusted fields", async () => {
   expect((await requestRecovery(request({ email: "local@example.test" }, "https://evil.example"))).status).toBe(403);
   expect((await requestRecovery(request({ email: "local@example.test", redirectTo: "https://evil.example" }))).status).toBe(422);

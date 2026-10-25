@@ -3,11 +3,12 @@ import { confirmationCallbackSchema } from "@/features/identity/registration-sch
 import { requireRegistration } from "@/server/registration";
 import { createStagedServerSupabase } from "@/server/supabase";
 import { AppError } from "@/lib/errors";
+import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import type { User } from "@supabase/supabase-js";
 
 function requireConfirmedUser(user: User | null, error: { status?: number } | null) {
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
-  if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
   if (error || !user?.id || !user.email_confirmed_at || user.is_anonymous) throw new AppError("AUTH_REQUIRED", 401);
   return user;
 }

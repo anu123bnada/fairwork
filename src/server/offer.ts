@@ -18,7 +18,7 @@ export async function readOfferHistory(request: { offerId: string; beforeVersion
   return parsed.data;
 }
 
-export async function listOffers(request: { context: "WORKER" | "EMPLOYER"; cursor: string | null }) {
+export async function listOffers(request: { context: "WORKER" | "EMPLOYER"; cursor: string | null; view?: "active" | "archived" | "all" }) {
   const client = await createServerSupabase(true);
   const { data: identity, error: authError } = await client.auth.getUser();
   if (authError && (authError.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);

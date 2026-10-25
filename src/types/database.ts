@@ -5,6 +5,7 @@ export type Database = {
   api: {
     Tables: Record<string, never>; Views: Record<string, never>;
     Functions: {
+      offer_lifecycle: { Args: { request: Json }; Returns: Json };
       guidance: { Args: { request: Json }; Returns: Json };
       opportunity_read: { Args: { request: Json }; Returns: Json };
       opportunity_command: { Args: { request: Json }; Returns: Json };

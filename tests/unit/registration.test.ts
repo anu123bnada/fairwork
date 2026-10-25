@@ -29,6 +29,17 @@ beforeEach(() => {
 });
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); });
 describe("disabled-by-default real registration and email confirmation", () => {
+  it("never reports email requested or invalid credentials when provider transport failed", async () => {
+    const error = { name: "AuthRetryableFetchError", status: 0, message: "private network failure" };
+    mocks.signUp.mockResolvedValue({ data: {}, error });
+    mocks.resend.mockResolvedValue({ error });
+    mocks.verifyOtp.mockResolvedValue({ data: { user: null, session: null }, error });
+    for (const response of [await register(req(credentials)), await resend(req({ email: credentials.email })), await confirm(req({ tokenHash }))]) {
+      expect(response.status).toBe(503);
+      expect(await response.text()).not.toContain("private network failure");
+    }
+    expect(mocks.commitCookies).not.toHaveBeenCalled();
+  });
   it.each(["", "TRUE", "true ", "false"])("requires the exact registration flag, rejecting %j", async flag => {
     vi.stubEnv("AUTH_REGISTRATION_ENABLED", flag);
     expect((await register(req(credentials))).status).toBe(403);

@@ -8,6 +8,15 @@ import { identityCommand } from "@/server/identity";
 const request=(data:unknown)=>new Request("http://localhost:3000/api/v1/auth/sign-in",{method:"POST",headers:{origin:"http://localhost:3000","content-type":"application/json"},body:JSON.stringify(data)});
 beforeEach(()=>{vi.clearAllMocks();vi.stubEnv("APP_ORIGIN","http://localhost:3000");mocks.rpc.mockResolvedValue({data:{access:"active"},error:null});mocks.signOut.mockResolvedValue({error:null});});
 describe("Auth handlers and verified identity boundary",()=>{
+  it("reports a provider network outage as unavailable, not invalid credentials", async()=>{
+    mocks.signInWithPassword.mockResolvedValue({data:{user:null,session:null},error:{name:"AuthRetryableFetchError",status:0}});
+    const response=await signIn(request({email:"synthetic@example.test",password:"synthetic-only"}));
+    expect(response.status).toBe(503);
+    expect((await response.json()).error.code).toBe("SERVICE_UNAVAILABLE");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    mocks.getUser.mockResolvedValue({data:{user:null},error:{name:"AuthRetryableFetchError",status:0}});
+    await expect(identityCommand("get_me",{})).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE",status:503});
+  });
   it("routes a verified account without a profile to profile completion",async()=>{
     mocks.signInWithPassword.mockResolvedValue({error:null});
     mocks.rpc.mockResolvedValueOnce({data:{access:"needs_profile"},error:null});

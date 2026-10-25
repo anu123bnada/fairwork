@@ -2,6 +2,7 @@ import { apiResponse, assertSameOrigin, readJson } from "@/server/http";
 import { signInSchema } from "@/features/identity/schema";
 import { createServerSupabase } from "@/server/supabase";
 import { AppError } from "@/lib/errors";
+import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import { accountAccess } from "@/features/identity/deactivation-schema";
 import {recordRuntimeEvent} from "@/server/telemetry";
 export async function POST(request: Request) {
@@ -10,8 +11,8 @@ export async function POST(request: Request) {
     const credentials = await readJson(request, signInSchema);
     const supabase = await createServerSupabase(true);
     const { data, error } = await supabase.auth.signInWithPassword(credentials);
-    if(error)await recordRuntimeEvent({id:crypto.randomUUID(),kind:"login_failure",operation:"auth.sign-in",code:error.status===429?"RATE_LIMITED":"AUTH_REQUIRED"});
-    if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
+    if(error)await recordRuntimeEvent({id:crypto.randomUUID(),kind:"login_failure",operation:"auth.sign-in",code:error.status===429?"RATE_LIMITED":isAuthServiceUnavailable(error)?"SERVICE_UNAVAILABLE":"AUTH_REQUIRED"});
+    if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
     if (error) throw new AppError(error.status === 429 ? "RATE_LIMITED" : "AUTH_REQUIRED", error.status === 429 ? 429 : 401);
     let profileRequired: boolean;
     try {

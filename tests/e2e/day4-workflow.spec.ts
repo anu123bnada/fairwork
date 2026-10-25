@@ -22,6 +22,34 @@ async function session(context:BrowserContext,actor:string,model:AgreementWorkfl
    return route.fulfill({json:{data:{agreementId:id,version:v.version,contentHash:v.contentHash,state:v.state,operation:body.operation,actorId:actor,recordedAt:time}}});
  });
 }
+test("manual agreement lookup remains recoverable after refresh and rechecks access",async({context,page})=>{
+ const model=fixture(),requests:Record<string,unknown>[]=[];await session(context,worker,model,requests);
+ await page.goto("/app/agreement-workflow");
+ await page.getByLabel("Versioned agreement ID",{exact:true}).fill(id);
+ await page.getByRole("button",{name:"Open versioned agreement"}).click();
+ await expect(page).toHaveURL(`/app/agreement-workflow?workflowId=${id}`);
+ await expect(page.getByRole("region",{name:"Saved terms version 1"})).toContainText("120000");
+ await page.reload();
+ await expect(page.getByRole("region",{name:"Saved terms version 1"})).toContainText("120000");
+ await expect(page.getByText(/not cryptographic signatures/)).toBeVisible();
+ await page.route("**/api/v1/agreement-workflows?*",route=>route.fulfill({status:404,json:{error:{code:"NOT_FOUND"}}}));
+ await page.reload();
+ await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();
+ await expect(page.getByRole("region",{name:"Saved terms version 1"})).toHaveCount(0);
+ expect(requests).toHaveLength(0);
+});
+
+test("failed manual lookup does not install a participant URL",async({context,page})=>{
+ await session(context,worker,fixture(),[]);
+ await context.route("**/api/v1/agreement-workflows?*",route=>route.fulfill({status:404,json:{error:{code:"NOT_FOUND"}}}));
+ await page.goto("/app/agreement-workflow");
+ await page.getByLabel("Versioned agreement ID",{exact:true}).fill(id);
+ await page.getByRole("button",{name:"Open versioned agreement"}).click();
+ await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();
+ await expect(page).toHaveURL("/app/agreement-workflow");
+ await expect(page.getByRole("button",{name:"Confirm this exact version"})).toHaveCount(0);
+});
+
 test("two independent browser contexts acknowledge, confirm and reopen the same frozen revision",async({browser})=>{
  const a=await browser.newContext({viewport:{width:390,height:844}}),b=await browser.newContext({viewport:{width:378,height:744}});
  try {

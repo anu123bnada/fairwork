@@ -2,6 +2,7 @@
 import "server-only";
 import { createServerSupabase } from "./supabase";
 import { AppError, mapDatabaseError } from "@/lib/errors";
+import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import { meSchema } from "@/features/identity/schema";
 import type { Json } from "@/types/database";
 
@@ -15,7 +16,7 @@ export async function identityCommand(
   const { data: identity, error: authError } =
     await supabase.auth.getUser();
 
-  if (authError && (authError.status ?? 0) >= 500) {
+  if (isAuthServiceUnavailable(authError)) {
     throw new AppError("SERVICE_UNAVAILABLE", 503);
   }
 

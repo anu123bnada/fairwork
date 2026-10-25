@@ -1,5 +1,26 @@
 # October 27 auth release investigation
 
+## Follow-up on d780bea: confirmed staging cause and local repair
+
+The earlier investigation below is retained as a historical record. The following read-only connector evidence supersedes its unknown-406 and unverified-migrations findings. No hosted changes were made.
+
+- In the Supabase project named `oryqen-staging`, the queried last-24-hour Gateway logs contained seven `/rest/v1/rpc/create_profile` 406 responses and two `/rest/v1/rpc/account_access` 406 responses. All had `Accept: */*` and `Proxy-Status: PostgREST; error=PGRST106`. The requested schema was rejected by the Data API; this is not PGRST116/singularity. The application selects `api` explicitly. A successful Auth call does not establish Data API schema exposure.
+- The same log window contained seven `/auth/v1/token` 400 responses with `invalid_credentials`, plus six successful token responses. Do not conflate password rejection (application 401) with successful authentication followed by account_access failure (application 503). Aggregate logs cannot identify a particular user's attempt without a request timestamp/correlation ID, and no personal data was retrieved.
+- Staging metadata confirms create_profile/get_me/account_access exist, return scalar jsonb, use their intended executor owners, permit authenticated EXECUTE and deny anon EXECUTE. All 32 repository migration versions were listed as applied, including opportunity_discovery and private_guidance_history. Do not reapply migrations based on the older pending report. Migration history alone is not a full schema-drift audit.
+- Auth logs contain one informational confirmation mail event and one magic-link mail event. These are not inbox delivery receipts. Two signup responses were 200, and one was 400/email_address_invalid. Existing-account privacy intentionally prevents signup success from establishing that another message was delivered.
+
+Required owner staging action: in the **oryqen-staging** Supabase project's Data API settings, inspect the exposed schemas and add `api` if absent. Keep `private` and `auth` unexposed, preserve all grants/RLS, and do not switch the application to public or use a service-role key. If the dashboard already lists api, investigate effective PostgREST configuration/reload rather than changing SQL blindly. This configuration repair has NOT been performed. Retest account_access, create_profile and get_me with a valid staging session after approval; capture new error codes if any remain.
+
+### Confirmed local defect: transport outage misclassification
+
+The installed Auth SDK (`node_modules/@supabase/auth-js/src/lib/fetch.ts`) returns `AuthRetryableFetchError` with status 0 when fetch fails. Existing code tested only status >=500. Regressions reproduced sign-in 401, signup 422 and recovery-email 200 on this transport error; resend and confirmation shared the same defect.
+
+Added `src/lib/auth-errors.ts` and used it in sign-in, registration/resend, confirmation, recovery/password operations and identity lookup. Status 0/retryable errors now map to SERVICE_UNAVAILABLE/503. Login telemetry uses the same classification. Invalid credentials remain generic, unknown-account email outcomes remain indistinguishable, and confirmation, CSRF, quotas, account-access and RLS checks remain intact. This fixes local reporting and false email-request success during outages; it does not fix SMTP delivery or the staging PGRST106 configuration.
+
+The first red run had 3 failing regressions / 42 passing tests. After the fix, 59 focused auth/profile tests passed and typecheck passed. A further test exercises an actual installed SDK fetch failure, rather than supplying a fabricated SDK error. Full suite/build/browser results are recorded after completion below.
+
+Local real-service acceptance is blocked: the existing guarded Docker Auth/PostgREST/mail stack is unavailable. No existing containers, volumes or user files were reset or removed. Browser fixture tests are UI regression evidence only, and PGlite SQL tests are persistence/authorization evidence within a disposable database; neither proves a hosted end-to-end flow.
+
 Inspected October 25, 2026 on `release/oryqen-oct27`, HEAD `6ad6b83` before these uncommitted changes. No deployment, push, hosted migration or hosted environment edit was performed. Existing backup/untracked files were preserved.
 
 ## Findings and limits

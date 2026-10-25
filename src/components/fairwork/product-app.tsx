@@ -28,6 +28,7 @@ import { AuthInformationLink } from "@/components/fairwork/auth-information-link
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { WorkRecordScreen } from "./work-record";
+import { DashboardRecords } from "./dashboard-records";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
 import { OpportunitiesScreen } from "./opportunities";
 import { GuidanceScreen } from "./guidance";
@@ -580,6 +581,8 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-hint-card"><strong>Before you accept — verify.</strong><br />ORYQEN shows what’s clear and what’s missing. It does not make the decision for you.</div>
       <OpenSavedAgreement />
       <SavedOffers />
+      <DashboardRecords />
+      <details className="fw-list-card"><summary>Recent account activity</summary><NotificationFeed /></details>
       <Link className="fw-secondary" href="/app/opportunities">Discover opportunities</Link>
       <Link className="fw-secondary" href="/app/guidance">Private guidance</Link>
       <CompanyProfiles />

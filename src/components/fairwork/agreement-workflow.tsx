@@ -52,7 +52,11 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
     const token=++generation.current;setBusy(true);setError(null);setChecked([]);setShareChecked(false);
     try {
       const next=workflowReadSchema.parse(await appRequest(`/api/v1/agreement-workflows?agreementId=${encodeURIComponent(id)}`));
-      if(token===generation.current){setWorkflow(next);setSelectedId(id);}
+      if(token===generation.current){
+        setWorkflow(next);setSelectedId(next.agreementId);
+        // Keep an authorized manual lookup recoverable after refresh or sign-in.
+        window.history.replaceState(null,"",`/app/agreement-workflow?workflowId=${next.agreementId}`);
+      }
     }catch(caught){if(token===generation.current){setWorkflow(null);setError(caught instanceof Error?caught:new Error("Agreement could not be verified."));}}
     finally{if(token===generation.current)setBusy(false);}
   },[]);
@@ -92,6 +96,7 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
   return <>
     <h2 className="fw-page-title">Agreement summary</h2>
     <p className="fw-page-subtitle">Independent review of one saved version.</p>
+    <p className="fw-notice">Confirmations record each participant’s review in ORYQEN. They are not cryptographic signatures or proof of a legally executed agreement.</p>
     {busy&&<p role="status" className="fw-notice">Verifying saved agreement…</p>}
     {error&&<div className="fw-error" role="alert"><p>{error instanceof ApiRequestError?error.message:"The saved agreement could not be verified. Check your connection and retry."}</p>
       {error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"?<Link href={`/sign-in?workflowId=${selectedId}`}>Sign in to reopen this agreement</Link>:<button className="fw-secondary" disabled={busy||!selectedId} onClick={()=>void load(selectedId)}>Reload authoritative agreement</button>}

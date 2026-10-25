@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import { requirePublicEnvironment } from "@/lib/env";
 import { AppError } from "@/lib/errors";
+import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import { getServerEnvironment } from "./env";
 import { authPath } from "@/features/identity/auth-navigation";
 
@@ -39,7 +40,7 @@ export async function registerAccount(email: string, password: string, continuat
     ...(displayName ? { data: { display_name: displayName } } : {}),
   } });
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
-  if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
   if (error && error.code !== "user_already_exists" && error.code !== "email_exists") throw new AppError("VALIDATION_FAILED", 422);
   if (data?.session) throw new AppError("SERVICE_UNAVAILABLE", 503);
   // Same response for an existing account and a new, unconfirmed account.
@@ -52,7 +53,7 @@ export async function resendVerification(email: string, continuation = "") {
   const client = createClient(url, key, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
   const { error } = await client.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${origin}${authPath("/auth/confirm", continuation)}` } });
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
-  if (error && (error.status ?? 0) >= 500) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
   // The same response covers unknown, confirmed and unconfirmed addresses.
   return { verificationRequired: true };
 }
