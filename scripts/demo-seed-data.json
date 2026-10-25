@@ -1,0 +1,56 @@
+{
+  "label": "ORYQEN demonstration data. Synthetic and self-reported. Not verified by any employer, registry or authority.",
+  "account": { "email": "oryqen-demo-worker@example.test", "displayName": "[DEMO] Synthetic Worker" },
+  "employment": [
+    {
+      "id": "d0000000-0000-4000-8000-000000000101",
+      "idempotencyKey": "d0000000-0000-4000-8000-000000000201",
+      "content": {
+        "employer": "[DEMO] Harbour Logistics (synthetic)", "role": "Warehouse Assistant",
+        "startDate": "2018-02", "endDate": "2020-08", "current": false,
+        "skills": ["Inventory counts", "Forklift basics"],
+        "achievements": "Synthetic example: helped reduce picking errors."
+      }
+    },
+    {
+      "id": "d0000000-0000-4000-8000-000000000102",
+      "idempotencyKey": "d0000000-0000-4000-8000-000000000202",
+      "content": {
+        "employer": "[DEMO] Lakeside Print Works (synthetic)", "role": "Machine Operator",
+        "startDate": "2020-09", "endDate": "2023-03", "current": false,
+        "skills": ["Offset printing", "Safety procedures"],
+        "achievements": ""
+      }
+    },
+    {
+      "id": "d0000000-0000-4000-8000-000000000103",
+      "idempotencyKey": "d0000000-0000-4000-8000-000000000203",
+      "content": {
+        "employer": "[DEMO] Northfield Fabrication (synthetic)", "role": "Welding Technician",
+        "startDate": "2023-04", "endDate": null, "current": true,
+        "skills": ["MIG welding", "Blueprint reading", "Quality checks"],
+        "achievements": "Synthetic example: completed an internal safety course."
+      }
+    }
+  ],
+  "offerDrafts": [
+    {
+      "id": "d0000000-0000-4000-8000-000000000301",
+      "idempotencyKey": "d0000000-0000-4000-8000-000000000401",
+      "content": {
+        "role": "[DEMO] Site Technician - missing pay terms",
+        "employer": "[DEMO] Example Builders (synthetic)",
+        "text": "[DEMO - synthetic offer text] We are pleased to offer you the post of Site Technician. Start date to be confirmed. Working hours are flexible depending on project needs. Salary will be discussed after you join."
+      }
+    },
+    {
+      "id": "d0000000-0000-4000-8000-000000000302",
+      "idempotencyKey": "d0000000-0000-4000-8000-000000000402",
+      "content": {
+        "role": "[DEMO] Sales Executive - warning signs",
+        "employer": "[DEMO] Example Trading Co (synthetic)",
+        "text": "[DEMO - synthetic offer text] Sales Executive. Pay: LKR 90,000 per month. The first 30 days are an unpaid training period. A refundable registration fee of LKR 25,000 is payable before the start date. Overtime may be required without extra pay. You must hand over your original certificates for safekeeping."
+      }
+    }
+  ]
+}

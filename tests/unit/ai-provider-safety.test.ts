@@ -8,6 +8,26 @@ import { aiOfferAnalysisDataSchema } from "@/features/offer/ai-schema";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn() }));
 vi.mock("@/server/supabase", () => ({ createServerSupabase: async () => ({ rpc: mocks.rpc }) }));
 const source = "Role: Technician\nSalary: LKR 80000 monthly\n40 hours per week";
+it.each(["gemini", "openai"])("%s rejects invented numbers even with genuine source quotations", async provider => {
+ vi.stubEnv("ORYQEN_AI_PROVIDER", provider);
+ for (const field of ["salary", "hours"] as const) {
+  const fixture = extractOfferTermsRuleBased(source).data!;
+  if (field === "salary") fixture.salary.amount = 8000;
+  else fixture.workingHours.hoursPerWeek = 4;
+  const content = JSON.stringify(fixture);
+  const envelope = provider === "gemini" ? { candidates: [{ finishReason: "STOP", content: { parts: [{ text: content }] } }] } : { choices: [{ finish_reason: "stop", message: { content } }] };
+  vi.mocked(fetch).mockResolvedValueOnce(Response.json(envelope));
+  const result = await executeAiOfferAnalysis(source);
+  expect(result.status).toBe("ERROR"); expect(result.data).toBeNull();
+ }
+});
+it("accepts a comma-grouped amount supported by the exact source", async () => {
+ const quoted = source.replace("80000", "80,000");
+ const fixture = extractOfferTermsRuleBased(source).data!;
+ fixture.salary.quote = "Salary: LKR 80,000 monthly";
+ vi.mocked(fetch).mockResolvedValueOnce(Response.json({ choices: [{ finish_reason: "stop", message: { content: JSON.stringify(fixture) } }] }));
+ expect((await executeAiOfferAnalysis(quoted)).status).toBe("SUCCESS");
+});
 beforeEach(() => {
  vi.resetAllMocks(); vi.stubGlobal("fetch", vi.fn());
  vi.stubEnv("OPENAI_API_KEY", "synthetic-test-key"); vi.stubEnv("GEMINI_API_KEY", "synthetic-test-key");

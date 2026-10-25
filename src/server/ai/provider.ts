@@ -329,6 +329,14 @@ function validateGroundedOutput(value: unknown, source: string): AiOfferAnalysis
     if (quote !== null && (!quote.trim() || !source.includes(quote))) throw new Error("Ungrounded provider quotation");
   }
   if ((data.salary.amount !== null && !data.salary.quote) || (data.workingHours.hoursPerWeek !== null && !data.workingHours.quote)) throw new Error("Missing extraction source");
+  // Exact source quotes alone do not ground extracted numbers: a model could
+  // quote a real sentence while returning a different amount. Accept only an
+  // explicitly written numeric token; inferred conversions remain unknown.
+  for (const [amount, quote] of [[data.salary.amount, data.salary.quote], [data.workingHours.hoursPerWeek, data.workingHours.quote]] as const) {
+    if (amount === null) continue;
+    const tokens = quote?.match(/(?<![\w.,])(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![\w.,])/g) ?? [];
+    if (!tokens.some(token => Number(token.replaceAll(",", "")) === amount)) throw new Error("Ungrounded numeric extraction");
+  }
   // Company/legal authority is never delegated to generated content.
   data.companyClaimNotice = "AI-generated suggestions are unverified. Text analysis cannot verify company registration, employer authority, legal compliance or salary fairness.";
   return data;

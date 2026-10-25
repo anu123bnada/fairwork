@@ -23,6 +23,8 @@ export type Database = {
       case_followup_command: { Args: { request: Json }; Returns: Json };
       review_offer: { Args: { payload: Json }; Returns: Json };
       list_offers: { Args: { request: Json }; Returns: Json };
+      offer_drafts: { Args: { request: Json }; Returns: Json };
+      employment_history: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

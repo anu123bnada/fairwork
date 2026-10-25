@@ -8,6 +8,7 @@ const employerId = "40000000-0000-4000-8000-000000000006";
 
 async function authenticate(page: import("@playwright/test").Page, actor = workerId) {
   await page.route("**/api/v1/companies**", route => route.fulfill({ json: { data: { items: [{ companyId, name: "Synthetic organization" }], scope: "your_authorized_organizations", externalSourceConfigured: false } } }));
+  await page.route("**/api/v1/offers/drafts", route => route.fulfill({json:{data:{items:[],nextCursor:null}}}));
   await page.route("**/api/v1/work-records", route => route.fulfill({json:{data:{items:[],nextCursor:null}}}));
   await page.route("**/api/v1/me", (route) => route.fulfill({
     json: { data: { id: actor, displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } },
@@ -67,7 +68,7 @@ test("integrated product routes carry an offer through check, answer, and agreem
   await page.getByLabel("Your intended party role").selectOption("EMPLOYER");
   await page.getByLabel("Worker account ID").fill(workerId);
   await page.getByLabel("Responsibilities").fill("");
-  expect(await page.locator("form :invalid").evaluateAll((elements) => elements.map((element) => (element as HTMLInputElement).name || element.tagName))).toEqual([]);
+  expect(await page.locator("form:not(:has(#private-draft-text)) :invalid").evaluateAll((elements) => elements.map((element) => (element as HTMLInputElement).name || element.tagName))).toEqual([]);
   const offerResponsePromise = page.waitForResponse((response) => response.url().endsWith("/api/v1/offers"));
   await page.getByRole("button", { name: "Analyze offer" }).click();
   await expect(page.getByRole("button", { name: /Checking offer/ })).toBeDisabled();
@@ -127,7 +128,7 @@ test("successful sign-in goes through the authenticated introduction before Home
 
 test("original main navigation opens check, record, passport, share, settings, and employer workspace", async ({ page }) => {
   await authenticate(page);
-  await page.route("**/api/v1/offers?context=EMPLOYER", route => route.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await page.route("**/api/v1/offers?context=EMPLOYER&view=active", route => route.fulfill({json:{data:{items:[],nextCursor:null}}}));
   await page.route("**/api/v1/organizations", route => route.fulfill({json:{data:{items:[],nextCursor:null}}}));
   await page.goto("/app/home");
   await expect(page.getByRole("heading", { name: /Good morning, Synthetic/ })).toBeVisible();

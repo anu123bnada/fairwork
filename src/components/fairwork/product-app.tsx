@@ -27,8 +27,10 @@ import { PassportSharing } from "@/components/fairwork/passport-sharing";
 import { AuthInformationLink } from "@/components/fairwork/auth-information-link";
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
+import { EmploymentHistory } from "./employment-history";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
+import { OfferDrafts } from "./offer-drafts";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
 import { OpportunitiesScreen } from "./opportunities";
 import { GuidanceScreen } from "./guidance";
@@ -469,7 +471,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "agreement" ? <AgreementScreen /> : null}
       {screen === "agreement-workflow" && profile ? <AgreementWorkflowScreen actorId={profile.id} /> : null}
       {screen === "cases" && profile ? <CaseReviewScreen /> : null}
-      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <WorkRecordScreen actorId={profile.id} /> : null : null}
+      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /></> : null : null}
       {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <WorkPassportScreen displayName={profile.displayName} /> : null : null}
       {screen === "settings" ? <SettingsScreen profile={profile} /> : null}
       {screen === "employer" ? demoPreview ? <PreviewScreen screen="employer" profile={profile} /> : <EmployerWorkspace /> : null}
@@ -710,6 +712,7 @@ function AddOfferScreen() {
     <>
       <h2 className="fw-page-title">Add a job offer</h2>
       <p className="fw-page-subtitle">Paste a job offer or enter the terms yourself.</p>
+      <OfferDrafts onUse={draft=>{startSeparateOffer();setTerms({role:draft.role,employerName:draft.employer});setSourceText(draft.text);setExtraction(null);setError(null);requestKeys.current.clear();router.replace("/app/add-offer");}} />
       {offer && <section className="fw-card fw-offer-detail-card" aria-label="Selected offer">
         <p>Editing saved offer revision {offer.version}. Saving updates this offer; earlier revisions remain in its history.</p>
         <button type="button" className="fw-secondary" disabled={busy} onClick={() => {

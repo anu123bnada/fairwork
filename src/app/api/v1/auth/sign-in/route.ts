@@ -1,4 +1,3 @@
-/*
 import { apiResponse, assertSameOrigin, readJson } from "@/server/http";
 import { signInSchema } from "@/features/identity/schema";
 import { createServerSupabase } from "@/server/supabase";
@@ -33,46 +32,5 @@ export async function POST(request: Request) {
     }
     if(data?.user?.id)await recordRuntimeEvent({id:crypto.randomUUID(),kind:"login_success",operation:"auth.sign-in",subjectId:data.user.id});
     return { signedIn: true, ...(profileRequired ? { profileRequired: true } : {}) };
-  });
-}
-*/
-
-import { apiResponse, assertSameOrigin, readJson } from "@/server/http";
-import { signInSchema } from "@/features/identity/schema";
-import { createServerSupabase } from "@/server/supabase";
-import { AppError } from "@/lib/errors";
-import { isAuthServiceUnavailable } from "@/lib/auth-errors";
-
-export async function POST(request: Request) {
-  return apiResponse(async () => {
-    assertSameOrigin(request);
-
-    const credentials = await readJson(request, signInSchema);
-    const supabase = await createServerSupabase(true);
-
-    const { data, error } =
-      await supabase.auth.signInWithPassword(credentials);
-
-    if (isAuthServiceUnavailable(error)) {
-      throw new AppError("SERVICE_UNAVAILABLE", 503);
-    }
-
-    if (error) {
-      console.error("[ORYQEN_LOGIN]", {
-        status: error.status,
-        code: error.code ?? "unknown",
-      });
-
-      throw new AppError(
-        error.status === 429 ? "RATE_LIMITED" : "AUTH_REQUIRED",
-        error.status === 429 ? 429 : 401
-      );
-    }
-
-    if (!data.user || !data.session) {
-      throw new AppError("AUTH_REQUIRED", 401);
-    }
-
-    return { signedIn: true };
   });
 }

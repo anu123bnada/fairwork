@@ -15,6 +15,7 @@ async function command(args,logFile) {
   if(code!==0)throw new Error(`Local verification command failed (${code}). See ${logFile}`);
 }
 try {
+  if(await fetch("http://127.0.0.1:3100",{signal:AbortSignal.timeout(1000)}).then(()=>true,()=>false))console.warn("NOTE: a development server is running on port 3100. It is left untouched; generated Next files are restored with retries afterward.");
   try {await fetch("http://127.0.0.1:3101",{signal:AbortSignal.timeout(1000)});throw new Error("Port 3101 is occupied; refusing to disturb its server.");}
   catch(error){if(error.message.startsWith("Port 3101"))throw error;}
   await command(["node_modules/next/dist/bin/next","build"],"test-results/day2-browser-build.log");
@@ -33,12 +34,22 @@ try {
 } finally {
   // Next auto-adds dist-specific generated types. Remove only its temporary
   // include entry; preserve unrelated edits made while this script was running.
+  // A development server on port 3100 can hold or rewrite the same generated
+  // files at this moment, so every restore is retried and a failure is reported
+  // (never silently left pointing at test-results/day2-next).
+  const restore=async(file,content)=>{
+    for(let attempt=1;attempt<=8;attempt++){
+      try{writeFileSync(file,content);if(readFileSync(file,"utf8")===content)return;}
+      catch(error){if(attempt===8){console.error(`WARNING: could not restore ${file} (${error.code??error.message}). Run: git checkout -- ${file}`);return;}}
+      await new Promise(resolve=>setTimeout(resolve,400*attempt));
+    }
+  };
   const current=readFileSync("tsconfig.json","utf8");
   if(current!==tsconfig){
     const parsed=JSON.parse(current);parsed.include=parsed.include.filter(path=>!path.startsWith("test-results/day2-next/"));
     const original=JSON.parse(tsconfig);
-    writeFileSync("tsconfig.json",JSON.stringify(parsed)===JSON.stringify(original)?tsconfig:JSON.stringify(parsed,null,2)+"\n");
+    await restore("tsconfig.json",JSON.stringify(parsed)===JSON.stringify(original)?tsconfig:JSON.stringify(parsed,null,2)+"\n");
   }
   const generated=readFileSync("next-env.d.ts","utf8");
-  if(generated.includes("test-results/day2-next/"))writeFileSync("next-env.d.ts",nextEnv);
+  if(generated.includes("test-results/day2-next/"))await restore("next-env.d.ts",nextEnv);
 }

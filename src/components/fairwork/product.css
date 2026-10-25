@@ -2703,6 +2703,13 @@ body:has(.fw-product) {
 .fw-comparison-scroll tr[data-differs="true"] { background: #f2fbff; }
 .fw-opportunities { min-width: 0; }
 .fw-opportunities fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
+.fw-employment { margin: 16px 0; }
+.fw-employment fieldset { min-width: 0; border: 0; padding: 0; margin: 0; display: grid; gap: 12px; }
+.fw-employment ol { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 10px; }
+.fw-employment .fw-question-card p { margin: 6px 0; }
+.fw-employment textarea { width: 100%; min-height: 96px; }
+.fw-employment .fw-check { display: flex; align-items: center; gap: 10px; font-weight: 600; min-height: 44px; }
+.fw-employment .fw-check input { width: 20px; height: 20px; flex: none; }
 .fw-opportunities .fw-list-card { margin: 16px 0; padding: 18px; }
 .fw-opportunities input, .fw-opportunities select, .fw-opportunities textarea { max-width: 100%; box-sizing: border-box; }
 .fw-opportunities p, .fw-opportunities li { line-height: 1.6; overflow-wrap: anywhere; }
@@ -2729,6 +2736,9 @@ body:has(.fw-product) {
   .fw-product .fw-opportunities { max-width: 960px; margin-inline: auto; }
   .fw-opportunities fieldset { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
   .fw-opportunities fieldset > button, .fw-opportunities fieldset > small { grid-column: 1 / -1; }
+  .fw-employment { max-width: 960px; margin-inline: auto; }
+  .fw-employment fieldset { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
+  .fw-employment fieldset > button, .fw-employment fieldset > label:has(textarea), .fw-employment fieldset > .fw-check { grid-column: 1 / -1; }
   .fw-discovery-tabs .fw-secondary { min-height: 48px; }
 }
 @media (max-width: 767px) {
