@@ -144,3 +144,19 @@ connection pooler or raise the limit before production.
 | Typecheck / lint / production audit | pass / pass 0 warnings / 0 vulnerabilities (new dependency `pdfjs-dist@6.4.299`) |
 | New migrations on real local Supabase PostgreSQL | all 7 applied in order (39 total); privilege error in the roster migration found there and fixed |
 | Real-database calls (role `authenticated`, demo account) | guidance delete (0 for an empty thread), employment list (3 entries), foreign-offer analysis refused, both `list_offers` shapes, direct table read denied |
+
+### 22-module session (26 Oct): Gemini contract, company research, localization, jurisdictions
+
+| Check | Result |
+|---|---|
+| Browser suite (isolated production build), final | **179 passed, 0 failed, 0 skipped, exit 0 (8.5 min)**. An earlier run in this session had 1 failure (stage9 passport download): my Passport skills panel raised a second alert when its endpoint was unmocked; fixed in the fixture, root cause recorded |
+| Vitest | 83 files; **539 passed, 17 skipped, 0 failed** (the 17 pass via the PostgreSQL scripts) |
+| Typecheck / lint / production audit | pass / pass 0 warnings / 0 vulnerabilities |
+| Live Gemini, synthetic text, app's real provider (`npm run test:live:gemini`) | `gemini-3.1-flash-lite`: SUCCESS in 5.3 s; salary 90,000 LKR; 4 grounded warning signs; 2 missing details; 3 questions. Configured `gemini-3.8-flash`: `RESOURCE_EXHAUSTED` (quota) |
+| Gemini contract bisection (live) | rejected: `exclusiveMinimum`, length limits, `minItems`/`maxItems` in `responseJsonSchema`; accepted after removal. Older `responseFormat` shape was the original defect source |
+| Live company research (`npm run test:live:research`) | 3 passed: Commercial Bank of Ceylon PLC (LK), Siemens AG (DE, country-mismatch finding), unknown name returns no results |
+| New unit tests | research 12, i18n 8, jurisdiction 8 |
+| New browser tests | company research 2, localization 3, jurisdiction 1 |
+
+Screenshots of Sinhala and Tamil settings screens were reviewed: glyphs render with correct conjuncts in
+Chromium on Windows. Android WebView rendering is unverified.

@@ -30,6 +30,9 @@ import { participantOfferId, participantSignInPath } from "@/features/offer/part
 import { EmploymentHistory } from "./employment-history";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
+import { LanguageSwitcher } from "./language-switcher";
+import { useI18n } from "@/i18n/use-i18n";
+import { LOCALES } from "@/i18n";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
 import { OfferDrafts } from "./offer-drafts";
@@ -371,11 +374,12 @@ function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: str
 }
 
 function BottomNav({ active, demoPreview }: { active: string; demoPreview: boolean }) {
+  const { t } = useI18n();
   const items = [
-    ["home", "Home", "home"],
-    ["check", "Check", "shield"],
-    ["work-record", "Record", "clock"],
-    ["passport", "Passport", "badge"],
+    ["home", t("nav.home"), "home"],
+    ["check", t("nav.check"), "shield"],
+    ["work-record", t("nav.record"), "clock"],
+    ["passport", t("nav.passport"), "badge"],
   ] as const;
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -863,7 +867,7 @@ function CheckScreen() {
         ))}
       </div>
       <RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
-      <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} />
+      <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       {missing.length ? (
         <section aria-label="Needs clarification">
           <p className="fw-check-explainer">We found a few details you may want to clarify.</p>
@@ -1205,6 +1209,7 @@ function PreviewScreen({ screen, profile, demoPreview = false }: { screen: strin
 }
 
 function SettingsScreen({ profile }: { profile: Profile | null }) {
+  const { t } = useI18n();
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1226,14 +1231,14 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
   return (
     <>
       <ProductHeader screen="settings" title="" />
-      <h2 className="fw-page-title">Settings</h2><p className="fw-page-subtitle">Manage your account</p>
+      <h2 className="fw-page-title">{t("settings.title")}</h2><p className="fw-page-subtitle">{t("settings.subtitle")}</p>
       <section className="fw-profile-card"><span className="fw-avatar">{profile?.displayName?.slice(0, 1) ?? "?"}</span><span><strong>{profile?.displayName ?? "ORYQEN member"}</strong><br /><span className="fw-offer-employer">Signed-in account</span></span></section>
       {profile && <ProfileEditor profile={profile} onSaved={setProfile} />}
       {profile && <section className="fw-list-card" aria-label="Participant account reference"><label className="fw-field">My participant account ID<input readOnly value={profile.id} onFocus={event=>event.target.select()} /></label><p className="fw-disclaimer">Give this reference only to your intended employer or Passport sender. It identifies your account and grants no access. Never share your password or authenticator codes.</p></section>}
       <section className="fw-list-card">
         {["Job alerts", "Hours reminders"].map(label => <div className="fw-list-row" key={label}><span>{label}</span><small>Not available</small></div>)}
-        <div className="fw-list-row"><span>Language</span><strong>{profile?.locale ?? "English"}</strong></div>
       </section>
+      <LanguageSwitcher />
       <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
       <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
       {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}
@@ -1297,9 +1302,9 @@ function labelFor(field: string) {
 }
 
 export function IntroScreen({ screen, initialSlide = 0 }: { screen: "splash" | "language" | "onboarding" | "welcome"; initialSlide?: number }) {
+  const { t, locale, setLocale } = useI18n();
   const router = useRouter();
   const [slide, setSlide] = useState(initialSlide);
-  const [language, setLanguage] = useState("English");
   useEffect(() => {
     if (screen !== "splash") return;
     const timer = window.setTimeout(() => router.replace("/intro/onboarding"), 1800);
@@ -1324,7 +1329,7 @@ export function IntroScreen({ screen, initialSlide = 0 }: { screen: "splash" | "
   }
 
   if (screen === "language") {
-    return <main id="main" className="fw-intro fw-language-screen"><DeviceStatus /><AppBrandHeader prominent /><Link className="fw-back fw-intro-back" href="/intro/onboarding?slide=3" aria-label="Back"><Icon name="back" /></Link><section className="fw-language-content"><h1>Choose your language</h1><p className="fw-language-native">භාෂාව තෝරන්න · மொழியைத் தேர்ந்தெடுக்கவும்</p>{["English", "Sinhala", "தமிழ்"].map((item, index) => <button className={`fw-language-option${language === item ? " selected" : ""}`} key={item} aria-pressed={language === item} onClick={() => setLanguage(item)}><span className="fw-language-bubble">{["EN", "Lk", "த"][index]}</span>{item}<span className={`fw-radio${language === item ? " selected" : ""}`} /></button>)}{language !== "English" && <p role="status" className="fw-language-unavailable">{language} is not available yet. Continue uses English.</p>}</section><div className="fw-intro-bottom"><Link href="/welcome" className="fw-primary">Continue</Link></div></main>;
+    return <main id="main" className="fw-intro fw-language-screen"><DeviceStatus /><AppBrandHeader prominent /><Link className="fw-back fw-intro-back" href="/intro/onboarding?slide=3" aria-label="Back"><Icon name="back" /></Link><section className="fw-language-content"><h1>{t("language.heading")}</h1><p className="fw-language-native">භාෂාව තෝරන්න · மொழியைத் தேர்ந்தெடுக்கவும் · Sprache wählen</p>{LOCALES.map((item, index) => <button className={`fw-language-option${locale === item.code ? " selected" : ""}`} key={item.code} aria-pressed={locale === item.code} onClick={() => setLocale(item.code)}><span className="fw-language-bubble">{["EN", "සි", "த", "DE"][index]}</span>{item.native}{item.native !== item.english ? ` ${item.english}` : ""}{item.status === "preview" ? " (preview)" : ""}<span className={`fw-radio${locale === item.code ? " selected" : ""}`} /></button>)}{locale !== "en" && <p role="status" className="fw-language-unavailable">{t("language.selected", { language: LOCALES.find(item => item.code === locale)!.native })}</p>}</section><div className="fw-intro-bottom"><Link href="/welcome" className="fw-primary">{t("language.continue")}</Link></div></main>;
   }
 
   if (screen === "onboarding") {

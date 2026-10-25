@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n/use-i18n";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { employmentContent, employmentPage, employmentReceipt, type EmploymentPage } from "@/features/work/employment-schema";
@@ -6,6 +7,7 @@ import { employmentContent, employmentPage, employmentReceipt, type EmploymentPa
 type Entry = EmploymentPage["items"][number];
 
 export function EmploymentHistory() {
+  const { t } = useI18n();
  const [page,setPage]=useState<EmploymentPage|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const [employer,setEmployer]=useState(""),[role,setRole]=useState(""),[startDate,setStartDate]=useState(""),[endDate,setEndDate]=useState("");
  const [current,setCurrent]=useState(false),[skills,setSkills]=useState(""),[achievements,setAchievements]=useState("");
@@ -25,7 +27,7 @@ export function EmploymentHistory() {
  }catch{setError("Entry save could not be confirmed. Retry unchanged to reuse the same request, or reload before editing a conflicting revision.");}finally{saving.current=false;setBusy(false);}}
  const sorted=[...(page?.items??[])].sort((a,b)=>b.content.startDate.localeCompare(a.content.startDate));
  return <section className="fw-list-card fw-employment" aria-label="Self-reported employment history">
-  <h3>Employment history</h3>
+  <h3>{t("employment.title")}</h3>
   <p>Private and self-reported. Nothing here is verified, shared or shown on a Work Passport. Verification requires a separate confirmation by an authorized party.</p>
   {busy&&<p role="status">Loading or saving…</p>}{error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
   <form onSubmit={event=>void save(event)}><fieldset disabled={busy}>

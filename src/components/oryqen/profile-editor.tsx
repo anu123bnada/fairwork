@@ -33,7 +33,7 @@ export function ProfileEditor({ profile, onSaved }: { profile: Profile; onSaved:
     <h3>Your profile</h3>
     <label className="fw-field">Display name<input value={name} onChange={event => setName(event.target.value)} required maxLength={80} autoComplete="nickname" disabled={busy} /></label>
     <label className="fw-field">Time zone<input value={timeZone} onChange={event => setTimeZone(event.target.value)} required maxLength={64} placeholder="Asia/Colombo" disabled={busy} /></label>
-    <p className="fw-disclaimer">English is currently available. Profile changes are saved to your account.</p>
+    <p className="fw-disclaimer">Profile changes are saved to your account. Your interface language is stored on this device only.</p>
     <button className="fw-primary" disabled={busy}>{busy ? "Saving profile…" : "Save profile"}</button>
     {message && <p role={failed ? "alert" : "status"}>{message}</p>}
   </form>;

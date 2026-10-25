@@ -1,0 +1,31 @@
+import { expect, test } from "@playwright/test";
+import { assessOfferTerms } from "../../src/features/offer/assessment";
+const id = "40000000-0000-4000-8000-000000000001";
+const terms = { role: "Workshop Assistant", salary: 80000, currency: "LKR", payPeriod: "monthly", hoursPerWeek: 52, probation: "Unpaid trial is required" };
+const hash = "a".repeat(64);
+const offer = { offerId: id, companyId: id, workerId: id, representativeId: null, requesterId: id, requesterRole: "WORKER", version: 2, termHash: hash, snapshot: terms, changes: [], unresolved: [] };
+
+test("country references cite primary sources, ask for missing figures, and show a limitation (not thresholds) where unverified", async ({ page }) => {
+  await page.route("**/api/v1/**", route => route.fulfill({ status: 503, json: { error: { code: "SERVICE_UNAVAILABLE" } } }));
+  await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id, displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  await page.route("**/api/v1/agreements?*", route => route.fulfill({ json: { data: { offer, agreementId: id, confirmation: null, answers: [], canConfirm: false } } }));
+  await page.route("**/api/v1/offers/assessment?*", route => route.fulfill({ json: { data: { offerId: id, offerVersion: 2, termHash: hash, assessment: assessOfferTerms(terms) } } }));
+  await page.route("**/api/v1/offers/analyses**", route => route.fulfill({ json: { data: { offerId: id, items: [] } } }));
+  await page.goto(`/app/check?offerId=${id}`);
+  const panel = page.getByRole("region", { name: "Country employment references" });
+  await expect(panel).toContainText("Weekly hours in this offer: 52");
+  await expect(panel).toContainText("Enter the weekly hours and the number of working days");
+  await panel.getByLabel("Working days per week (from the offer)").fill("5");
+  await expect(panel).toContainText("About 10.4 hours a day is above the 10-hour extended maximum");
+  await panel.getByText("Source: Arbeitszeitgesetz (ArbZG) § 3 Arbeitszeit der Arbeitnehmer").first().click();
+  await expect(panel.getByText("Die werktägliche Arbeitszeit der Arbeitnehmer darf acht Stunden nicht überschreiten.", { exact: false }).first()).toBeVisible();
+  await expect(panel.getByRole("link", { name: "Open the source" }).first()).toHaveAttribute("href", "https://www.gesetze-im-internet.de/arbzg/__3.html");
+  await expect(panel).toContainText("unofficial consolidated text"); await expect(panel).toContainText("The source shows no date");
+  await expect(panel).not.toContainText(/\b(illegal|unlawful|violates?|violation)\b/i);
+  await panel.getByLabel("Country").selectOption("LK");
+  await expect(panel.getByRole("note")).toContainText("No verified rules for Sri Lanka yet");
+  await expect(panel.getByRole("link", { name: /Department of Labour/ })).toHaveAttribute("href", "https://labourdept.gov.lk/labour-legislations/");
+  await expect(panel).not.toContainText(/\b(45|48)\s*hours/i);
+  await panel.getByLabel("Country").selectOption("GB");
+  await expect(panel.getByRole("note")).toContainText("No verified rules for United Kingdom yet");
+});

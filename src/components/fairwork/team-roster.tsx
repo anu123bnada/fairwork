@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n/use-i18n";
 import { useEffect, useState } from "react";
 import { appRequest } from "@/features/authority/client";
 import { companyResultsSchema } from "@/features/authority/company-schema";
@@ -10,6 +11,7 @@ const day = (value: string) => new Date(value).toLocaleDateString();
 // Read-only. Adding, renewing or removing a representative stays an independent operator
 // decision (a request, reviewed with evidence); nothing here changes anyone's authority.
 export function TeamRoster() {
+  const { t } = useI18n();
   const [entries, setEntries] = useState<Entry[] | null>(null), [error, setError] = useState(false);
   useEffect(() => {
     let active = true;
@@ -24,7 +26,7 @@ export function TeamRoster() {
     return () => { active = false; };
   }, []);
   return <section className="fw-list-card" aria-label="Organization team">
-    <h3>Organization team</h3>
+    <h3>{t("team.title")}</h3>
     <p>Representatives with approved authority for your organizations. Authority is time-limited and granted only after independent review. To add, renew or remove a representative, submit a request above; you cannot change anyone's authority here.</p>
     {error && <p role="alert">Your organizations could not be loaded. Retry when connected.</p>}
     {!entries && !error && <p role="status">Loading team…</p>}

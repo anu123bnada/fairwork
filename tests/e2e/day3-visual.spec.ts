@@ -1,3 +1,4 @@
+import { translate } from "../../src/i18n";
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 
@@ -69,7 +70,8 @@ test("language Back restores the third original onboarding slide and invalid sli
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/intro/language");
   await page.getByRole("button", { name: /Sinhala/ }).click();
-  await expect(page.getByRole("status")).toHaveText("Sinhala is not available yet. Continue uses English.");
+  // Sinhala is now a real, partially translated locale: the status is shown in Sinhala and says so.
+  await expect(page.getByRole("status")).toHaveText(translate("si", "language.selected", { language: "සිංහල" }));
   await page.getByRole("link", { name: "Back", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Build your Work Passport" })).toBeVisible();
   await page.getByRole("button", { name: "Get started" }).click();

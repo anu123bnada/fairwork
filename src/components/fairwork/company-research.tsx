@@ -1,4 +1,5 @@
 "use client";
+import { useI18n } from "@/i18n/use-i18n";
 import { useRef, useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { researchResponse, type Finding, type ResearchResponse } from "@/features/research/schema";
@@ -10,6 +11,7 @@ const when = (value: string | null) => value && !Number.isNaN(Date.parse(value))
 // Independent registry research. Results are third-party evidence with a source and a time; they are
 // never merged with employer-submitted claims and never turned into a score.
 export function CompanyResearch() {
+  const { t } = useI18n();
   const [name, setName] = useState(""), [country, setCountry] = useState("");
   const [result, setResult] = useState<ResearchResponse | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
   const sequence = useRef(0);
@@ -24,13 +26,13 @@ export function CompanyResearch() {
       if (current === sequence.current) setError(caught instanceof Error ? caught.message : "Research is unavailable right now. Try again later.");
     } finally { if (current === sequence.current) setBusy(false); }
   }
-  return <section className="fw-list-card fw-research" aria-label="Employer research">
-    <h3>Research an employer</h3>
+  return <section className="fw-list-card fw-research" aria-label={t("research.title")}>
+    <h3>{t("research.title")}</h3>
     <p>Check whether a company is recorded in a public registry (GLEIF). You see the source, the date it was retrieved, and what the record does and does not show. This is evidence for your own judgment, not a rating of the employer.</p>
     <form onSubmit={event => void search(event)}>
-      <label className="fw-field">Company name<input required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></label>
-      <label className="fw-field">Country<select value={country} onChange={event => setCountry(event.target.value)}>{COUNTRIES.map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
-      <button className="fw-primary" disabled={busy || name.trim().length < 2}>{busy ? "Searching…" : "Search registry"}</button>
+      <label className="fw-field">{t("research.companyName")}<input required minLength={2} maxLength={120} value={name} onChange={event => setName(event.target.value)} /></label>
+      <label className="fw-field">{t("research.country")}<select value={country} onChange={event => setCountry(event.target.value)}>{COUNTRIES.map(([code, label]) => <option key={code} value={code}>{label}</option>)}</select></label>
+      <button className="fw-primary" disabled={busy || name.trim().length < 2}>{busy ? "…" : t("research.search")}</button>
     </form>
     {busy && <p role="status">Searching the registry…</p>}
     {error && <p role="alert">{error}</p>}

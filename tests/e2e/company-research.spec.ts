@@ -28,7 +28,7 @@ test("employer research shows cited registry evidence, separates findings and ne
         { id: "scope", kind: "limitation", title: "What this research does not establish", detail: "It does not verify that this entity made a specific offer." }] }] } } });
   });
   await page.goto("/app/employer");
-  const panel = page.getByRole("region", { name: "Employer research" });
+  const panel = page.getByRole("region", { name: "Research an employer" });
   await panel.getByLabel("Company name").fill("Commercial Bank of Ceylon");
   await panel.getByLabel("Country").selectOption("LK");
   await panel.getByRole("button", { name: "Search registry" }).click();
@@ -49,7 +49,7 @@ test("a search with no registry match says it proves nothing, and a failure show
     ? route.fulfill({ json: { data: { query: { name: "Tiny Local Employer", country: null }, totalMatches: 0, results: [], source, limitations: ["No registry record was found. Many genuine employers have no LEI, so this is not evidence of anything either way."] } } })
     : route.fulfill({ status: 429, json: { error: { code: "RATE_LIMITED" } } }));
   await page.goto("/app/employer");
-  const panel = page.getByRole("region", { name: "Employer research" });
+  const panel = page.getByRole("region", { name: "Research an employer" });
   await panel.getByLabel("Company name").fill("Tiny Local Employer");
   await panel.getByRole("button", { name: "Search registry" }).click();
   await expect(panel.getByText(/No registry record found for/)).toBeVisible();
