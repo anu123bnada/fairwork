@@ -2704,6 +2704,10 @@ body:has(.fw-product) {
 .fw-opportunities { min-width: 0; }
 .fw-opportunities fieldset { min-width: 0; border: 0; padding: 0; margin: 0; }
 .fw-employment { margin: 16px 0; }
+.fw-research { margin: 16px 0; }
+.fw-research dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 10px 0; font-size: 14px; }
+.fw-research dd { margin: 0; overflow-wrap: anywhere; }
+.fw-research ul[aria-label="Findings"] { padding-left: 18px; display: grid; gap: 6px; }
 .fw-employment fieldset { min-width: 0; border: 0; padding: 0; margin: 0; display: grid; gap: 12px; }
 .fw-employment ol { list-style: none; margin: 16px 0; padding: 0; display: grid; gap: 10px; }
 .fw-employment .fw-question-card p { margin: 6px 0; }

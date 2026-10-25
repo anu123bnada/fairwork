@@ -28,6 +28,7 @@ import { AuthInformationLink } from "@/components/fairwork/auth-information-link
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { EmploymentHistory } from "./employment-history";
+import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
@@ -590,6 +591,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <Link className="fw-secondary" href="/app/opportunities">Discover opportunities</Link>
       <Link className="fw-secondary" href="/app/guidance">Private guidance</Link>
       <CompanyProfiles />
+      <CompanyResearch />
     </>
   );
 }

@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, expect, it, vi } from "vitest";
-import { executeAiOfferAnalysis } from "@/server/ai/provider";
+import { executeAiOfferAnalysis, toGeminiResponseSchema } from "@/server/ai/provider";
 import { authorizeAiTransmission } from "@/server/ai/consent";
 import { aiConfiguration } from "@/server/ai/config";
 import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
@@ -69,14 +69,18 @@ it("Gemini transmits only the redacted preview to one configured model with stru
  expect(String(url)).toBe("https://generativelanguage.googleapis.com/v1beta/models/gemini-synthetic-test:generateContent");
  const body=JSON.parse(init?.body as string);
  expect(init?.body).not.toContain("Synthetic Private Person");expect(init?.body).not.toContain("private@example.test");
- expect(body.generationConfig.responseFormat.text.mimeType).toBe("APPLICATION_JSON");
- expect(body.generationConfig.responseFormat.text.schema.properties.salary).toBeDefined();expect(body.tools).toBeUndefined();
-  expect(body.generationConfig).toEqual({responseFormat:{text:{mimeType:"APPLICATION_JSON",schema:z.toJSONSchema(aiOfferAnalysisDataSchema)}},temperature:0.1,candidateCount:1,maxOutputTokens:3000});
-  const schema=body.generationConfig.responseFormat.text.schema;
-  expect(schema.$schema).toBe("https://json-schema.org/draft/2020-12/schema");
-  expect(schema.properties.salary.properties.amount.anyOf[0]).toEqual({type:"number",exclusiveMinimum:0});
-  expect(schema.properties.warningSigns.items.properties.id).toEqual({type:"string",minLength:1,maxLength:80});
-  expect(schema.additionalProperties).toBe(false);expect(schema.properties.warningSigns.maxItems).toBe(12);
+ expect(body.generationConfig.responseMimeType).toBe("application/json");expect(body.generationConfig.responseFormat).toBeUndefined();
+ expect(body.generationConfig.responseJsonSchema.properties.salary).toBeDefined();expect(body.tools).toBeUndefined();
+  expect(body.generationConfig).toEqual({responseMimeType:"application/json",responseJsonSchema:toGeminiResponseSchema(z.toJSONSchema(aiOfferAnalysisDataSchema)),temperature:0.1,candidateCount:1,maxOutputTokens:3000});
+  const schema=body.generationConfig.responseJsonSchema;
+  // Keywords the live API rejected with HTTP 400 must not be sent; the same limits are enforced by Zod on the response.
+  const keywords=new Set<string>();(function walk(node:unknown){if(Array.isArray(node))node.forEach(walk);else if(node&&typeof node==="object")for(const [key,value] of Object.entries(node)){keywords.add(key);walk(value);}})(schema);
+  for(const banned of ["$schema","exclusiveMinimum","exclusiveMaximum","minLength","maxLength","pattern","minItems","maxItems"])expect(keywords.has(banned)).toBe(false);
+  expect(schema.properties.salary.properties.amount.anyOf[0]).toEqual({type:"number"});
+  expect(schema.properties.warningSigns.items.properties.id).toEqual({type:"string"});
+  expect(schema.additionalProperties).toBe(false);expect(schema.properties.warningSigns.maxItems).toBeUndefined();
+  expect(()=>aiOfferAnalysisDataSchema.parse({...fixture,warningSigns:Array.from({length:13},(_,i)=>({id:`w${i}`,severity:"low",title:"t",description:"d",quote:null,recommendation:"r"}))})).toThrow();
+  expect(()=>aiOfferAnalysisDataSchema.parse({...fixture,salary:{...fixture.salary,amount:-1,quote:"x"}})).toThrow();
   expect(new Headers(init?.headers).get("x-goog-api-key")).toBe("synthetic-test-key");
  expect(body.cachedContent).toBeUndefined();expect(body.generationConfig.maxOutputTokens).toBe(3000);
  expect(init?.redirect).toBe("error");expect(init?.cache).toBe("no-store");
@@ -248,4 +252,15 @@ it("classifies argument-message signals without copying any provider message", a
  expect(observe).toHaveBeenCalledExactlyOnceWith({ status: "INVALID_ARGUMENT", reasons: ["SCHEMA_EXCLUSIVE_MINIMUM", "RESPONSE_FORMAT_MENTIONED", "UNKNOWN_FIELD_MENTIONED"], fields: [] });
  expect(JSON.stringify(observe.mock.calls)).not.toContain("private@example.test");
  expect(JSON.stringify(observe.mock.calls)).not.toContain("secret-token");
+});
+
+it("sends a low thinking level to Gemini 3 models only, never to other families", async () => {
+ for (const [model,expected] of [["gemini-3.1-flash-lite",{thinkingLevel:"low"}],["gemini-2.5-flash",undefined]] as const) {
+  vi.resetAllMocks();vi.stubGlobal("fetch",vi.fn());vi.stubEnv("ORYQEN_AI_PROVIDER","gemini");vi.stubEnv("GEMINI_MODEL",model);
+  mocks.rpc.mockResolvedValue({error:null,data:{authorizationId:crypto.randomUUID()}});
+  vi.mocked(fetch).mockResolvedValue(new Response("{}",{status:500}));
+  await executeAiOfferAnalysis(source);
+  const body=JSON.parse(vi.mocked(fetch).mock.calls[0]![1]?.body as string);
+  expect(body.generationConfig.thinkingConfig).toEqual(expected);
+ }
 });

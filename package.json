@@ -11,6 +11,8 @@
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
+    "test:live:gemini": "vitest run --config vitest.live.config.ts tests/live/gemini-synthetic.live.ts",
+    "test:live:research": "vitest run --config vitest.live.config.ts tests/live/gleif-research.live.ts",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "playwright test",
     "test:e2e:isolated": "node scripts/test-browser.mjs",

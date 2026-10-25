@@ -7,6 +7,8 @@ import { aiConfiguration } from "@/server/ai/config";
 import {recordRuntimeEvent} from "@/server/telemetry";
 
 export const dynamic = "force-dynamic";
+// The provider call may legitimately take longer than the platform default (see GEMINI_TIMEOUT_MS).
+export const maxDuration = 60;
 
 export async function GET() {
   return apiResponse(async () => {

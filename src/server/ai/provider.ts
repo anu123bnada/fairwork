@@ -3,6 +3,9 @@ import { aiConfiguration } from "./config";
 import { z } from "zod";
 import { sanitizeGeminiDiagnostic, type GeminiDiagnostic } from "./gemini-diagnostic";
 
+// Under provider load a request can queue for several seconds before it is served or rejected.
+const GEMINI_TIMEOUT_MS = 35000;
+
 class ProviderFailure extends Error {
   constructor(readonly kind: "quota" | "configuration" | "model" | "incomplete" | "blocked" | "invalid") { super(kind); }
 }
@@ -214,6 +217,21 @@ export async function executeAiOfferAnalysis(
   };
 }
 
+// Gemini accepts only a subset of JSON Schema in responseJsonSchema. Sending any other keyword
+// (verified against the live API by bisection: exclusiveMinimum, string-length limits and array-size limits) fails the whole
+// request with HTTP 400 "Request contains an invalid argument". These constraints are not lost:
+// aiOfferAnalysisDataSchema re-validates every response strictly (lengths, positive amounts, caps).
+const GEMINI_UNSUPPORTED_SCHEMA_KEYWORDS = new Set(["$schema", "exclusiveMinimum", "exclusiveMaximum", "minLength", "maxLength", "pattern", "minItems", "maxItems"]);
+export function toGeminiResponseSchema(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(toGeminiResponseSchema);
+  if (schema !== null && typeof schema === "object") {
+    return Object.fromEntries(Object.entries(schema as Record<string, unknown>)
+      .filter(([key]) => !GEMINI_UNSUPPORTED_SCHEMA_KEYWORDS.has(key))
+      .map(([key, value]) => [key, toGeminiResponseSchema(value)]));
+  }
+  return schema;
+}
+
 async function callGeminiProvider(
   apiKey: string,
   text: string,
@@ -231,10 +249,15 @@ async function callGeminiProvider(
       { parts: [{ text: PROMPT_TEMPLATE(text, role) }] },
     ],
     generationConfig: {
-      responseFormat: { text: { mimeType: "APPLICATION_JSON", schema: z.toJSONSchema(aiOfferAnalysisDataSchema) } },
+      responseMimeType: "application/json",
+      responseJsonSchema: toGeminiResponseSchema(z.toJSONSchema(aiOfferAnalysisDataSchema)),
       temperature: 0.1,
       candidateCount: 1,
       maxOutputTokens: 3000,
+      // Gemini 3 models spend most of the latency budget on hidden reasoning. Measured live: the
+      // default took 14 to 22 s for this extraction, "low" about 11 s. Older families use a
+      // different parameter, so this is applied to the Gemini 3 family only.
+      ...(/^gemini-3/.test(selectedModel) ? { thinkingConfig: { thinkingLevel: "low" } } : {}),
     },
   };
 
@@ -246,7 +269,7 @@ async function callGeminiProvider(
     cache: "no-store",
     headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
   });
 
   if (!response.ok) {

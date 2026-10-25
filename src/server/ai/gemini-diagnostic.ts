@@ -7,9 +7,11 @@ const fields = new Set([
   "model", "contents", "system_instruction", "systemInstruction", "generationConfig", "generation_config",
   "generationConfig.responseFormat", "generationConfig.responseFormat.text",
   "generationConfig.responseFormat.text.mimeType", "generationConfig.responseFormat.text.schema",
+  "generationConfig.responseMimeType", "generationConfig.responseJsonSchema",
   "generationConfig.temperature", "generationConfig.candidateCount", "generationConfig.maxOutputTokens",
   "generation_config.response_format", "generation_config.response_format.text",
   "generation_config.response_format.text.mime_type", "generation_config.response_format.text.schema",
+  "generation_config.response_mime_type", "generation_config.response_json_schema",
   "generation_config.temperature", "generation_config.candidate_count", "generation_config.max_output_tokens",
 ]);
 // Fixed labels only. The provider sometimes puts argument errors in its message
