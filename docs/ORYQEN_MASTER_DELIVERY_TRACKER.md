@@ -67,7 +67,7 @@ a step for it.
 
 | # | Proof | State |
 |---|---|---|
-| 1 | Synthetic offer, real Gemini response | **Done** through the app's own provider on `gemini-3.1-flash-lite`; configured model quota-blocked |
+| 1 | Synthetic offer, real Gemini response | **Proven earlier** through the app's own provider on `gemini-3.1-flash-lite` (SUCCESS, 4 grounded warning signs). **Re-run 27 Oct 2026: RESOURCE_EXHAUSTED on both the configured model and `gemini-3.1-flash-lite`** (three attempts, no automatic retry beyond the documented overload rule). External blocker: the owner must check the Gemini key's quota and billing tier. Real-user AI stays disabled by policy |
 | 2 | Real company from an authorized source with cited evidence | **Done** (GLEIF; Sri Lanka and Germany) |
 | 3 | Language switching renders localized screens | **Done** for the translated subset (browser test, screenshot reviewed) |
 | 4 | Analysis with country-specific references | **Done** for Germany; Sri Lanka explicitly unavailable |
