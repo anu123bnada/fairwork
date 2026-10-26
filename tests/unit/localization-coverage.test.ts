@@ -9,7 +9,6 @@ const walk = (dir: string): string[] => readdirSync(dir).flatMap(name => { const
 const ENGLISH_ON_PURPOSE: Record<string, string> = {
   "src/components/admin/admin-center.tsx": "administration console (operators), listed in the language note",
   "src/components/admin/operations-overview.tsx": "administration console (operators)",
-  "src/components/fairwork/case-followups.tsx": "case correspondence",
   "src/components/fairwork/company-profiles.tsx": "organization and company screens, listed in the note",
   "src/components/fairwork/credential-verifier.tsx": "public verifier page",
   "src/components/fairwork/dashboard-records.tsx": "home record lists",
@@ -17,10 +16,7 @@ const ENGLISH_ON_PURPOSE: Record<string, string> = {
   "src/components/fairwork/developer-access.tsx": "developer access, listed in the note",
   "src/components/fairwork/guidance.tsx": "guidance assistant, listed in the note",
   "src/components/fairwork/jurisdiction-check.tsx": "country references (legal text kept in English)",
-  "src/components/fairwork/notifications.tsx": "notification feed, listed in the note",
   "src/components/fairwork/offer-company-selector.tsx": "organization screens",
-  "src/components/fairwork/offer-comparison.tsx": "offer comparison",
-  "src/components/fairwork/offer-history.tsx": "offer history",
   "src/components/fairwork/organization-requests.tsx": "organization screens, listed in the note",
   "src/components/fairwork/page-shell.tsx": "layout wrapper", "src/components/fairwork/status.tsx": "layout wrapper",
   "src/components/oryqen/appearance.tsx": "appearance picker", "src/components/oryqen/cinematic-core.tsx": "landing animation", "src/components/oryqen/profile-editor.tsx": "profile editor",
