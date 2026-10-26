@@ -218,3 +218,10 @@ the new endpoint is mocked.
 | Real-stack harness with webhooks | **186 PASS, exit 0** (real Auth, mail, TOTP, PostgreSQL, local vault store, throwaway signing key). Developer webhook journey: validation, one-time secret, owner-only, test event failure logged, revoke event retried three times in the background and logged |
 | New SQL tests (PGlite and real PostgreSQL) | entitlements 5, vault 6, developer keys 5, developer webhooks 6: all pass on both engines |
 | Not run on real hardware | No Android device or emulator was attached; no Windows installer was installed and exercised in this batch; hosted Supabase Storage and a hosted backend were not touched |
+
+## Platform installation checks (27 Oct 2026, this machine)
+
+| Platform | What was done | Result |
+|---|---|---|
+| Android (emulator-5554, Android 17, API 37, x86_64) | `adb install -r` of the debug APK built by `release:verify:full` (`org.fairwork.localpoc`, versionName 1.0.0, minSdk 24, targetSdk 36, debug-signed); `am start -W`; screenshot | **Installed (Success), launched (Status ok, process running), and showed the app's own native "ORYQEN is offline ... Try again" page because no backend was reachable (correct fail-closed behaviour).** The emulator's System UI raised an ANR under memory starvation. **Not exercised:** sign-in, workflows, Back handling, reconnection (those need `scripts/test-android-real.mjs`, which needs more memory than this machine has with the database stack running), physical device |
+| Windows (this PC) | Silent install of `ORYQEN-Preview-0.1.0-x64-Setup.exe` (Authenticode status **NotSigned**) to a temporary folder with `/S`, launch, 12-second liveness check, stop, silent uninstall | **Installer exit 0; the app launched with the window title "ORYQEN — Your work, clearly recorded"; four processes ran and were stopped; uninstaller exit 0 and the executable was removed.** Not exercised: signed installer, upgrade over an older version, sign-in against a hosted backend |
