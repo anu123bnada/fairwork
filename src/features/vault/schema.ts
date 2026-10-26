@@ -17,6 +17,9 @@ export const vaultDocument = z.strictObject({
 });
 export type VaultDocument = z.infer<typeof vaultDocument>;
 export const vaultListResponse = z.strictObject({ items: z.array(vaultDocument).max(vaultLimits.maxDocuments), limit: z.number().int(), used: z.number().int() });
+export const vaultAttachment = vaultDocument.omit({ createdAt: true }).extend({ attachedAt: z.string() });
+export const vaultAttachments = z.strictObject({ workId: z.uuid(), items: z.array(vaultAttachment).max(10) });
+export const vaultAttached = z.strictObject({ documentId: z.uuid(), workId: z.uuid(), replayed: z.boolean().optional() });
 export const vaultRegistered = z.strictObject({ documentId: z.uuid(), replayed: z.boolean() });
 export const vaultDeleted = z.strictObject({ documentId: z.uuid(), storageKey: z.string() });
 export const vaultFetched = z.strictObject({ documentId: z.uuid(), storageKey: z.string(), fileName: z.string(), mediaType: z.enum(vaultMediaTypes) });

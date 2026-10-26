@@ -36,6 +36,9 @@ export type Database = {
       entitlement_assign: { Args: { request: Json }; Returns: Json };
       vault_register: { Args: { request: Json }; Returns: Json };
       vault_list: { Args: { request: Json }; Returns: Json };
+      vault_attach: { Args: { request: Json }; Returns: Json };
+      vault_detach: { Args: { request: Json }; Returns: Json };
+      vault_attachments: { Args: { request: Json }; Returns: Json };
       vault_fetch: { Args: { request: Json }; Returns: Json };
       vault_delete: { Args: { request: Json }; Returns: Json };
       developer_key_create: { Args: { request: Json }; Returns: Json };

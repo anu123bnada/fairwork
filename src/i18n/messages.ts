@@ -591,6 +591,14 @@ export const en = {
   "reminders.checkOpen": "Open the offer check",
   "reminders.queue": "{count} recruiter request(s) are waiting for your decision as an organization representative.",
   "reminders.queueOpen": "Open the employer workspace",
+  "wa.title": "My documents for this record",
+  "wa.intro": "Link documents from your Evidence Vault to this record, for example a payslip. The link is private to you: it is not shown to the employer, a reviewer or anyone you share your Passport with.",
+  "wa.none": "No documents linked yet.",
+  "wa.pick": "Choose a document to link",
+  "wa.attach": "Link document",
+  "wa.detach": "Unlink",
+  "wa.noVault": "Your Evidence Vault is empty. Save a document there first.",
+  "wa.error": "That did not work. Retry.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -1172,6 +1180,14 @@ export const si: Partial<Messages> = {
   "reminders.checkOpen": "දීමනා පරීක්ෂාව විවෘත කරන්න",
   "reminders.queue": "සංවිධාන නියෝජිතයෙකු ලෙස ඔබේ තීරණය බලා සිටින බඳවා ගැනීමේ ඉල්ලීම් {count} ක් ඇත.",
   "reminders.queueOpen": "සේවායෝජක වැඩබිම විවෘත කරන්න",
+  "wa.title": "මෙම වාර්තාව සඳහා මගේ ලේඛන",
+  "wa.intro": "ඔබේ සාක්ෂි සුරක්ෂිත ගබඩාවේ ලේඛන, උදාහරණයක් ලෙස වැටුප් පතක්, මෙම වාර්තාවට සම්බන්ධ කරන්න. සබැඳිය ඔබට පෞද්ගලිකයි: එය සේවායෝජකයාට, සමාලෝචකයෙකුට හෝ ඔබේ ගමන් බලපත්‍රය බෙදාගන්නා කිසිවෙකුට නොපෙනේ.",
+  "wa.none": "තවම සම්බන්ධ කළ ලේඛන නැත.",
+  "wa.pick": "සම්බන්ධ කිරීමට ලේඛනයක් තෝරන්න",
+  "wa.attach": "ලේඛනය සම්බන්ධ කරන්න",
+  "wa.detach": "සම්බන්ධය ඉවත් කරන්න",
+  "wa.noVault": "ඔබේ සාක්ෂි සුරක්ෂිත ගබඩාව හිස්. මුලින් එහි ලේඛනයක් සුරකින්න.",
+  "wa.error": "එය සාර්ථක නොවීය. නැවත උත්සාහ කරන්න.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -1750,6 +1766,14 @@ export const ta: Partial<Messages> = {
   "reminders.checkOpen": "சலுகைச் சரிபார்ப்பைத் திற",
   "reminders.queue": "அமைப்புப் பிரதிநிதியாக உங்கள் முடிவுக்காக {count} ஆட்சேர்ப்புக் கோரிக்கை(கள்) காத்திருக்கின்றன.",
   "reminders.queueOpen": "முதலாளி பணியிடத்தைத் திற",
+  "wa.title": "இந்தப் பதிவுக்கான என் ஆவணங்கள்",
+  "wa.intro": "உங்கள் சான்று பெட்டகத்திலிருந்து ஆவணங்களை, எ.கா. சம்பளச் சீட்டை, இந்தப் பதிவுடன் இணைக்கவும். இணைப்பு உங்களுக்கு மட்டும் தனிப்பட்டது: முதலாளி, மதிப்பாய்வாளர் அல்லது உங்கள் கடவுச்சீட்டைப் பகிரும் யாருக்கும் காட்டப்படாது.",
+  "wa.none": "இணைக்கப்பட்ட ஆவணங்கள் இன்னும் இல்லை.",
+  "wa.pick": "இணைக்க ஒரு ஆவணத்தைத் தேர்ந்தெடு",
+  "wa.attach": "ஆவணத்தை இணை",
+  "wa.detach": "இணைப்பை நீக்கு",
+  "wa.noVault": "உங்கள் சான்று பெட்டகம் காலியாக உள்ளது. முதலில் அதில் ஆவணத்தைச் சேமிக்கவும்.",
+  "wa.error": "அது செயல்படவில்லை. மீண்டும் முயலவும்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -2328,4 +2352,12 @@ export const de: Partial<Messages> = {
   "reminders.checkOpen": "Angebotsprüfung öffnen",
   "reminders.queue": "{count} Recruiter-Anfrage(n) warten auf Ihre Entscheidung als Organisationsvertreter.",
   "reminders.queueOpen": "Arbeitgeberbereich öffnen",
+  "wa.title": "Meine Dokumente zu diesem Nachweis",
+  "wa.intro": "Verknüpfen Sie Dokumente aus Ihrem Nachweis-Tresor mit diesem Nachweis, zum Beispiel eine Gehaltsabrechnung. Die Verknüpfung ist privat: Sie wird weder dem Arbeitgeber noch einer Prüfperson noch Empfängern Ihres Passes angezeigt.",
+  "wa.none": "Noch keine Dokumente verknüpft.",
+  "wa.pick": "Dokument zum Verknüpfen wählen",
+  "wa.attach": "Dokument verknüpfen",
+  "wa.detach": "Verknüpfung lösen",
+  "wa.noVault": "Ihr Nachweis-Tresor ist leer. Speichern Sie dort zuerst ein Dokument.",
+  "wa.error": "Das hat nicht funktioniert. Erneut versuchen.",
 };

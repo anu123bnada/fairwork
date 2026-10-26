@@ -2,7 +2,7 @@ import { randomUUID, createHash } from 'node:crypto';
 
 // Real local stack: real Auth sessions, real PostgreSQL and the local disk store for file bytes.
 // Reports SKIPPED, never PASS, when the app was started without a vault store.
-export async function localVaultJourney({ worker, employer, outsider, request, record, origin }) {
+export async function localVaultJourney({ worker, employer, outsider, workId, request, record, origin }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
   const listed = await request(worker, '/api/v1/vault');
   if (!listed.storageConfigured) { console.log('SKIPPED: vault journey (the local app has no document store configured)'); return { skipped: true }; }
@@ -34,9 +34,17 @@ export async function localVaultJourney({ worker, employer, outsider, request, r
   await upload(worker, { bytes: pdf, type: 'image/png' }, [415]);
   await upload(worker, { bytes: Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(5 * 1024 * 1024)]) }, [413]);
   must((await request(worker, '/api/v1/vault')).items.length === 1, 'An executable, a mislabelled file and an oversized file are all refused and nothing is saved');
+  if (workId) {
+    await request(worker, '/api/v1/vault/attachments', { documentId: sent.data.documentId, workId });
+    must((await request(worker, `/api/v1/vault/attachments?workId=${workId}`)).items.some(item => item.documentId === sent.data.documentId), 'The worker links a vault document to their own work record');
+    must((await request(employer, `/api/v1/vault/attachments?workId=${workId}`)).items.length === 0, 'The employer representative on the record does not see the private link');
+    await request(employer, '/api/v1/vault/attachments', { documentId: sent.data.documentId, workId }, [404]);
+    await request(outsider, '/api/v1/vault/attachments', { documentId: sent.data.documentId, workId }, [404]);
+  }
   await request(outsider, '/api/v1/vault/delete', { documentId: sent.data.documentId }, [404]);
   const removed = await request(worker, '/api/v1/vault/delete', { documentId: sent.data.documentId });
   must(removed.fileRemoved === true, 'Only the owner can delete, and deletion removes the stored file');
+  if (workId) must((await request(worker, `/api/v1/vault/attachments?workId=${workId}`)).items.length === 0, 'Deleting a document removes its link to the work record');
   await request(worker, `/api/v1/vault/link?id=${sent.data.documentId}`, undefined, [404]);
   must((await fetch(link.url)).status === 404 && (await request(worker, '/api/v1/vault')).items.length === 0, 'After deletion the old signed link and the listing no longer reach the file');
   return { skipped: false };

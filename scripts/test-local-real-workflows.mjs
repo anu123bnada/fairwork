@@ -1,6 +1,7 @@
 // Real local Auth, mail and application APIs. No route fixtures or forged JWTs.
 // Creates synthetic accounts/records and retains their audit history. Never hosted.
 import { chromium, expect } from '@playwright/test';
+import { generateKeyPair, exportJWK } from 'jose';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
 import { existsSync } from 'node:fs';
@@ -29,6 +30,16 @@ const mail = 'http://127.0.0.1:55424';
 const results = [], actors = [];
 const evidence = `test-results/local-real-${Date.now()}`;
 mkdirSync(evidence, { recursive: true });
+// A loopback-only disk store for Evidence Vault bytes, owned by this run, so the vault journeys are exercised instead of skipped.
+// A throwaway credential signing key that exists only in this process and the app it starts; never written to disk or reused. It is not the production key.
+if (!process.env.ORYQEN_CREDENTIAL_SIGNING_KEY) {
+  const { publicKey, privateKey } = await generateKeyPair('EdDSA', { extractable: true });
+  const kid = `local-test-${Date.now()}`;
+  process.env.ORYQEN_CREDENTIAL_KEY_ID = kid;
+  process.env.ORYQEN_CREDENTIAL_SIGNING_KEY = JSON.stringify({ ...(await exportJWK(privateKey)), kid });
+  process.env.ORYQEN_CREDENTIAL_PUBLIC_KEYS = JSON.stringify({ [kid]: (({ kty, crv, x }) => ({ kty, crv, x }))(await exportJWK(publicKey)) });
+}
+process.env.ORYQEN_VAULT_LOCAL_DIR ??= `${process.cwd()}/${evidence}/vault-store`;
 const record = check => { results.push({ check, status: 'PASS' }); console.log(`PASS: ${check}`); };
 const must = (value, check) => { if (!value) throw new Error(check); record(check); };
 let browser, app, stage = 'startup';
@@ -344,7 +355,7 @@ try {
   const share = await localSharingJourney({worker,employer,outsider:approver,workId:ids.workId,request,record,origin,evidence,localSql});
   await localTrustChainJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record });
   await localCredentialJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin, evidence });
-  await localVaultJourney({ worker, employer, outsider: approver, request, record, origin });
+  await localVaultJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin });
   await localDeveloperJourney({ worker, employer, workId: ids.workId, request, record, origin });
   await localRecruiterJourney({ worker, employer, outsider: approver, companyId: company.id, companyName: organization.companyName, request, record });
   stage = 'privacy request tracking';

@@ -7,6 +7,7 @@ import { workflowReadSchema,type AgreementWorkflow } from "@/features/offer/work
 import { participantWorkId, participantAgreementBasisId } from "@/features/offer/participant-path";
 import { integrityCommandSchema } from "@/features/work/integrity-schema";
 import { EvidenceDocumentImport } from "./evidence-document-import";
+import { WorkAttachments } from "./work-attachments";
 import { useI18n } from "@/i18n/use-i18n";
 const STATE_KEY={draft:"work.state.draft",submitted:"work.state.submitted",verified:"work.state.verified",disputed:"work.state.disputed",rejected:"work.state.rejected",superseded:"work.state.superseded",withdrawn:"work.state.withdrawn",invalidated:"work.state.invalidated"} as const;
 function useStateLabel(){const {t}=useI18n();return (state:keyof typeof STATE_KEY)=>t(STATE_KEY[state]);}
@@ -73,6 +74,7 @@ export function WorkRecordScreen({actorId}:{actorId:string}) {
     {worker&&current.state==="draft"&&!editing&&<><label className="fw-work-check"><input type="checkbox" checked={share} onChange={e=>setShare(e.target.checked)}/> {t("work.shareCheck")}</label><button className="fw-primary" disabled={busy||!share} onClick={()=>void send("submit")}>{t("work.submit")}</button></>}
     {!worker&&current.state==="submitted"&&<><label className="fw-field">{t("work.reviewReason")}<textarea value={reason} onChange={e=>setReason(e.target.value)} maxLength={2000}/></label>{(["verified","disputed","rejected"] as const).map(outcome=><button className={outcome==="verified"?"fw-primary":"fw-secondary"} disabled={busy||!reason.trim()} key={outcome} onClick={()=>void send("decide",outcome)}>{outcome==="verified"?t("work.verifyRecord"):outcome==="disputed"?t("work.disputeRecord"):t("work.rejectRecord")}</button>)}</>}
    </>}
+   {worker&&<WorkAttachments workId={record.workId}/>}
    <label className="fw-field">{t("work.participantLink")}<input readOnly value={`/app/work-record?workId=${record.workId}`} onFocus={e=>e.target.select()}/></label><p>{t("work.linkNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void load(record.workId)}>{t("work.reload")}</button>
    <details><summary>{t("work.history",{count:record.versions.length})}</summary>{record.versions.map(v=><section key={v.version}><h4>{t("work.versionLine",{version:v.version,state:label(v.state)})}</h4><WorkDetails version={v}/></section>)}</details>
    {!!record.integrityEvents?.length&&<section aria-label={t("work.integrityAria")}><h4>{t("work.integrityTitle")}</h4>{record.integrityEvents.map(event=><p key={event.id}>Version {event.version}{event.nextVersion?` → ${event.nextVersion}`:""} · {event.operation} · {event.reason} · {new Date(event.recordedAt).toLocaleString()}</p>)}</section>}

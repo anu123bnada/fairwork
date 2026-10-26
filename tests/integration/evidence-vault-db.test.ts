@@ -189,6 +189,7 @@ beforeAll(async () => {
     if(existsSync("supabase/migrations/202610140003_work_integrity_passport.sql")) await runMigration(await readFile("supabase/migrations/202610140003_work_integrity_passport.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/202610150001_work_case_review.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261027100000_evidence_vault.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261028160000_vault_attachments.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -286,5 +287,57 @@ describe("evidence vault metadata", () => {
     await expect(run("delete from private.vault_events where document_id=$1", [request.documentId], claims(WORKER), "fw_user_exec")).rejects.toThrow();
     await expect(run("insert into private.vault_documents(id,owner_id,title,category,file_name,media_type,byte_size,sha256,storage_key,idempotency_key) values($1,$2,'x','other','x.pdf','application/pdf',1,$3,$4,gen_random_uuid())", [crypto.randomUUID(), OTHER, SHA, `${OTHER}/x`], claims(WORKER), "fw_user_exec")).rejects.toThrow();
     await rpc("vault_delete", { documentId: request.documentId });
+  });
+});
+
+describe("evidence vault attachments to work records", () => {
+  const WORK = crypto.randomUUID(), THEIRS = crypto.randomUUID();
+  // The agreement chain behind a work record is covered by its own tests; foreign keys are bypassed here only to place two rows.
+  beforeAll(async () => {
+    await db.exec("reset role");
+    await db.exec("set session_replication_role = replica");
+    for (const [id, worker] of [[WORK, WORKER], [THEIRS, OTHER]] as const) {
+      await db.query("insert into private.work_records(id,agreement_id,worker_id,company_id,representative_id,current_version) values($1,$2,$3,$4,$5,1)", [id, crypto.randomUUID(), worker, COMPANY, APPROVER]);
+    }
+    await db.exec("set session_replication_role = origin");
+  });
+  const upload = async (owner = WORKER) => { const request = doc({}, owner); await rpc("vault_register", request, owner); return request.documentId as string; };
+
+  it("lets the worker attach and detach their own document, idempotently, and lists only their links", async () => {
+    await clearQuotas();
+    const id = await upload();
+    expect(await rpc("vault_attach", { documentId: id, workId: WORK })).toEqual({ documentId: id, workId: WORK, replayed: false });
+    expect(await rpc("vault_attach", { documentId: id, workId: WORK })).toMatchObject({ replayed: true });
+    const listed = await rpc("vault_attachments", { workId: WORK });
+    expect((listed.items as Record<string, unknown>[]).map(item => item.documentId)).toEqual([id]);
+    expect(await rpc("vault_attachments", { workId: WORK }, OTHER)).toMatchObject({ items: [] });
+    expect(await rpc("vault_detach", { documentId: id, workId: WORK })).toEqual({ documentId: id, workId: WORK });
+    await expect(rpc("vault_detach", { documentId: id, workId: WORK })).rejects.toThrow("NOT_FOUND");
+    await rpc("vault_delete", { documentId: id });
+  });
+
+  it("refuses someone else's document or record with the same answer as a missing one", async () => {
+    await clearQuotas();
+    const mine = await upload(), theirs = await upload(OTHER);
+    await expect(rpc("vault_attach", { documentId: theirs, workId: WORK })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_attach", { documentId: mine, workId: THEIRS })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_attach", { documentId: mine, workId: crypto.randomUUID() })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_attach", { documentId: mine, workId: WORK, extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("vault_attach", { documentId: mine, workId: WORK }, null)).rejects.toThrow();
+    await rpc("vault_delete", { documentId: mine }); await rpc("vault_delete", { documentId: theirs }, OTHER);
+  });
+
+  it("removes links when the document is deleted and caps links per record at ten", async () => {
+    await clearQuotas();
+    const first = await upload();
+    await rpc("vault_attach", { documentId: first, workId: WORK });
+    await rpc("vault_delete", { documentId: first });
+    expect((await rpc("vault_attachments", { workId: WORK })).items).toEqual([]);
+    const ids: string[] = [];
+    for (let index = 0; index < 11; index += 1) { await clearQuotas(); ids.push(await upload()); }
+    for (const id of ids.slice(0, 10)) { await clearQuotas(); await rpc("vault_attach", { documentId: id, workId: WORK }); }
+    await clearQuotas();
+    await expect(rpc("vault_attach", { documentId: ids[10]!, workId: WORK })).rejects.toThrow("RATE_LIMITED");
+    for (const id of ids) { await clearQuotas(); await rpc("vault_delete", { documentId: id }); }
   });
 });

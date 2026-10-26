@@ -245,3 +245,7 @@ the new endpoint is mocked.
 **PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6. Verdict: NOT READY — owner input required.**
 PASS: typecheck, lint, unit-integration (309 s), dependency audit, brand assets, secrets scan, Electron policy, production build, browser journeys (868 s), real-PostgreSQL database security, Android toolchain, Android debug-signed preview APK (not a release), Windows unsigned preview installer (not a release), artifact integrity (9 hashed).
 BLOCKED (all owner decisions, none a defect): production configuration, AI policy/key, credential signing key, https download hosts, Android release approvals, Windows code-signing certificate. Report: `release-results/release-verify.md`.
+
+### 28 Oct 2026 — real-stack harness with vault, credential and developer journeys enabled
+
+`test-local-real-workflows.mjs --manage-app`: **206 PASS, 0 FAIL, 0 SKIPPED** (exit 0). The harness now starts the app with a loopback-only disk store for vault bytes and a throwaway, in-memory credential signing key (never written to disk, not the production key), so the vault, credential and developer-API journeys run instead of being skipped. Includes the new vault-attachment checks (employer cannot see or create links; deleting a document removes its link). Real PostgreSQL: `evidence-vault-db` (9) and `recruiter-verification-db` (9) via `scripts/test-feature-postgres.mjs <test files>`; PGlite also passes.

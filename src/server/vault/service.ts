@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { AppError, mapDatabaseError } from "@/lib/errors";
-import { checkVaultFile, vaultDeleted, vaultFetched, vaultListResponse, vaultRegistered, vaultUploadFields } from "@/features/vault/schema";
+import { checkVaultFile, vaultAttached, vaultAttachments, vaultDeleted, vaultFetched, vaultListResponse, vaultRegistered, vaultUploadFields } from "@/features/vault/schema";
 import type { z } from "zod";
 import type { BlobStore } from "./store";
 
@@ -54,3 +54,8 @@ export async function deleteDocument(documentId: string, deps: VaultDeps) {
   if (deps.store) { try { await deps.store.remove(removed.storageKey); fileRemoved = true; } catch { fileRemoved = false; } }
   return { documentId: removed.documentId, fileRemoved };
 }
+
+// A private link between the owner's document and the owner's own work record. Nothing is shared by it.
+export const attachDocument = (documentId: string, workId: string, deps: VaultDeps) => call(deps, "vault_attach", { documentId, workId }, vaultAttached);
+export const detachDocument = (documentId: string, workId: string, deps: VaultDeps) => call(deps, "vault_detach", { documentId, workId }, vaultAttached);
+export const listAttachments = (workId: string, deps: VaultDeps) => call(deps, "vault_attachments", { workId }, vaultAttachments);
