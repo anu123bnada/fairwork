@@ -35,6 +35,8 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - Latest full gate: PASS 14 / FAIL 0 / BLOCKED 6 (F-26 fixed). Audit of all 22 modules, external connections and the owner checklist: `ORYQEN_PRODUCTION_READINESS_AUDIT.md`. Next engineering task: translate sign-in/registration, import tools and rule-analysis panels (then shorten the coverage note), then agreement expiry reminders.
 
+- Gate on `c39c576`: PASS 14 / FAIL 0 / BLOCKED 6. Route matrix 74/74. Accessibility (axe) 30/30. Notification preferences added. Run `git checkout next-env.d.ts` after builds (Next rewrites it).
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +

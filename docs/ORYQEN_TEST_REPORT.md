@@ -253,3 +253,8 @@ BLOCKED (all owner decisions, none a defect): production configuration, AI polic
 ### 28 Oct 2026 — full release gate after F-26 fix (`npm run release:verify:full`, exit 0)
 
 **PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6. Verdict: NOT READY — owner input required.** Browser journeys 239/239 passed (773 s), unit/integration (352 s), real-PostgreSQL database security, production build, Android debug APK and Windows unsigned installer built. The previous run's only failure (F-26, localization coverage tripwire) is resolved. The six BLOCKED gates are unchanged owner inputs. Readiness analysis: `ORYQEN_PRODUCTION_READINESS_AUDIT.md`.
+
+### 28 Oct 2026 — full release gate on `c39c576` and the route matrix
+
+**Gate (`npm run release:verify:full`, exit 0): PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6 — NOT READY: owner input required.** Browser journeys passed (1005 s) including the new accessibility checks (30) and notification preferences; unit/integration 512 s; real-PostgreSQL security 53 s. BLOCKED gates unchanged: production configuration, AI policy, credential key, download hosts, Android release, Windows signing.
+**Route matrix (`tests/e2e/route-matrix.spec.ts`): 74 passed.** 13 public routes and 16 signed-in `/app` screens at 390 px and 1366 px: renders, no page errors or hydration messages, no horizontal overflow; signed-out visitors see no private screen; admin and operator routes fail closed.
