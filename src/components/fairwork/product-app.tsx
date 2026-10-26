@@ -813,45 +813,47 @@ function AddOfferScreen() {
 }
 
 function AnalyzingScreen() {
+  const { t } = useI18n();
   const { offer } = useProduct();
   const terms = Object.fromEntries(Object.entries(offer?.snapshot ?? {}).map(([key, value]) => [key, String(value)]));
   const termRows = Object.entries(terms).slice(0, 6);
   return (
     <section aria-live="polite">
       <div className="fw-analysis-mark" aria-hidden="true"><span>···</span></div>
-      <h2 className="fw-analysis-title">Checking {termRows.length || 0} offer details</h2>
-      <p className="fw-page-subtitle fw-analysis-copy">Checking the terms you entered. This is a deterministic completeness check, not AI analysis.</p>
+      <h2 className="fw-analysis-title">{t("check.analyzingTitle", { count: termRows.length || 0 })}</h2>
+      <p className="fw-page-subtitle fw-analysis-copy">{t("check.analyzingCopy")}</p>
       <div className="fw-analysis-list">
         {termRows.map(([field, value], index) => {
           const unresolved = offer?.unresolved.some((question) => question.field === field);
           return <div className="fw-analysis-row" key={field}>
             <span className={`fw-analysis-dot${unresolved ? " warning" : ""}`} />
-            <span><small>{labelFor(field)}</small><strong>{String(value)}</strong></span>
-            <span className={`fw-analysis-state${unresolved ? " warning" : ""}`}>{unresolved ? "Clarify" : "Included"}</span>
-            <span className="fw-screen-reader">Detail {index + 1}</span>
+            <span><small>{labelFor(field, t)}</small><strong>{String(value)}</strong></span>
+            <span className={`fw-analysis-state${unresolved ? " warning" : ""}`}>{unresolved ? t("check.clarify") : t("check.included")}</span>
+            <span className="fw-screen-reader">{t("check.detailN", { n: index + 1 })}</span>
           </div>;
         })}
         {offer?.unresolved.filter((question) => !(question.field in terms)).map((question) => <div className="fw-analysis-row" key={question.id}>
-          <span className="fw-analysis-dot warning" /><span><small>{labelFor(question.field)}</small><strong>Not stated</strong></span><span className="fw-analysis-state warning">Clarify</span>
+          <span className="fw-analysis-dot warning" /><span><small>{labelFor(question.field, t)}</small><strong>{t("check.notStated")}</strong></span><span className="fw-analysis-state warning">{t("check.clarify")}</span>
         </div>)}
-        {!termRows.length && <p className="fw-disclaimer">No submitted offer details are available in this session.</p>}
+        {!termRows.length && <p className="fw-disclaimer">{t("check.noDetails")}</p>}
       </div>
-      <div className="fw-analysis-meta">Revision {offer?.version ?? "—"} · Manual check</div>
-      <div className="fw-fixed-action"><Link className="fw-primary" href={routeFor("check")}>See ORYQEN Check <Icon name="arrow" size={18} /></Link></div>
+      <div className="fw-analysis-meta">{t("check.revisionMeta", { version: offer?.version ?? "—" })}</div>
+      <div className="fw-fixed-action"><Link className="fw-primary" href={routeFor("check")}>{t("check.seeCheck")} <Icon name="arrow" size={18} /></Link></div>
     </section>
   );
 }
 
 function CheckScreen() {
+  const { t } = useI18n();
   const { offer } = useProduct();
   const terms = Object.fromEntries(Object.entries(offer?.snapshot ?? {}).map(([key, value]) => [key, String(value)]));
   if (!offer) {
     return <>
       <section className="fw-card fw-check-empty">
         <span className="fw-check-ring"><Icon name="shield" size={27} /></span>
-        <strong>No offer revision is loaded.</strong>
-        <p>Submit an offer first. This screen does not invent a score or assessment.</p>
-        <Link href={routeFor("add-offer")} className="fw-primary">Add an offer</Link>
+        <strong>{t("check.noOffer")}</strong>
+        <p>{t("check.noOfferBody")}</p>
+        <Link href={routeFor("add-offer")} className="fw-primary">{t("check.addOffer")}</Link>
       </section>
     </>;
   }
@@ -865,35 +867,37 @@ function CheckScreen() {
     <>
       <section className="fw-card fw-check-summary">
         <span className="fw-check-ring fw-check-count">{statedCount}<small>/{requiredFields.length}</small></span>
-        <span><strong>{missingCount ? "Some details need clarification" : "Required terms are stated"}</strong><br /><span className="fw-offer-employer">{statedCount} of {requiredFields.length} required details stated · {missingCount} need clarification</span><span className="fw-check-basis">Current offer revision only</span></span>
+        <span><strong>{missingCount ? t("check.someClarify") : t("check.requiredStated")}</strong><br /><span className="fw-offer-employer">{t("check.statedCount", { stated: statedCount, total: requiredFields.length, missing: missingCount })}</span><span className="fw-check-basis">{t("check.basis")}</span></span>
       </section>
-      <div className="fw-check-details" aria-label="Offer field completeness">
+      <div className="fw-check-details" aria-label={t("check.completenessAria")}>
         {entries.map(([key, value]) => (
           <div className="fw-check-row" key={key}>
-            <span className="fw-check-label">{labelFor(key)}</span>
-            <span className={`fw-check-status${missingFields.has(key) ? " warning" : ""}`}>{missingFields.has(key) ? "Needs clarification" : "Stated"}</span>
+            <span className="fw-check-label">{labelFor(key, t)}</span>
+            <span className={`fw-check-status${missingFields.has(key) ? " warning" : ""}`}>{missingFields.has(key) ? t("check.needsClarification") : t("check.stated")}</span>
             <div className="bar"><span className={missingFields.has(key) ? "warning" : ""} style={{ width: missingFields.has(key) ? "58%" : "100%" }} /></div>
             <span className="fw-check-value">{String(value)}</span>
           </div>
         ))}
       </div>
+      {/* The rules read English field names from this text, so it is deliberately not translated. */}
       <RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
       <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       {missing.length ? (
-        <section aria-label="Needs clarification">
-          <p className="fw-check-explainer">We found a few details you may want to clarify.</p>
-          {missing.map((question) => <Link href={routeFor("questions")} key={question.id} className="fw-question-card fw-check-question fw-question-link"><strong>{labelFor(question.field)}</strong><p>{question.question}</p><span className="fw-question-badge">Needs clarification</span></Link>)}
+        <section aria-label={t("check.needsClarification")}>
+          <p className="fw-check-explainer">{t("check.foundFew")}</p>
+          {missing.map((question) => <Link href={routeFor("questions")} key={question.id} className="fw-question-card fw-check-question fw-question-link"><strong>{labelFor(question.field, t)}</strong><p>{question.question}</p><span className="fw-question-badge">{t("check.needsClarification")}</span></Link>)}
         </section>
-      ) : <p className="fw-success">No required missing-field questions were returned for this revision.</p>}
+      ) : <p className="fw-success">{t("check.noQuestions")}</p>}
       {offer?.changes.length ? (
-        <section className="fw-list-card"><strong>Changes from the previous offer</strong>{offer.changes.map((change) => <div className="fw-list-row" key={change.field}><span>{labelFor(change.field)}</span><strong>{change.previous ?? "—"} → {change.current ?? "—"}</strong></div>)}</section>
+        <section className="fw-list-card"><strong>{t("check.changes")}</strong>{offer.changes.map((change) => <div className="fw-list-row" key={change.field}><span>{labelFor(change.field, t)}</span><strong>{change.previous ?? "—"} → {change.current ?? "—"}</strong></div>)}</section>
       ) : null}
-      <div className="fw-fixed-action"><Link className="fw-primary" href={routeFor(missing.length ? "questions" : "agreement")}>{missing.length ? "Questions to ask" : "Review agreement"} <Icon name="arrow" size={18} /></Link></div>
+      <div className="fw-fixed-action"><Link className="fw-primary" href={routeFor(missing.length ? "questions" : "agreement")}>{missing.length ? t("check.questionsToAsk") : t("check.reviewAgreement")} <Icon name="arrow" size={18} /></Link></div>
     </>
   );
 }
 
 function QuestionsScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { offer, answered, loadAgreement, savedAnswers, profile } = useProduct();
   const [values, setValues] = useState<Record<string, string>>({});
@@ -906,9 +910,9 @@ function QuestionsScreen() {
   async function copyQuestions() {
     try {
       await navigator.clipboard.writeText(questions.map((question) => question.question).join("\n"));
-      setCopyStatus("Questions copied.");
+      setCopyStatus(t("ask.copied"));
     } catch {
-      setCopyStatus("Could not copy. Select the question text to copy it manually.");
+      setCopyStatus(t("ask.copyFailed"));
     }
   }
 
@@ -941,19 +945,19 @@ function QuestionsScreen() {
 
   return (
     <>
-      <h2 className="fw-page-title">Ask before you accept</h2>
-      <p className="fw-page-subtitle">Questions are attached to offer revision {offer?.version ?? "—"}.</p>
-      {!questions.length && <p className="fw-notice">There are no required missing-field questions for this revision. Custom question creation is not part of the current database API.</p>}
+      <h2 className="fw-page-title">{t("ask.title")}</h2>
+      <p className="fw-page-subtitle">{t("ask.subtitle", { version: offer?.version ?? "—" })}</p>
+      {!questions.length && <p className="fw-notice">{t("ask.none")}</p>}
       {questions.map((question) => (
         <article className="fw-question-card" key={question.id}>
-          <span className="fw-question-category">{labelFor(question.field).toUpperCase()}</span>
+          <span className="fw-question-category">{labelFor(question.field, t).toUpperCase()}</span>
           <h3 style={{ margin: "5px 0", fontSize: 14 }}>{question.question}</h3>
           {answered.has(question.id) ? (
-            <><p className="fw-success">Answer saved for this question and offer revision.</p>
+            <><p className="fw-success">{t("ask.saved")}</p>
               <p>{savedAnswers.find((answer) => answer.questionId === question.id)?.answer}</p></>
           ) : (
             <>
-              <label className="fw-screen-reader" htmlFor={`answer-${question.id}`}>Your answer to {question.question}</label>
+              <label className="fw-screen-reader" htmlFor={`answer-${question.id}`}>{t("ask.answerLabel", { question: question.question })}</label>
               <textarea
                 id={`answer-${question.id}`}
                 className="fw-field"
@@ -961,21 +965,21 @@ function QuestionsScreen() {
                 value={values[question.id] ?? ""}
                 maxLength={2000}
                 onChange={(event) => setValues({ ...values, [question.id]: event.target.value })}
-                placeholder="Enter your clarification note"
+                placeholder={t("ask.placeholder")}
               />
-              <button type="button" className="fw-secondary" disabled={busy || !values[question.id]?.trim()} onClick={() => void save(question)}>Save answer</button>
+              <button type="button" className="fw-secondary" disabled={busy || !values[question.id]?.trim()} onClick={() => void save(question)}>{t("ask.save")}</button>
             </>
           )}
         </article>
       ))}
-      <p className="fw-notice">Answers are immutable and do not change offer terms. Each answer is recorded under the signed-in account; a worker-entered note is not employer confirmation.</p>
+      <p className="fw-notice">{t("ask.immutable")}</p>
       <ErrorMessage error={error} />
       {copyStatus && <p role="status" className="fw-notice">{copyStatus}</p>}
       <div className="fw-fixed-action fw-question-actions">
-        {questions.length > 0 && <button type="button" className="fw-secondary" onClick={() => void copyQuestions()}>Copy questions</button>}
-        <button type="button" className="fw-dark-button" disabled={!offer || questions.some((question) => question.required && !answered.has(question.id))} onClick={() => router.push(routeFor("agreement"))}>Continue to agreement <Icon name="arrow" size={18} /></button>
+        {questions.length > 0 && <button type="button" className="fw-secondary" onClick={() => void copyQuestions()}>{t("ask.copy")}</button>}
+        <button type="button" className="fw-dark-button" disabled={!offer || questions.some((question) => question.required && !answered.has(question.id))} onClick={() => router.push(routeFor("agreement"))}>{t("ask.continue")} <Icon name="arrow" size={18} /></button>
       </div>
-      <span className="fw-screen-reader">Signed in account {profile?.id}</span>
+      <span className="fw-screen-reader">{t("ask.signedIn", { id: profile?.id ?? "" })}</span>
     </>
   );
 }
@@ -1299,20 +1303,18 @@ function ShareSheet() {
   );
 }
 
-function labelFor(field: string) {
-  const labels: Record<string, string> = {
-    salary: "Pay",
-    currency: "Currency",
-    startDate: "Start date",
-    hoursPerWeek: "Working hours",
-    responsibilities: "Role details",
-    role: "Role",
-    location: "Location",
-    overtime: "Overtime",
-    paymentDate: "Payment date",
-    safety: "Safety",
-  };
-  return labels[field] ?? field.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase());
+const FIELD_KEY: Record<string, MessageKey> = {
+  salary: "field.salary", currency: "field.currency", startDate: "field.startDate", hoursPerWeek: "field.hoursPerWeek", responsibilities: "field.responsibilities",
+  role: "field.role", location: "field.location", overtime: "field.overtime", paymentDate: "field.paymentDate", safety: "field.safety",
+  benefits: "add.o.benefits", employmentType: "add.o.employmentType", probation: "add.o.probation", notice: "add.o.notice", deductions: "add.o.deductions",
+  contractConditions: "add.o.contractConditions", payPeriod: "add.o.payPeriod", taxBasis: "add.o.taxBasis", schedule: "add.o.schedule", leave: "add.o.leave",
+  contractDuration: "add.o.contractDuration", trainingDeposit: "add.o.trainingDeposit", documentRetention: "add.o.documentRetention", employerName: "add.o.employerName",
+};
+const ENGLISH_LABELS: Record<string, string> = { salary: "Pay", currency: "Currency", startDate: "Start date", hoursPerWeek: "Working hours", responsibilities: "Role details", role: "Role", location: "Location", overtime: "Overtime", paymentDate: "Payment date", safety: "Safety" };
+function labelFor(field: string, t?: (key: MessageKey) => string) {
+  const key = FIELD_KEY[field];
+  if (t && key) return t(key);
+  return ENGLISH_LABELS[field] ?? field.replace(/([A-Z])/g, " $1").replace(/^./, (letter) => letter.toUpperCase());
 }
 
 export function IntroScreen({ screen, initialSlide = 0 }: { screen: "splash" | "language" | "onboarding" | "welcome"; initialSlide?: number }) {

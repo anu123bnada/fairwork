@@ -61,3 +61,5 @@ The saved-offers panel, the company research panel (including registry field lab
 ## Update 27 Oct 2026: work record screen, pay comparison, reminders
 
 The work record screen (summary, list, empty state, details, review, withdrawal, retraction and the entry form) is translated; `tests/e2e/localized-work-record.spec.ts` checks the empty state, form and record details in Sinhala, Tamil and German at phone width, and the Sinhala screenshot was reviewed. The English note about evidence storage was corrected to say that Evidence Vault documents are separate and not yet attached to records. About 220 strings per language are drafts awaiting native review.
+
+Offer check and questions screens (27 Oct 2026): translated, with browser tests in si, ta and de at phone width. Field names inside the text handed to the local rules stay English on purpose: the rules read English field names, so translating that text would silently disable them. The question sentences returned by the server are English.
