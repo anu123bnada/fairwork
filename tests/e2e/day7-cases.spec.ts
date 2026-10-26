@@ -1,4 +1,5 @@
 import { test,expect,type BrowserContext } from "@playwright/test";
+import { translate } from "../../src/i18n";
 import { mkdirSync } from "node:fs";
 import type { CaseView } from "../../src/features/cases/schema";
 const worker="40000000-0000-4000-8000-000000000012",reviewer="40000000-0000-4000-8000-000000000016",operator="40000000-0000-4000-8000-000000000017",id="40000000-0000-4000-8000-000000000021",rep="40000000-0000-4000-8000-000000000013";
@@ -34,3 +35,15 @@ test("reviewer can decline without evidence disclosure",async({context,page})=>{
 test("offline and expired reads clear private evidence and offer recovery",async({context,page})=>{await session(context,model());await page.goto(`/app/cases?caseId=${id}`);await expect(page.getByText("Private maintenance evidence",{exact:true})).toBeVisible();await page.route("**/api/v1/work-cases**",route=>route.abort());await page.getByRole("button",{name:"Reload cases"}).click();await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();await expect(page.getByText("Private maintenance evidence",{exact:true})).toHaveCount(0);await page.route("**/api/v1/work-cases**",route=>route.fulfill({status:401,json:{error:{code:"AUTH_REQUIRED"}}}));await page.getByRole("button",{name:"Reload cases"}).click();await expect(page.getByRole("link",{name:"Sign in to reopen your case link"})).toBeVisible();});
 test("case screens retain mobile layout and native browser back navigation",async({context,page})=>{await session(context,model());mkdirSync("test-results/day7-visual",{recursive:true});for(const width of [390,378,320]){await page.setViewportSize({width,height:width===378?744:844});await page.goto(`/app/cases?caseId=${id}`);await expect(page.getByRole("region",{name:"Case details"})).toBeVisible();await page.screenshot({path:`test-results/day7-visual/${width}-case.png`,fullPage:true,animations:"disabled"});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);}await page.goto("/app/settings");await page.getByRole("link",{name:"Case review",exact:true}).click();await expect(page.getByRole("heading",{name:"Review a concern"})).toBeVisible();await page.goBack();await expect(page).toHaveURL(/\/app\/settings$/);});
 test("stale decisions fail without claiming success or keeping private data",async({context,page})=>{const state=model();state.assignment={id,reviewerId:reviewer,expiresAt:"2026-10-20T01:00:00Z",acceptedAt:time,revokedAt:null};await session(context,state,reviewer);await page.goto(`/app/cases?caseId=${id}`);await page.getByLabel("Decision rationale").fill("Review completed");await page.route("**/api/v1/work-cases",route=>route.fulfill({status:409,json:{error:{code:"VERSION_CONFLICT"}}}));await page.getByRole("button",{name:"Record final decision"}).click();await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();await expect(page.getByRole("region",{name:"Decision receipt"})).toHaveCount(0);await expect(page.getByText("Private maintenance evidence",{exact:true})).toHaveCount(0);});
+
+for (const locale of ["si","ta","de"] as const) {
+ test(`the case review screen is translated in ${locale}`,async({context,page})=>{
+  await session(context,model());
+  await page.goto("/app/settings");await page.getByLabel("Language").selectOption(locale);
+  await page.goto(`/app/cases?caseId=${id}`);
+  await expect(page.getByRole("heading",{name:translate(locale,"cs.title")})).toBeVisible();
+  await expect(page.getByText(translate(locale,"cs.intro"))).toBeVisible();
+  await expect(page.getByRole("region",{name:translate(locale,"cs.detailsAria")})).toContainText(translate(locale,"cs.statusOpen"));
+  await expect(page.locator("body")).not.toContainText(/\bcs\.[a-zA-Z.]+\b/);
+ });
+}
