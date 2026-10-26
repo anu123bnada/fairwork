@@ -16,6 +16,7 @@ import { localDeactivationJourney } from './local-deactivation-journey.mjs';
 import { localOfferHistoryJourney } from './local-offer-history-journey.mjs';
 import { localCredentialJourney, localTrustChainJourney } from './local-credential-journey.mjs';
 import { localVaultJourney } from './local-vault-journey.mjs';
+import { localDeveloperJourney } from './local-developer-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
@@ -335,6 +336,7 @@ try {
   await localTrustChainJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record });
   await localCredentialJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin, evidence });
   await localVaultJourney({ worker, employer, outsider: approver, request, record, origin });
+  await localDeveloperJourney({ worker, employer, workId: ids.workId, request, record, origin });
   stage = 'privacy request tracking';
   const privacyRequestId = await localPrivacyJourney({worker, employer, approver, operator, localSql, record, evidence, origin});
   if (app) {

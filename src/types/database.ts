@@ -38,6 +38,10 @@ export type Database = {
       vault_list: { Args: { request: Json }; Returns: Json };
       vault_fetch: { Args: { request: Json }; Returns: Json };
       vault_delete: { Args: { request: Json }; Returns: Json };
+      developer_key_create: { Args: { request: Json }; Returns: Json };
+      developer_key_list: { Args: { request: Json }; Returns: Json };
+      developer_key_revoke: { Args: { request: Json }; Returns: Json };
+      developer_key_check: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

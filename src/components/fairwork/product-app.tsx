@@ -30,6 +30,7 @@ import { participantOfferId, participantSignInPath } from "@/features/offer/part
 import { EmploymentHistory } from "./employment-history";
 import { EvidenceVault } from "./evidence-vault";
 import { PlanAssignment, PlanPanel } from "./plan-panel";
+import { DeveloperAccess } from "./developer-access";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -1246,6 +1247,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <PlanPanel />
       <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
       <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
+      <details className="fw-list-card"><summary>Developer access</summary><DeveloperAccess /></details>
       {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}
       <Link className="fw-secondary" href="/forgot-password">Reset password securely</Link>
       {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>Assign plans (operator)</summary><PlanAssignment /></details>}
