@@ -9,6 +9,7 @@ import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { offerDecision, offerLifecycleResult } from "@/features/offer/lifecycle-schema";
 import { OrganizationRequests } from "./organization-requests";
 import { CompanyProfiles } from "./company-profiles";
+import { RecruiterEmployerPanel } from "./recruiter-employer";
 import { OfferComparison } from "./offer-comparison";
 
 export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPLOYER" }) {
@@ -79,6 +80,7 @@ export function EmployerWorkspace() {
     <OrganizationRequests />
     <CompanyProfiles />
     <CompanyResearch />
+    <RecruiterEmployerPanel />
     <TeamRoster />
     <Link className="fw-secondary" href="/app/opportunities">Manage opportunity listings</Link>
     <SavedOffers context="EMPLOYER" />

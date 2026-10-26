@@ -3,7 +3,7 @@
 Nothing in this document has been executed against any hosted system. Local evidence only.
 No push, deployment or hosted-database change has been made. Approval is requested, not assumed.
 
-## 1. The twelve pending migrations
+## 1. The fourteen pending migrations
 
 Apply in this order. Each runs in one transaction and starts with a guard that requires the
 `postgres` identity. All seven were applied cleanly, in order, to the **real local Supabase
@@ -26,8 +26,10 @@ in the roster migration), so real-Postgres application is the meaningful check.
 | 10 | `20261027100000_evidence_vault` | New tables `vault_documents` (owner-only RLS, deletable by owner) and append-only `vault_events`; RPCs `vault_register/list/fetch/delete`. No storage objects are created by the migration: the private bucket and the two server secrets (`ORYQEN_VAULT_STORAGE_URL`, `ORYQEN_VAULT_STORAGE_SERVICE_KEY`) are separate owner steps | No | None (new empty tables) |
 | 11 | `20261027140000_developer_keys` | New tables `developer_keys`, `developer_key_events` (append-only) and `developer_key_usage`; RPCs `developer_key_create/list/revoke/check`; helper `private.developer_key_check` owned by the policy role. **Security-relevant grant, please review:** `api.developer_key_check` is executable by anonymous callers (an integrator's server has no session). It returns only valid/invalid plus scopes for a matching key and is limited to 60 calls a minute per key; a test pins that anonymous callers can execute exactly `credential_status` and `developer_key_check` | No | None (new empty tables) |
 | 12 | `20261027160000_developer_webhooks` | New tables `developer_webhooks` (owner-only; stores each endpoint's signing secret so deliveries can be signed) and `developer_webhook_deliveries`; RPCs `webhook_create/list/targets/delete/log`, all authenticated-only | No | None (new empty tables) |
+| 13 | `20261028100000_ai_gateway_providers` | Drops two check constraints on `private.ai_transmission_authorizations` (provider list, and the one-model-per-provider pin) and re-creates them with the self-hosted provider and any safe model identifier; re-defines `api.authorize_ai_transmission_v1` accordingly. Consent, budgets and the append-only receipt are unchanged | Yes: one table's constraints and one function (existing receipts remain valid) | None to data. Without it, any model other than the pinned one is refused by the database even after written approval |
+| 14 | `20261028140000_recruiter_verification` | New tables `company_domains`, `company_domain_events`, `recruiter_verifications`, `recruiter_decisions`, `recruiter_events` (forced RLS); helpers owned by the policy role (needs temporary `CREATE` on schema `private`, as in earlier migrations); RPCs `recruiter_company_search/create/list/read/delete/queue/decide` and `company_domain_claim/list/remove`, authenticated-only. Deletes occur only inside user-triggered RPCs (a worker erasing their own check) and expiry purge after 90 days | No | None (new empty tables) |
 
-(You asked about four migrations. Twelve are pending: the original four, plus the compatibility fix (5), saved
+(You asked about four migrations. Fourteen are pending: the original four, plus the compatibility fix (5), saved
 analysis (6), team roster (7) and the credential register (8). Apply them together, in order.)
 
 A scan for `DROP TABLE/COLUMN/SCHEMA`, `TRUNCATE`, `ALTER ... DROP/RENAME` and `UPDATE ... SET`

@@ -17,6 +17,7 @@ import { localOfferHistoryJourney } from './local-offer-history-journey.mjs';
 import { localCredentialJourney, localTrustChainJourney } from './local-credential-journey.mjs';
 import { localVaultJourney } from './local-vault-journey.mjs';
 import { localDeveloperJourney } from './local-developer-journey.mjs';
+import { localRecruiterJourney } from './local-recruiter-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
@@ -231,7 +232,7 @@ try {
   // authorized employer first creates their participant offer through the API.
   // This legitimate relationship makes the company selectable for a private review.
   stage = 'agreement work record passport';
-  const ids = await twoAccountFlow({ worker, employer, companyId: company.id, request, record });
+  const ids = await twoAccountFlow({ worker, employer, companyId: company.id, companyName: organization.companyName, request, record });
   stage = 'worker private offer';
   const workerPage = worker.context.pages()[0];
   await workerPage.goto(`${origin}/app/add-offer`);
@@ -345,6 +346,7 @@ try {
   await localCredentialJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin, evidence });
   await localVaultJourney({ worker, employer, outsider: approver, request, record, origin });
   await localDeveloperJourney({ worker, employer, workId: ids.workId, request, record, origin });
+  await localRecruiterJourney({ worker, employer, outsider: approver, companyId: company.id, companyName: organization.companyName, request, record });
   stage = 'privacy request tracking';
   const privacyRequestId = await localPrivacyJourney({worker, employer, approver, operator, localSql, record, evidence, origin});
   if (app) {

@@ -54,6 +54,7 @@ import { RuleAnalysis } from "./rule-analysis";
 import { AiAnalysis } from "./ai-analysis";
 import { DraftOfferAssessment, OfferAssessment } from "./offer-assessment";
 import { CompanyProfiles } from "./company-profiles";
+import { RecruiterVerification } from "./recruiter-verification";
 import { OfferCompanySelector } from "./offer-company-selector";
 import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
 import { CaseReviewScreen } from "./case-review";
@@ -883,6 +884,7 @@ function CheckScreen() {
       {/* The rules read English field names from this text, so it is deliberately not translated. */}
       <RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
       <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
+      <RecruiterVerification defaultEmployer={terms.employer ?? terms.company ?? ""} defaultRole={terms.jobTitle ?? terms.role ?? ""} />
       {missing.length ? (
         <section aria-label={t("check.needsClarification")}>
           <p className="fw-check-explainer">{t("check.foundFew")}</p>

@@ -47,6 +47,16 @@ export type Database = {
       webhook_targets: { Args: { request: Json }; Returns: Json };
       webhook_delete: { Args: { request: Json }; Returns: Json };
       webhook_log: { Args: { request: Json }; Returns: Json };
+      recruiter_company_search: { Args: { request: Json }; Returns: Json };
+      recruiter_create: { Args: { request: Json }; Returns: Json };
+      recruiter_list: { Args: { request: Json }; Returns: Json };
+      recruiter_read: { Args: { request: Json }; Returns: Json };
+      recruiter_delete: { Args: { request: Json }; Returns: Json };
+      recruiter_queue: { Args: { request: Json }; Returns: Json };
+      recruiter_decide: { Args: { request: Json }; Returns: Json };
+      company_domain_claim: { Args: { request: Json }; Returns: Json };
+      company_domain_list: { Args: { request: Json }; Returns: Json };
+      company_domain_remove: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

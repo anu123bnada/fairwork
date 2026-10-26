@@ -6,7 +6,7 @@ export type ScamIndicator = {
   id: string; severity: "high" | "medium"; title: string; description: string; quote: string; recommendation: string;
 };
 
-const FREE_MAIL = /\b[a-z0-9._%+-]+@(?:gmail|googlemail|yahoo|ymail|outlook|hotmail|live|aol|proton|protonmail|icloud|gmx|mail)\.[a-z.]{2,}\b/i;
+export const FREE_MAIL = /\b[a-z0-9._%+-]+@(?:gmail|googlemail|yahoo|ymail|outlook|hotmail|live|aol|proton|protonmail|icloud|gmx|mail)\.[a-z.]{2,}\b/i;
 const EMAIL = /\b[a-z0-9._%+-]+@([a-z0-9-]+(?:\.[a-z0-9-]+)+)\b/gi;
 
 const rules: { id: string; severity: "high" | "medium"; pattern: RegExp; title: string; description: string; recommendation: string }[] = [
@@ -61,15 +61,15 @@ const rules: { id: string; severity: "high" | "medium"; pattern: RegExp; title: 
   },
 ];
 
-function domainOf(value: string) {
+export function domainOf(value: string) {
   return value.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/[/:?#].*$/, "").replace(/\.$/, "");
 }
-function registrable(domain: string) {
+export function registrable(domain: string) {
   const parts = domain.split(".");
   const secondLevel = new Set(["co", "com", "org", "net", "gov", "ac", "edu"]);
   return parts.length >= 3 && secondLevel.has(parts[parts.length - 2]!) && parts[parts.length - 1]!.length === 2 ? parts.slice(-3).join(".") : parts.slice(-2).join(".");
 }
-function distance(a: string, b: string) {
+export function distance(a: string, b: string) {
   const row = Array.from({ length: b.length + 1 }, (_, index) => index);
   for (let i = 1; i <= a.length; i += 1) {
     let previous = row[0]!; row[0] = i;
@@ -82,7 +82,7 @@ function distance(a: string, b: string) {
   return row[b.length]!;
 }
 // Visual look-alikes such as rn for m, 0 for o, 1 for l, and vv for w.
-const fold = (value: string) => value.replace(/rn/g, "m").replace(/vv/g, "w").replace(/0/g, "o").replace(/[1|]/g, "l");
+export const fold = (value: string) => value.replace(/rn/g, "m").replace(/vv/g, "w").replace(/0/g, "o").replace(/[1|]/g, "l");
 
 export function scamIndicators(text: string, options: { companyDomain?: string } = {}): ScamIndicator[] {
   const found: ScamIndicator[] = [];

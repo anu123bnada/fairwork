@@ -233,3 +233,9 @@ the new endpoint is mocked.
 | `release:verify:full` on the final commit | **PASS 14, FAIL 0, SKIPPED 0, BLOCKED 6** (new gate: secrets scan). **Browser suite 226 passed.** BLOCKED, all needing the owner: production configuration (the validator names `APP_ORIGIN`, `FAIRWORK_DATA_MODE`, credential signing and vault storage), AI policy fields, credential signing key, https download hosts, Android release approvals, Windows code-signing certificate |
 | New this sprint | Failure register (24 entries, none OPEN), secrets scan (781 files, 0 unexplained), production configuration validator (3 unit tests), local migration automation, static route and source security audit (9 tests: 49 mutating routes checked, 48 enforce the origin check, the one exception is the documented bearer-key API), HSTS header on every response (7 browser tests), self-service data export (5 unit, 2 browser), production runbook, private-bucket setup SQL and a hosted Storage verification script (not run: needs the owner's project) |
 | Live integrations (27 Oct) | GLEIF registry research: 3 of 3 live tests passed. Gemini with synthetic data: RESOURCE_EXHAUSTED (provider quota), BLOCKED |
+
+### 28 Oct 2026 — recruiter verification and AI gateway checks
+
+* Real-stack harness (`test-local-real-workflows.mjs --manage-app`), run alone after F-25: **168 PASS, 0 FAIL**, including the new recruiter journey (domain claim without false control, idempotent create, no worker information in the representative queue, outsider sees nothing, confirm/dispute/withdraw, erase). Credential, vault and developer journeys SKIPPED by design (no signing key / document store configured locally). Evidence `test-results/local-real-1793009069177/`.
+* Vitest: 111 files, 732 passed, 17 skipped; `tsc` and `eslint` clean.
+* Browser: `recruiter-verification.spec.ts` 2/2, `localized-check.spec.ts` 3/3.

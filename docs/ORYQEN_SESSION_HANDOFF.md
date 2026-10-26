@@ -15,6 +15,14 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
   `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`. The owner has not yet confirmed which Supabase and Vercel
   projects are production; do not ask again until a hosted operation is genuinely needed.
 
+## 28 October additions (uncommitted until the commit that follows this note)
+
+- AI gateway (`docs/ORYQEN_AI_GATEWAY.md`), committed `e415445`.
+- Recruiter Identity & Affiliation Verification (`docs/ORYQEN_RECRUITER_VERIFICATION.md`): migration 14, routes under
+  `src/app/api/v1/recruiter/`, `src/features/recruiter/`, `src/server/recruiter/`, `src/server/net/public-network.ts`
+  (shared public-address-only fetch/DNS), worker panel in the Check screen, employer panel in the employer workspace.
+  Fourteen migrations are now pending on hosted Supabase (`ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
