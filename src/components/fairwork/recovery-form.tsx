@@ -4,7 +4,9 @@ import { AuthLink } from "./auth-link";
 import { authPath } from "@/features/identity/auth-navigation";
 import { participantAuthQuery } from "@/features/offer/participant-path";
 import { appRequest } from "@/features/authority/client";
+import { useI18n } from "@/i18n/use-i18n";
 export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
+  const { t } = useI18n();
   const [step, setStep] = useState(confirm ? "confirm" : "request");
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
   const [factorId, setFactorId] = useState("");
@@ -33,21 +35,21 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
       } else if (step === "mfa") {
         await appRequest("/api/v1/auth/mfa", { action: "verify", factorId, code: data.get("code") }); setStep("password");
       } else {
-        if (data.get("password") !== data.get("confirmPassword")) throw new Error("The passwords do not match.");
+        if (data.get("password") !== data.get("confirmPassword")) throw new Error(t("au.rec.mismatch"));
         await appRequest("/api/v1/auth/password", { password: data.get("password") }); setStep("done");
       }
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "Recovery could not be completed."); }
+    } catch (caught) { setError(caught instanceof Error ? caught.message : t("au.rec.failed")); }
     finally { setBusy(false); }
   }
-  if (step === "sent") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✉</span><h2>Check your inbox</h2><p role="status">If this address has an account, check its inbox for a recovery link. No account information is disclosed here.</p><p>Check spam and allow a few minutes for delivery.</p><button type="button" onClick={() => setStep("request")}>Try another email</button><p><AuthLink href="/sign-in">Back to sign in</AuthLink></p></section>;
-  if (step === "done") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✓</span><h2>Password updated</h2><p role="status">Your password was changed. Sign in again with the new password.</p><AuthLink className="fw-primary" href="/sign-in">Sign in</AuthLink></section>;
+  if (step === "sent") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✉</span><h2>{t("au.rec.sentTitle")}</h2><p role="status">{t("au.rec.sentStatus")}</p><p>{t("au.rec.sentNote")}</p><button type="button" onClick={() => setStep("request")}>{t("au.rec.anotherEmail")}</button><p><AuthLink href="/sign-in">{t("au.backToSignIn")}</AuthLink></p></section>;
+  if (step === "done") return <section className="fw-auth-result"><span className="fw-result-icon" aria-hidden="true">✓</span><h2>{t("au.rec.doneTitle")}</h2><p role="status">{t("au.rec.doneStatus")}</p><AuthLink className="fw-primary" href="/sign-in">{t("au.signIn")}</AuthLink></section>;
   return <><form onSubmit={event => void submit(event)} aria-busy={busy}>
-    {step === "request" && <label>Email address<input name="email" type="email" autoComplete="username" required maxLength={254}/></label>}
-    {step === "confirm" && <p>Continue only if you requested this password reset. Opening this page alone does not consume the recovery link.</p>}
-    {step === "assurance" && <p>Your recovery link was confirmed. Check your account authenticator requirements to continue.</p>}
-    {step === "mfa" && <><p>Your existing authenticator is still required. Email recovery does not remove MFA.</p><label>Authenticator code<input name="code" inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" required/></label><p>Lost authenticator access requires an independently reviewed recovery process; this application cannot bypass it.</p></>}
-    {step === "password" && <><label>New password<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><label>Confirm new password<input name="confirmPassword" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><p>Changing your password signs out refresh sessions on all devices. Existing access tokens expire on the configured provider schedule.</p></>}
+    {step === "request" && <label>{t("au.email")}<input name="email" type="email" autoComplete="username" required maxLength={254}/></label>}
+    {step === "confirm" && <p>{t("au.rec.confirmNote")}</p>}
+    {step === "assurance" && <p>{t("au.rec.assuranceNote")}</p>}
+    {step === "mfa" && <><p>{t("au.rec.mfaNote")}</p><label>{t("au.rec.code")}<input name="code" inputMode="numeric" pattern="[0-9]{6}" autoComplete="one-time-code" required/></label><p>{t("au.rec.lostNote")}</p></>}
+    {step === "password" && <><label>{t("au.rec.newPassword")}<input name="password" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><label>{t("au.rec.confirmNew")}<input name="confirmPassword" type="password" autoComplete="new-password" minLength={12} maxLength={128} required/></label><p>{t("au.rec.signsOut")}</p></>}
     {error && <p role="alert">{error}</p>}
-    <button className="fw-primary" disabled={busy}>{busy ? "Please wait…" : step === "request" ? "Send recovery email" : step === "confirm" ? "Confirm recovery link" : step === "assurance" ? "Retry authenticator check" : step === "mfa" ? "Verify authenticator" : "Save new password"}</button>
+    <button className="fw-primary" disabled={busy}>{busy ? t("au.reg.wait") : step === "request" ? t("au.rec.send") : step === "confirm" ? t("au.rec.confirmLink") : step === "assurance" ? t("au.rec.retryAuth") : step === "mfa" ? t("au.rec.verifyAuth") : t("au.rec.saveNew")}</button>
   </form><p><AuthLink href="/sign-in">Back to sign in</AuthLink></p></>;
 }

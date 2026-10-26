@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { participantAuthQuery } from "@/features/offer/participant-path";
+import { useI18n } from "@/i18n/use-i18n";
 
 export function AuthInformationLink() {
   const router = useRouter();
+  const { t } = useI18n();
   return <Link href="/sign-in/information" onClick={event => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -15,5 +17,5 @@ export function AuthInformationLink() {
     const path = window.location.pathname;
     query.set("from", path === "/welcome" ? "welcome" : path === "/otp" ? "otp" : "sign-in");
     router.push(`/sign-in/information?${query}`);
-  }}>Sign-in information</Link>;
+  }}>{t("au.signInInfo")}</Link>;
 }

@@ -5,9 +5,11 @@ import { useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { participantDestination, participantAuthQuery } from "@/features/offer/participant-path";
 import { AuthLink } from "./auth-link";
+import { useI18n } from "@/i18n/use-i18n";
 
 export function SecureSignInForm({ className }: { className?: string }) {
   const router = useRouter();
+  const { t } = useI18n();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,7 +29,7 @@ export function SecureSignInForm({ className }: { className?: string }) {
         : participantDestination(window.location.search) ?? "/app/intro-welcome");
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Unable to sign in.");
+      setError(caught instanceof Error ? caught.message : t("au.signInFailed"));
     } finally {
       setBusy(false);
     }
@@ -35,12 +37,12 @@ export function SecureSignInForm({ className }: { className?: string }) {
 
   return (
     <form className={className} onSubmit={(event) => void submit(event)} aria-busy={busy}>
-      <label>Email address<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
-      <label>Password<input name="password" type="password" autoComplete="current-password" required maxLength={128} /></label>
-      <button className="fw-primary" disabled={busy}>{busy ? "Verifying account…" : "Continue securely"}</button>
+      <label>{t("au.email")}<input name="email" type="email" autoComplete="username" required maxLength={254} /></label>
+      <label>{t("au.password")}<input name="password" type="password" autoComplete="current-password" required maxLength={128} /></label>
+      <button className="fw-primary" disabled={busy}>{busy ? t("au.verifying") : t("au.continueSecurely")}</button>
       {error && <p role="alert">{error}</p>}
-      <p><AuthLink href="/forgot-password">Forgot your password?</AuthLink></p>
-      {error && <p><AuthLink href="/auth/confirm">Need to verify your email?</AuthLink></p>}
+      <p><AuthLink href="/forgot-password">{t("au.forgot")}</AuthLink></p>
+      {error && <p><AuthLink href="/auth/confirm">{t("au.needVerify")}</AuthLink></p>}
     </form>
   );
 }
