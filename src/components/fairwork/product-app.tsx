@@ -33,6 +33,7 @@ import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { OrgPlanAssignment } from "./org-plan-panel";
 import { MyReports } from "./report-problem";
 import { OfferNotes } from "./offer-notes";
+import { OfferPreparation } from "./offer-preparation";
 import { EmploymentTimeline } from "./employment-timeline";
 import { buildOfferSummary } from "@/features/offer/summary";
 import { ReportQueue } from "./report-queue";
@@ -897,6 +898,7 @@ function CheckScreen() {
           link.href = url; link.download = `oryqen-offer-summary-revision-${offer.version}.md`; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
         }}>{t("sum.button")}</button>
       </section>
+      <OfferPreparation key={`prep:${offer.offerId}:${offer.version}`} snapshot={offer.snapshot ?? {}} />
       <OfferNotes key={offer.offerId} offerId={offer.offerId} />
       <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       <RecruiterVerification defaultEmployer={terms.employer ?? terms.company ?? ""} defaultRole={terms.jobTitle ?? terms.role ?? ""} />
