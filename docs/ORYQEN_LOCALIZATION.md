@@ -49,3 +49,7 @@ Labour site could not be read (expired certificate) and the Parliament copy retr
 2024 amendment. Every other country shows a limitation. References older than 180 days are flagged
 for re-verification. The check compares figures the user already has; it never concludes that an
 employer broke the law.
+
+## Update 26 Oct 2026: home dashboard
+
+The signed-in home dashboard is translated in Sinhala, Tamil and German (28 new keys, about 50 per locale). A phone-width browser test checks each locale for the translated greeting, offer prompt, passport card, hint and links, absence of raw keys, and no horizontal overflow; the Sinhala screenshot was reviewed and renders correctly. Panels below the dashboard (saved offers, work records, company information) and the Check flow are still English, and every non-English string remains an **unreviewed machine-assisted draft** that needs native-speaker review before release.

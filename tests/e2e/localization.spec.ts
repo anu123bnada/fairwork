@@ -61,3 +61,22 @@ test("the onboarding language screen offers real languages and applies the choic
   await expect(page.getByRole("heading", { name: "Choose your language" })).toBeVisible();
   await expect(page.getByRole("status")).toHaveCount(0);
 });
+
+test("the home dashboard is translated end to end in Sinhala, Tamil and German without overflow on a phone", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signedIn(page);
+  await page.goto("/app/settings");
+  for (const locale of ["si", "ta", "de"] as const) {
+    await page.getByLabel(/Language|භාෂාව|மொழி|Sprache/).selectOption(locale);
+    await page.goto("/app/home");
+    await expect(page.getByRole("heading", { name: translate(locale, "home.greeting", { name: "Synthetic" }) })).toBeVisible();
+    for (const key of ["home.workspace", "home.understand", "home.addPrompt", "home.addOffer", "home.passportTitle", "home.hintStrong", "home.discover", "home.guidance"] as const) {
+      await expect(page.getByText(translate(locale, key), { exact: false }).first(), `${locale}:${key}`).toBeVisible();
+    }
+    await expect(page.getByRole("link", { name: translate(locale, "home.notifications") })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/home\.[a-z]+/);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `${locale} overflow`).toBeLessThanOrEqual(0);
+    await page.screenshot({ path: testInfo.outputPath(`home-${locale}.png`), fullPage: true });
+    await page.goto("/app/settings");
+  }
+});
