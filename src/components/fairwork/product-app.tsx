@@ -1241,7 +1241,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       router.replace("/sign-in");
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught : new Error("Sign out failed."));
+      setError(caught instanceof Error ? caught : new Error(t("set.signOutFail")));
     } finally {
       setBusy(false);
     }
@@ -1250,25 +1250,25 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
     <>
       <ProductHeader screen="settings" title="" />
       <h2 className="fw-page-title">{t("settings.title")}</h2><p className="fw-page-subtitle">{t("settings.subtitle")}</p>
-      <section className="fw-profile-card"><span className="fw-avatar">{profile?.displayName?.slice(0, 1) ?? "?"}</span><span><strong>{profile?.displayName ?? "ORYQEN member"}</strong><br /><span className="fw-offer-employer">Signed-in account</span></span></section>
+      <section className="fw-profile-card"><span className="fw-avatar">{profile?.displayName?.slice(0, 1) ?? "?"}</span><span><strong>{profile?.displayName ?? t("set.member")}</strong><br /><span className="fw-offer-employer">{t("set.signedIn")}</span></span></section>
       {profile && <ProfileEditor profile={profile} onSaved={setProfile} />}
-      {profile && <section className="fw-list-card" aria-label="Participant account reference"><label className="fw-field">My participant account ID<input readOnly value={profile.id} onFocus={event=>event.target.select()} /></label><p className="fw-disclaimer">Give this reference only to your intended employer or Passport sender. It identifies your account and grants no access. Never share your password or authenticator codes.</p></section>}
+      {profile && <section className="fw-list-card" aria-label={t("set.refAria")}><label className="fw-field">{t("set.refLabel")}<input readOnly value={profile.id} onFocus={event=>event.target.select()} /></label><p className="fw-disclaimer">{t("set.refNote")}</p></section>}
       <section className="fw-list-card">
-        {["Job alerts", "Hours reminders"].map(label => <div className="fw-list-row" key={label}><span>{label}</span><small>Not available</small></div>)}
+        {(["set.jobAlerts", "set.hoursReminders"] as const).map(label => <div className="fw-list-row" key={label}><span>{t(label)}</span><small>{t("set.notAvailable")}</small></div>)}
       </section>
       <LanguageSwitcher />
       <PlanPanel />
-      <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
+      <p className="fw-disclaimer">{t("set.inAppNote")}</p>
       <details className="fw-list-card"><summary>{t("export.title")}</summary><DataExportPanel /></details>
-      <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
-      <details className="fw-list-card"><summary>Developer access</summary><DeveloperAccess /></details>
-      {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}
-      <Link className="fw-secondary" href="/forgot-password">Reset password securely</Link>
-      {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>Assign plans (operator)</summary><PlanAssignment /></details>}
-      {profile?.capabilities.includes("privacy_operator") && <details className="fw-list-card"><summary>Review privacy requests</summary><PrivacyRequests operator /></details>}
-      <Link className="fw-dark-button" href={routeFor("employer")}>Switch to employer view</Link>
-      <Link className="fw-secondary" href={routeFor("cases")}>Case review</Link>
-      <button className="fw-secondary" style={{ marginTop: 12 }} disabled={busy} onClick={() => void signOut()}>{busy ? "Signing out…" : "Sign out"}</button>
+      <details className="fw-list-card"><summary>{t("set.privacy")}</summary><PrivacyRequests /></details>
+      <details className="fw-list-card"><summary>{t("set.developer")}</summary><DeveloperAccess /></details>
+      {profile && <details className="fw-list-card"><summary>{t("set.security")}</summary><AccountSecurity revision={profile.revision} /></details>}
+      <Link className="fw-secondary" href="/forgot-password">{t("set.resetPassword")}</Link>
+      {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>{t("set.assignPlans")}</summary><PlanAssignment /></details>}
+      {profile?.capabilities.includes("privacy_operator") && <details className="fw-list-card"><summary>{t("set.reviewPrivacy")}</summary><PrivacyRequests operator /></details>}
+      <Link className="fw-dark-button" href={routeFor("employer")}>{t("set.employerView")}</Link>
+      <Link className="fw-secondary" href={routeFor("cases")}>{t("set.caseReview")}</Link>
+      <button className="fw-secondary" style={{ marginTop: 12 }} disabled={busy} onClick={() => void signOut()}>{busy ? t("set.signingOut") : t("set.signOut")}</button>
       <ErrorMessage error={error} />
     </>
   );
