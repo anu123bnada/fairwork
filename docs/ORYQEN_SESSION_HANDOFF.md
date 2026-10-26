@@ -37,6 +37,11 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - Gate on `c39c576`: PASS 14 / FAIL 0 / BLOCKED 6. Route matrix 74/74. Accessibility (axe) 30/30. Notification preferences added. Run `git checkout next-env.d.ts` after builds (Next rewrites it).
 
+- CHECKPOINT (28 Oct, HEAD after `9a5ea85`): sign-in/registration/recovery translated; coverage note now lists only the rule-analysis and
+  assessment panels (their text comes from English-only deterministic engines in `src/features/offer/{assessment,deterministic-extractor}.ts`,
+  so translating them means making those engines locale-aware, not just the chrome), the admin console and server messages.
+  NEXT: locale-aware assessment/extractor texts; persistent webhook queue; organization plans; audit export; Android emulator run when memory allows.
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
