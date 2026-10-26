@@ -1,4 +1,5 @@
 import { test,expect,type BrowserContext } from "@playwright/test";
+import { translate } from "../../src/i18n";
 import { mkdirSync } from "node:fs";
 import type { WorkRecord,WorkVersion } from "../../src/features/work/schema";
 const worker="40000000-0000-4000-8000-000000000012",rep="40000000-0000-4000-8000-000000000013",id="40000000-0000-4000-8000-000000000021",company="40000000-0000-4000-8000-000000000001";
@@ -50,3 +51,16 @@ test("offline and expired Passport reads clear stale data; original mobile surfa
  await page.route("**/api/v1/passport**",route=>route.abort());await page.getByRole("button",{name:"Reload private Passport"}).click();await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();await expect(page.getByRole("link",{name:/Motorcycle Technician/})).toHaveCount(0);
  await page.route("**/api/v1/passport**",route=>route.fulfill({status:401,json:{error:{code:"AUTH_REQUIRED"}}}));await page.getByRole("button",{name:"Reload private Passport"}).click();await expect(page.getByRole("link",{name:"Sign in to reopen your Passport"})).toBeVisible();await page.screenshot({path:"test-results/day6-visual/320-expired.png",fullPage:true,animations:"disabled"});
 });
+
+for (const locale of ["si","ta","de"] as const) {
+ test(`the Work Passport screen is translated in ${locale}`,async({context,page})=>{
+  await session(context,model());
+  await page.goto("/app/settings");await page.getByLabel("Language").selectOption(locale);
+  await page.goto("/app/passport");
+  await expect(page.getByText(translate(locale,"pp.tagline"))).toBeVisible();
+  await expect(page.getByText(translate(locale,"pp.onlyYou"))).toBeVisible();
+  await expect(page.getByRole("heading",{name:translate(locale,"pp.history")})).toBeVisible();
+  await expect(page.getByRole("link",{name:translate(locale,"pp.share")})).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/\bpp\.[a-zA-Z.]+\b/);
+ });
+}
