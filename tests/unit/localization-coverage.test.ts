@@ -14,7 +14,6 @@ const ENGLISH_ON_PURPOSE: Record<string, string> = {
   "src/components/fairwork/dashboard-records.tsx": "home record lists",
   "src/components/fairwork/day3-offer-demo.tsx": "legacy demo route",
   "src/components/fairwork/developer-access.tsx": "developer access, listed in the note",
-  "src/components/fairwork/guidance.tsx": "guidance assistant, listed in the note",
   "src/components/fairwork/jurisdiction-check.tsx": "country references (legal text kept in English)",
   "src/components/fairwork/offer-company-selector.tsx": "organization screens",
   "src/components/fairwork/organization-requests.tsx": "organization screens, listed in the note",
