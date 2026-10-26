@@ -85,3 +85,5 @@ copy; items marked "labeled" are disclosed to users in the product.
   operator-reviewed request; there is no self-service team management.
 - Hosted rollout order matters: apply all seven migrations first, then deploy
   (`docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
+
+- Evidence Vault: uploaded files are not scanned for malware; hosted Supabase Storage is not verified (the local stack has no Storage service); documents cannot yet be attached to records, shares or disputes; orphaned stored files after a crash are not reconciled automatically. See `ORYQEN_VAULT_DESIGN.md`.

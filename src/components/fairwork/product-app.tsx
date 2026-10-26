@@ -28,6 +28,7 @@ import { AuthInformationLink } from "@/components/fairwork/auth-information-link
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { EmploymentHistory } from "./employment-history";
+import { EvidenceVault } from "./evidence-vault";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -479,7 +480,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "agreement" ? <AgreementScreen /> : null}
       {screen === "agreement-workflow" && profile ? <AgreementWorkflowScreen actorId={profile.id} /> : null}
       {screen === "cases" && profile ? <CaseReviewScreen /> : null}
-      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /></> : null : null}
+      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /><EvidenceVault /></> : null : null}
       {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <><WorkPassportScreen displayName={profile.displayName} /><TrustChain /><SelfReportedSkills /></> : null : null}
       {screen === "settings" ? <SettingsScreen profile={profile} /> : null}
       {screen === "employer" ? demoPreview ? <PreviewScreen screen="employer" profile={profile} /> : <EmployerWorkspace /> : null}

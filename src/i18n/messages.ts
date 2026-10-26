@@ -56,6 +56,12 @@ export const en = {
   "home.recent": "Recent account activity",
   "home.discover": "Discover opportunities",
   "home.guidance": "Private guidance",
+  "vault.title": "Evidence Vault",
+  "vault.intro": "Keep certificates, letters and payslips privately. Only you can see them.",
+  "vault.upload": "Save document",
+  "vault.download": "Download",
+  "vault.delete": "Delete",
+  "vault.empty": "No documents yet.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -102,6 +108,12 @@ export const si: Partial<Messages> = {
   "home.recent": "මෑත ගිණුම් ක්‍රියාකාරකම්",
   "home.discover": "අවස්ථා සොයන්න",
   "home.guidance": "පෞද්ගලික මඟපෙන්වීම",
+  "vault.title": "සාක්ෂි සුරක්ෂිත ගබඩාව",
+  "vault.intro": "සහතික, ලිපි සහ වැටුප් පත්‍රිකා පෞද්ගලිකව තබාගන්න. ඒවා දැකිය හැක්කේ ඔබට පමණි.",
+  "vault.upload": "ලේඛනය සුරකින්න",
+  "vault.download": "බාගන්න",
+  "vault.delete": "මකන්න",
+  "vault.empty": "තවම ලේඛන නැත.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -145,6 +157,12 @@ export const ta: Partial<Messages> = {
   "home.recent": "சமீபத்திய கணக்கு செயல்பாடு",
   "home.discover": "வாய்ப்புகளைக் கண்டறியுங்கள்",
   "home.guidance": "தனிப்பட்ட வழிகாட்டுதல்",
+  "vault.title": "சான்று பெட்டகம்",
+  "vault.intro": "சான்றிதழ்கள், கடிதங்கள், சம்பளச் சீட்டுகளைத் தனிப்பட்ட முறையில் வைத்திருங்கள். அவற்றை நீங்கள் மட்டுமே பார்க்க முடியும்.",
+  "vault.upload": "ஆவணத்தைச் சேமி",
+  "vault.download": "பதிவிறக்கு",
+  "vault.delete": "நீக்கு",
+  "vault.empty": "இதுவரை ஆவணங்கள் இல்லை.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -188,4 +206,10 @@ export const de: Partial<Messages> = {
   "home.recent": "Letzte Kontoaktivität",
   "home.discover": "Möglichkeiten entdecken",
   "home.guidance": "Private Orientierung",
+  "vault.title": "Nachweis-Tresor",
+  "vault.intro": "Bewahren Sie Zeugnisse, Briefe und Gehaltsabrechnungen privat auf. Nur Sie können sie sehen.",
+  "vault.upload": "Dokument speichern",
+  "vault.download": "Herunterladen",
+  "vault.delete": "Löschen",
+  "vault.empty": "Noch keine Dokumente.",
 };

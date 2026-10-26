@@ -34,6 +34,10 @@ export type Database = {
       credential_status: { Args: { request: Json }; Returns: Json };
       entitlement_read: { Args: { request: Json }; Returns: Json };
       entitlement_assign: { Args: { request: Json }; Returns: Json };
+      vault_register: { Args: { request: Json }; Returns: Json };
+      vault_list: { Args: { request: Json }; Returns: Json };
+      vault_fetch: { Args: { request: Json }; Returns: Json };
+      vault_delete: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };
