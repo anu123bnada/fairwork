@@ -3,7 +3,7 @@
 Status 27 Oct 2026: **one scoped endpoint (credential verification) with key management, per-key rate limits and usage metering, plus
 signed webhooks with retries and a delivery log, are built and tested. Further scopes, organization-level keys, a persistent
 delivery queue and a published API specification are NOT built.**
-Nothing has been published; a hosted deployment needs the owner's approval (migration 11 of the pending set).
+Nothing has been published; a hosted deployment needs the owner's approval (migrations 11 and 12 of the pending set).
 
 ## What exists
 

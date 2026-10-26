@@ -38,6 +38,7 @@ import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
 import { LanguageSwitcher } from "./language-switcher";
 import { useI18n } from "@/i18n/use-i18n";
+import type { MessageKey } from "@/i18n";
 import { LOCALES } from "@/i18n";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
@@ -640,6 +641,7 @@ function AuthenticatedWelcome({ profile }: { profile: Profile | null }) {
 }
 
 function AddOfferScreen() {
+  const { t } = useI18n();
   const router = useRouter();
   const { profile, offer, setOffer, terms, setTerms, companyId, setCompanyId, workerId, setWorkerId, role, setRole, sourceText, setSourceText, ensureOfferId, startSeparateOffer } = useProduct();
   const [tab, setTab] = useState<"paste" | "screenshot" | "pdf" | "manual">("paste");
@@ -727,21 +729,21 @@ function AddOfferScreen() {
 
   return (
     <>
-      <h2 className="fw-page-title">Add a job offer</h2>
-      <p className="fw-page-subtitle">Paste a job offer or enter the terms yourself.</p>
+      <h2 className="fw-page-title">{t("add.title")}</h2>
+      <p className="fw-page-subtitle">{t("add.subtitle")}</p>
       <OfferDrafts onUse={draft=>{startSeparateOffer();setTerms({role:draft.role,employerName:draft.employer});setSourceText(draft.text);setExtraction(null);setError(null);requestKeys.current.clear();router.replace("/app/add-offer");}} />
       {offer && <section className="fw-card fw-offer-detail-card" aria-label="Selected offer">
-        <p>Editing saved offer revision {offer.version}. Saving updates this offer; earlier revisions remain in its history.</p>
+        <p>{t("add.editing", { version: offer.version })}</p>
         <button type="button" className="fw-secondary" disabled={busy} onClick={() => {
           startSeparateOffer(); setExtraction(null); setError(null); requestKeys.current.clear();
           router.replace("/app/add-offer");
-        }}>Start a separate offer</button>
+        }}>{t("add.separate")}</button>
       </section>}
-      <div className="fw-mode-tabs" role="tablist" aria-label="Offer input method">
-        <button type="button" role="tab" aria-selected={tab === "paste"} className={tab === "paste" ? "active" : ""} onClick={() => setTab("paste")}>Paste text</button>
-        <button type="button" role="tab" aria-selected={tab === "screenshot"} className={tab === "screenshot" ? "active" : ""} onClick={() => setTab("screenshot")}>Screenshot</button>
-        <button type="button" role="tab" aria-selected={tab === "pdf"} className={tab === "pdf" ? "active" : ""} onClick={() => setTab("pdf")}>PDF</button>
-        <button type="button" role="tab" aria-selected={tab === "manual"} className={tab === "manual" ? "active" : ""} onClick={() => setTab("manual")}>Enter manually</button>
+      <div className="fw-mode-tabs" role="tablist" aria-label={t("add.methodAria")}>
+        <button type="button" role="tab" aria-selected={tab === "paste"} className={tab === "paste" ? "active" : ""} onClick={() => setTab("paste")}>{t("add.tabPaste")}</button>
+        <button type="button" role="tab" aria-selected={tab === "screenshot"} className={tab === "screenshot" ? "active" : ""} onClick={() => setTab("screenshot")}>{t("add.tabScreenshot")}</button>
+        <button type="button" role="tab" aria-selected={tab === "pdf"} className={tab === "pdf" ? "active" : ""} onClick={() => setTab("pdf")}>{t("add.tabPdf")}</button>
+        <button type="button" role="tab" aria-selected={tab === "manual"} className={tab === "manual" ? "active" : ""} onClick={() => setTab("manual")}>{t("add.tabManual")}</button>
       </div>
       {tab === "screenshot" ? (
         <OfferScreenshot onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
@@ -752,57 +754,57 @@ function AddOfferScreen() {
           {error && <ErrorMessage error={error} />}
           {tab === "paste" && (
             <section className="fw-source-panel">
-              <label className="fw-source-label">Paste offer text
-                <textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder="Paste a job offer here." maxLength={10000} />
+              <label className="fw-source-label">{t("add.pasteLabel")}
+                <textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder={t("add.pastePlaceholder")} maxLength={10000} />
               </label>
-              <p className="fw-disclaimer">Text stays in this screen. Optional local rules suggest fields for your review; they do not use AI or contact an external service.</p>
+              <p className="fw-disclaimer">{t("add.pasteNote")}</p>
               <button type="button" className="fw-secondary" disabled={!sourceText.trim()} onClick={() => {
                 const { detectedTerms } = extractOfferTermsRuleBased(sourceText);
                 const blankFields = Object.entries(detectedTerms).filter(([field]) => !terms[field]?.trim());
                 setTerms({ ...terms, ...Object.fromEntries(blankFields.map(([field, value]) => [field, String(value)])) });
                 setExtraction({ text: sourceText, filled: blankFields.length, preserved: Object.keys(detectedTerms).length - blankFields.length });
-              }}>Suggest terms with local rules</button>
-              {extraction && extraction.text === sourceText && <><p role="status">{extraction.filled ? `${extraction.filled} blank fields filled with suggestions.` : "No new fields filled."} {extraction.preserved ? `${extraction.preserved} existing fields preserved; clear a field before requesting a replacement suggestion.` : !extraction.filled ? "No supported, unambiguous terms were detected. Enter the offer details below manually." : ""} Review every field below before saving; rules can misinterpret amounts and context.</p><RuleAnalysis text={extraction.text} /></>}
+              }}>{t("add.suggest")}</button>
+              {extraction && extraction.text === sourceText && <><p role="status">{extraction.filled ? t("add.filled", { count: extraction.filled }) : t("add.nothingFilled")} {extraction.preserved ? t("add.preserved", { count: extraction.preserved }) : !extraction.filled ? t("add.noneDetected") : ""} {t("add.reviewEvery")}</p><RuleAnalysis text={extraction.text} /></>}
               <AiAnalysis text={sourceText} role={role} />
             </section>
           )}
-          <section className="fw-card fw-offer-detail-card" aria-label="Offer terms">
-            <strong>Offer details</strong>
-            <p className="fw-notice">Leave unknown terms blank. ORYQEN will generate questions for missing pay, currency, start date, weekly hours or responsibilities.</p>
-            <label className="fw-field">Role title<input name="role" required maxLength={120} value={terms.role ?? ""} onChange={(event) => updateTerm("role", event.target.value)} /></label>
-            <label className="fw-field">Pay amount<input name="salary" type="number" min="0.01" step="0.01" value={terms.salary ?? ""} onChange={(event) => updateTerm("salary", event.target.value)} /></label>
-            <label className="fw-field">Currency<input name="currency" maxLength={10} value={terms.currency ?? ""} onChange={(event) => updateTerm("currency", event.target.value)} /></label>
-            <label className="fw-field">Start date<input name="startDate" maxLength={80} value={terms.startDate ?? ""} onChange={(event) => updateTerm("startDate", event.target.value)} /></label>
-            <label className="fw-field">Expected hours per week<input name="hoursPerWeek" type="number" min="0.25" step="0.25" value={terms.hoursPerWeek ?? ""} onChange={(event) => updateTerm("hoursPerWeek", event.target.value)} /></label>
-            <label className="fw-field">Responsibilities<textarea name="responsibilities" maxLength={500} value={terms.responsibilities ?? ""} onChange={(event) => updateTerm("responsibilities", event.target.value)} /></label>
-            <label className="fw-field">Location (optional)<input name="location" value={terms.location ?? ""} onChange={(event) => updateTerm("location", event.target.value)} /></label>
-            <label className="fw-field">Overtime terms (optional)<input name="overtime" value={terms.overtime ?? ""} onChange={(event) => updateTerm("overtime", event.target.value)} /></label>
-            <label className="fw-field">Payment date (optional)<input name="paymentDate" value={terms.paymentDate ?? ""} onChange={(event) => updateTerm("paymentDate", event.target.value)} /></label>
-            <label className="fw-field">Safety information (optional)<input name="safety" value={terms.safety ?? ""} onChange={(event) => updateTerm("safety", event.target.value)} /></label>
-            {([["benefits", "Benefits"], ["employmentType", "Employment type"], ["probation", "Probation terms"], ["notice", "Notice and termination terms"], ["deductions", "Deductions"], ["contractConditions", "Other contract conditions"], ["payPeriod", "Pay period"], ["taxBasis", "Gross or net pay"], ["schedule", "Work schedule"], ["leave", "Leave terms"], ["contractDuration", "Contract duration"], ["trainingDeposit", "Fees and deposits"], ["documentRetention", "Original document requirements"], ["employerName", "Employer name as stated (unverified)"]] as const).map(([field, label]) => <label className="fw-field" key={field}>{label} (optional)<textarea name={field} maxLength={500} value={terms[field] ?? ""} onChange={event => updateTerm(field, event.target.value)} /></label>)}
+          <section className="fw-card fw-offer-detail-card" aria-label={t("add.termsAria")}>
+            <strong>{t("add.details")}</strong>
+            <p className="fw-notice">{t("add.leaveBlank")}</p>
+            <label className="fw-field">{t("add.f.role")}<input name="role" required maxLength={120} value={terms.role ?? ""} onChange={(event) => updateTerm("role", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.salary")}<input name="salary" type="number" min="0.01" step="0.01" value={terms.salary ?? ""} onChange={(event) => updateTerm("salary", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.currency")}<input name="currency" maxLength={10} value={terms.currency ?? ""} onChange={(event) => updateTerm("currency", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.startDate")}<input name="startDate" maxLength={80} value={terms.startDate ?? ""} onChange={(event) => updateTerm("startDate", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.hours")}<input name="hoursPerWeek" type="number" min="0.25" step="0.25" value={terms.hoursPerWeek ?? ""} onChange={(event) => updateTerm("hoursPerWeek", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.responsibilities")}<textarea name="responsibilities" maxLength={500} value={terms.responsibilities ?? ""} onChange={(event) => updateTerm("responsibilities", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.location")}<input name="location" value={terms.location ?? ""} onChange={(event) => updateTerm("location", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.overtime")}<input name="overtime" value={terms.overtime ?? ""} onChange={(event) => updateTerm("overtime", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.paymentDate")}<input name="paymentDate" value={terms.paymentDate ?? ""} onChange={(event) => updateTerm("paymentDate", event.target.value)} /></label>
+            <label className="fw-field">{t("add.f.safety")}<input name="safety" value={terms.safety ?? ""} onChange={(event) => updateTerm("safety", event.target.value)} /></label>
+            {(["benefits", "employmentType", "probation", "notice", "deductions", "contractConditions", "payPeriod", "taxBasis", "schedule", "leave", "contractDuration", "trainingDeposit", "documentRetention", "employerName"] as const).map(field => <label className="fw-field" key={field}>{t("add.optional", { label: t(`add.o.${field}` as MessageKey) })}<textarea name={field} maxLength={500} value={terms[field] ?? ""} onChange={event => updateTerm(field, event.target.value)} /></label>)}
           </section>
           <DraftOfferAssessment terms={terms} />
           <section className="fw-card fw-offer-detail-card">
-            <strong>Participants</strong>
-            {!offer && role === "WORKER" && <p className="fw-notice">A new worker review is a private draft. To complete two-person confirmation, ask the approved representative to create the offer and send you its participant link.</p>}
-            <label className="fw-field">Your intended party role
+            <strong>{t("add.participants")}</strong>
+            {!offer && role === "WORKER" && <p className="fw-notice">{t("add.privateDraft")}</p>}
+            <label className="fw-field">{t("add.partyRole")}
               <select value={role} disabled={Boolean(offer)} onChange={(event) => {
                 const nextRole = event.target.value as Role;
                 setRole(nextRole);
                 setWorkerId(nextRole === "WORKER" ? profile?.id ?? "" : "");
               }}>
-                <option value="WORKER">Worker</option>
-                <option value="EMPLOYER">Employer representative</option>
+                <option value="WORKER">{t("add.roleWorker")}</option>
+                <option value="EMPLOYER">{t("add.roleEmployer")}</option>
               </select>
             </label>
-            {offer ? <label className="fw-field">Company ID<input name="companyId" readOnly value={offer.companyId} /></label> : <OfferCompanySelector value={companyId} onChange={setCompanyId} />}
-            <label className="fw-field">Worker account ID<input name="workerId" required readOnly={role === "WORKER" || Boolean(offer)} pattern={"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"} title="Enter the worker's account UUID" value={offer?.workerId ?? (role === "WORKER" ? profile?.id ?? "" : workerId)} onChange={(event) => setWorkerId(event.target.value)} /></label>
-            <p className="fw-notice">{role === "WORKER" ? "Your worker account is taken from your signed-in profile." : "Ask the worker for their account ID. You must hold current independent authority for the selected organization and cannot confirm as both parties."}</p>
-            <p className="fw-notice">These IDs identify the participants; they do not grant access. The server checks your signed-in account and current authority.</p>
+            {offer ? <label className="fw-field">{t("add.companyId")}<input name="companyId" readOnly value={offer.companyId} /></label> : <OfferCompanySelector value={companyId} onChange={setCompanyId} />}
+            <label className="fw-field">{t("add.workerId")}<input name="workerId" required readOnly={role === "WORKER" || Boolean(offer)} pattern={"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"} title={t("add.workerIdTitle")} value={offer?.workerId ?? (role === "WORKER" ? profile?.id ?? "" : workerId)} onChange={(event) => setWorkerId(event.target.value)} /></label>
+            <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
+            <p className="fw-notice">{t("add.idsNote")}</p>
           </section>
-          <p className="fw-disclaimer">Analyze offer saves the reviewed fields and checks for missing terms. Pasted text is not saved as terms automatically; use local suggestions and review the fields first.</p>
+          <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
           <div className="fw-fixed-action">
-            <button className="fw-primary" type="submit" disabled={busy}>{busy ? "Checking offer…" : "Analyze offer"} <Icon name="arrow" size={18} /></button>
+            <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
           </div>
         </form>
       )}
