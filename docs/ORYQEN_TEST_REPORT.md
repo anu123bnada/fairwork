@@ -249,3 +249,7 @@ BLOCKED (all owner decisions, none a defect): production configuration, AI polic
 ### 28 Oct 2026 — real-stack harness with vault, credential and developer journeys enabled
 
 `test-local-real-workflows.mjs --manage-app`: **206 PASS, 0 FAIL, 0 SKIPPED** (exit 0). The harness now starts the app with a loopback-only disk store for vault bytes and a throwaway, in-memory credential signing key (never written to disk, not the production key), so the vault, credential and developer-API journeys run instead of being skipped. Includes the new vault-attachment checks (employer cannot see or create links; deleting a document removes its link). Real PostgreSQL: `evidence-vault-db` (9) and `recruiter-verification-db` (9) via `scripts/test-feature-postgres.mjs <test files>`; PGlite also passes.
+
+### 28 Oct 2026 — full release gate after F-26 fix (`npm run release:verify:full`, exit 0)
+
+**PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6. Verdict: NOT READY — owner input required.** Browser journeys 239/239 passed (773 s), unit/integration (352 s), real-PostgreSQL database security, production build, Android debug APK and Windows unsigned installer built. The previous run's only failure (F-26, localization coverage tripwire) is resolved. The six BLOCKED gates are unchanged owner inputs. Readiness analysis: `ORYQEN_PRODUCTION_READINESS_AUDIT.md`.

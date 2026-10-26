@@ -8,7 +8,7 @@ AI needs the owner's explicit approval first. This runbook replaces the older `O
 ## 0. Owner decisions that gate everything
 
 1. Which Supabase project and which Vercel project are production (the two Supabase refs seen in this repository's history must be reconciled; do not guess).
-2. Approval to apply the twelve pending migrations, in order, with a verified backup first.
+2. Approval to apply the fifteen pending migrations, in order, with a verified backup first.
 3. The credential signing key ceremony (`scripts/generate-credential-key.mjs`), key custody and the production domain (it becomes the credential issuer).
 4. The private Storage bucket and its server key for the Evidence Vault.
 5. Whether registration opens (`AUTH_REGISTRATION_ENABLED`), after the confirmation email sender and template are approved.
