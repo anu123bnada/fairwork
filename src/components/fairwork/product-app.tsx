@@ -33,6 +33,7 @@ import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { OrgPlanAssignment } from "./org-plan-panel";
 import { MyReports } from "./report-problem";
 import { OfferNotes } from "./offer-notes";
+import { EmploymentTimeline } from "./employment-timeline";
 import { buildOfferSummary } from "@/features/offer/summary";
 import { ReportQueue } from "./report-queue";
 import { DeveloperAccess } from "./developer-access";
@@ -492,7 +493,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "agreement" ? <AgreementScreen /> : null}
       {screen === "agreement-workflow" && profile ? <AgreementWorkflowScreen actorId={profile.id} /> : null}
       {screen === "cases" && profile ? <CaseReviewScreen /> : null}
-      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentHistory /><EvidenceVault /></> : null : null}
+      {screen === "work-record" ? demoPreview ? <PreviewScreen screen="work-record" profile={profile} demoPreview /> : profile ? <><WorkRecordScreen actorId={profile.id} /><EmploymentTimeline /><EmploymentHistory /><EvidenceVault /></> : null : null}
       {screen === "passport" ? demoPreview ? <PreviewScreen screen="passport" profile={profile} demoPreview /> : profile ? <><WorkPassportScreen displayName={profile.displayName} /><TrustChain /><SelfReportedSkills /></> : null : null}
       {screen === "settings" ? <SettingsScreen profile={profile} /> : null}
       {screen === "employer" ? demoPreview ? <PreviewScreen screen="employer" profile={profile} /> : <EmployerWorkspace /> : null}
