@@ -87,6 +87,14 @@ function totp(secret) {
   return ((digest.readUInt32BE(digest.at(-1) & 15) & 0x7fffffff) % 1000000).toString().padStart(6, '0');
 }
 
+// Preflight: bring the local database up to the migration folder, and say plainly when no app is running.
+{
+  const migrated = spawnSync(process.execPath, ['scripts/apply-local-migrations.mjs'], { encoding: 'utf8', windowsHide: true });
+  if (migrated.stdout.trim()) console.log(migrated.stdout.trim());
+  if (migrated.status !== 0) throw new Error(`Local migrations are not in place: ${migrated.stderr.trim()}`);
+  if (!process.argv.includes('--manage-app') && !(await fetch(`${origin}/sign-in`).then(r => r.ok).catch(() => false)))
+    throw new Error(`No local app is running on ${origin}. Start it with node scripts/run-local-development.mjs (credential and vault variables exported first, see docs/ORYQEN_SESSION_HANDOFF.md) or pass --manage-app.`);
+}
 try {
   if (process.argv.includes('--manage-app')) {
     if (await fetch(`${origin}/sign-in`).then(() => true).catch(() => false)) throw new Error('Port 3100 must be free before --manage-app; existing processes are never killed');

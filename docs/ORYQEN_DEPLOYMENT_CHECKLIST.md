@@ -1,5 +1,7 @@
 # ORYQEN deployment checklist
 
+> **Superseded on 27 Oct 2026 by `ORYQEN_PRODUCTION_RUNBOOK.md`** (this file predates the last twelve migrations and the Evidence Vault, credentials and developer API). Kept for history.
+
 Status: **prepared, not executed.** Nothing was deployed, linked or changed in Supabase,
 Vercel or DNS. Every box below needs a named human owner and explicit approval first.
 Do not claim hosted acceptance until section 6 is completed.

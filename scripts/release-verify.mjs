@@ -47,6 +47,7 @@ command('lint', 'code', node, ['node_modules/eslint/bin/eslint.js', '.', '--max-
 command('unit-integration', 'tests', node, ['node_modules/vitest/vitest.mjs', 'run'], { passDetail: 'vitest (PGlite database tests included)' });
 command('dependency-audit', 'security', 'npm', ['audit', '--omit=dev', '--audit-level=high'], { passDetail: 'no high or critical production vulnerabilities' });
 command('brand-assets', 'release', node, ['scripts/check-brand-assets.mjs']);
+command('secrets-scan', 'security', node, ['scripts/scan-secrets.mjs'], { passDetail: 'no unexplained secret-like values in tracked or untracked source files (reviewed fixtures are allow-listed with reasons)' });
 command('electron-policy', 'windows', node, ['--test', 'policy.test.cjs'], { cwd: 'desktop', passDetail: 'desktop navigation and permission policy tests' });
 
 // ---------------------------------------------------------------- long gates (--full)
@@ -56,14 +57,16 @@ command('database-security', 'security', node, ['scripts/test-day7-postgres.mjs'
 
 // ---------------------------------------------------------------- configuration (names only, never values)
 const present = name => Boolean(process.env[name]?.trim());
-const origin = process.env.APP_ORIGIN ?? '';
 if (wanted('configuration')) {
-  const problems = [];
-  if (!/^https:\/\//.test(origin)) problems.push('APP_ORIGIN must be the https production origin');
-  for (const name of ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY']) if (!present(name)) problems.push(`${name} is not set`);
-  if (process.env.FAIRWORK_DATA_MODE !== 'supabase') problems.push('FAIRWORK_DATA_MODE must be supabase for a hosted release');
   if (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.NEXT_PUBLIC_ORYQEN_CREDENTIAL_SIGNING_KEY) add('configuration-secrets', 'security', 'FAIL', 'a server secret is set under a public name or a service-role key is present in this environment');
-  add('configuration', 'config', problems.length ? 'BLOCKED' : 'PASS', problems.length ? `production values missing: ${problems.join('; ')}` : 'production environment values present');
+  const validation = run(node, ['scripts/validate-production-config.mjs', '--json']);
+  let report;
+  try { report = JSON.parse(validation.output.slice(validation.output.indexOf('{'), validation.output.lastIndexOf('}') + 1)); } catch { report = null; }
+  if (!report) add('configuration', 'config', 'FAIL', 'the configuration validator did not produce a report', { evidence: validation.tail });
+  else {
+    const failed = report.results.filter(item => item.status === 'FAIL').map(item => item.id);
+    add('configuration', 'config', failed.length ? 'BLOCKED' : 'PASS', failed.length ? `production configuration incomplete: ${failed.join(', ')} (run node scripts/validate-production-config.mjs for the reason each one fails)` : 'production configuration passes every check (presence and form only; values are never printed)');
+  }
 }
 if (wanted('ai-policy')) {
   const aiReady = present('GEMINI_API_KEY') && process.env.ORYQEN_AI_POLICY_APPROVED === 'true' && present('ORYQEN_AI_POLICY_APPROVAL_REF') && present('ORYQEN_AI_PROCESSING_REGION');
