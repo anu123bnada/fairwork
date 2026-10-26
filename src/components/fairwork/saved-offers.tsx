@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TeamRoster } from "./team-roster";
 import { CompanyResearch } from "./company-research";
 import Link from "next/link";
+import { useI18n } from "@/i18n/use-i18n";
 import { appRequest } from "@/features/authority/client";
 import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { offerDecision, offerLifecycleResult } from "@/features/offer/lifecycle-schema";
@@ -11,6 +12,7 @@ import { CompanyProfiles } from "./company-profiles";
 import { OfferComparison } from "./offer-comparison";
 
 export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPLOYER" }) {
+  const { t } = useI18n();
   const [list, setList] = useState<OfferList | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(true);
@@ -48,24 +50,24 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
     } catch (caught) { setError(`${caught instanceof Error ? caught.message : "The change could not be saved."} Refresh to check the saved state, or retry the same action.`); }
     finally { saving.current = false; setBusy(false); }
   }
-  return <section className="fw-list-card" aria-label="Saved offers">
-    <h3>{context === "EMPLOYER" ? "Offers you represent" : "Your saved offers"}</h3>
-    <p>Archive and decisions are private to you. Accepting here records your intention; it does not sign or confirm an agreement.</p>
-    <label className="fw-field">Offer view<select value={view} disabled={busy} onChange={event => { setList(null); setError(""); setSelected([]); setComparison(null); setBusy(true); setView(event.target.value); }}><option value="active">Active offers</option><option value="archived">Archived offers</option><option value="all">All offers</option></select></label>
-    {list && list.items.length > 1 && <p>Select two or three offers to compare their saved terms.</p>}
+  return <section className="fw-list-card" aria-label={t("offers.region")}>
+    <h3>{context === "EMPLOYER" ? t("offers.employerTitle") : t("offers.title")}</h3>
+    <p>{t("offers.privacy")}</p>
+    <label className="fw-field">{t("offers.view")}<select value={view} disabled={busy} onChange={event => { setList(null); setError(""); setSelected([]); setComparison(null); setBusy(true); setView(event.target.value); }}><option value="active">{t("offers.viewActive")}</option><option value="archived">{t("offers.viewArchived")}</option><option value="all">{t("offers.viewAll")}</option></select></label>
+    {list && list.items.length > 1 && <p>{t("offers.compareHint")}</p>}
     {list?.items.map(item => <div className="fw-list-row" key={item.offerId}>
-      <label><input type="checkbox" aria-label={`Compare ${item.role || "Untitled offer"}`} checked={selected.includes(item.offerId)} disabled={busy || (!selected.includes(item.offerId) && selected.length >= 3)} onChange={event => { setComparison(null); setSelected(previous => event.target.checked ? [...previous, item.offerId] : previous.filter(id => id !== item.offerId)); }} /> <strong>{item.role || "Untitled offer"}</strong><br />Revision {item.version} · {item.questions} clarification questions</label>
-      <Link className="fw-small-action" href={`/app/agreement?offerId=${item.offerId}`}>Open offer</Link>
-      <label className="fw-field">Your decision for {item.role || "Untitled offer"}<select disabled={busy} value={item.decision ?? "considering"} onChange={event => void update(item, item.archived ?? false, event.target.value)}><option value="considering">Considering</option><option value="interested">Interested</option><option value="accepted">Accepted privately</option><option value="declined">Declined privately</option></select></label>
-      <button className="fw-secondary" disabled={busy} onClick={() => void update(item, !item.archived, item.decision ?? "considering")}>{item.archived ? "Restore offer" : "Archive offer"}</button>
+      <label><input type="checkbox" aria-label={t("offers.compareAria", { role: item.role || t("offers.untitled") })} checked={selected.includes(item.offerId)} disabled={busy || (!selected.includes(item.offerId) && selected.length >= 3)} onChange={event => { setComparison(null); setSelected(previous => event.target.checked ? [...previous, item.offerId] : previous.filter(id => id !== item.offerId)); }} /> <strong>{item.role || t("offers.untitled")}</strong><br />{t("offers.revision", { version: item.version, count: item.questions })}</label>
+      <Link className="fw-small-action" href={`/app/agreement?offerId=${item.offerId}`}>{t("offers.open")}</Link>
+      <label className="fw-field">{t("offers.decisionFor", { role: item.role || t("offers.untitled") })}<select disabled={busy} value={item.decision ?? "considering"} onChange={event => void update(item, item.archived ?? false, event.target.value)}><option value="considering">{t("offers.considering")}</option><option value="interested">{t("offers.interested")}</option><option value="accepted">{t("offers.accepted")}</option><option value="declined">{t("offers.declined")}</option></select></label>
+      <button className="fw-secondary" disabled={busy} onClick={() => void update(item, !item.archived, item.decision ?? "considering")}>{item.archived ? t("offers.restore") : t("offers.archive")}</button>
     </div>)}
-    {!busy && !error && list?.items.length === 0 && <p>No saved offers are available in this workspace.</p>}
-    {busy && <p role="status">Loading saved offers…</p>}
+    {!busy && !error && list?.items.length === 0 && <p>{t("offers.empty")}</p>}
+    {busy && <p role="status">{t("offers.loading")}</p>}
     {error && <p role="alert">{error}</p>}
-    {list && list.items.length > 1 && <button className="fw-secondary" disabled={busy || selected.length < 2} onClick={() => setComparison([...selected])}>Compare selected offers ({selected.length}/3)</button>}
-    {comparison && <><button className="fw-secondary" onClick={() => setComparison(null)}>Close comparison</button><OfferComparison key={comparison.join(",")} ids={comparison} /></>}
-    <button className="fw-secondary" disabled={busy} onClick={() => void load()}>Refresh offers</button>
-    {list?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void load(list.nextCursor)}>Load more offers</button>}
+    {list && list.items.length > 1 && <button className="fw-secondary" disabled={busy || selected.length < 2} onClick={() => setComparison([...selected])}>{t("offers.compareButton", { count: selected.length })}</button>}
+    {comparison && <><button className="fw-secondary" onClick={() => setComparison(null)}>{t("offers.closeCompare")}</button><OfferComparison key={comparison.join(",")} ids={comparison} /></>}
+    <button className="fw-secondary" disabled={busy} onClick={() => void load()}>{t("offers.refresh")}</button>
+    {list?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void load(list.nextCursor)}>{t("offers.more")}</button>}
   </section>;
 }
 

@@ -53,3 +53,7 @@ employer broke the law.
 ## Update 26 Oct 2026: home dashboard
 
 The signed-in home dashboard is translated in Sinhala, Tamil and German (28 new keys, about 50 per locale). A phone-width browser test checks each locale for the translated greeting, offer prompt, passport card, hint and links, absence of raw keys, and no horizontal overflow; the Sinhala screenshot was reviewed and renders correctly. Panels below the dashboard (saved offers, work records, company information) and the Check flow are still English, and every non-English string remains an **unreviewed machine-assisted draft** that needs native-speaker review before release.
+
+## Update 27 Oct 2026: saved offers, company research, vault and plan panels
+
+The saved-offers panel, the company research panel (including registry field labels, finding kinds, date formats and country names taken from the browser's own locale data), the Evidence Vault headings and the plan panel are translated. `tests/e2e/localized-panels.spec.ts` checks each language at phone width for translated headings, labels and results, no leftover keys, no overflow, and writes screenshots. Still English: the Check flow, work records, agreements, cases, registration, error messages from the server and the research limitation sentences returned by the server. All non-English strings remain unreviewed drafts.
