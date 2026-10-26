@@ -44,6 +44,13 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - RULE: never run vitest, browsers or the harness beside `release:verify:full` (F-30); never edit `src/` while it runs.
 
+- CHECKPOINT (28 Oct, after `0b170fb`): strict module count in `ORYQEN_22_MODULE_ACCEPTANCE.md` (1 complete and verified, 20 partial, 1 blocked). Seventeen
+  hosted migrations pending. Live Gemini verified with synthetic text on `gemini-3.1-flash-lite` (configured `gemini-3.8-flash` returned 503). Added since the last
+  gate: private abuse reporting (migration 17), offer summary download, saved-offer search/filter, Passport recipient QR and print copy, admin record export.
+  NEXT (no owner input): report queue inside the admin console + correction path; offer review notes and supporting documents (needs migration); expiry reminders and
+  employment timeline; admin console and server-message translation; account-deletion workflow and retention controls; passkey feasibility; interview/negotiation
+  preparation in the rules-based Copilot. Do NOT run the full gate again until a meaningful milestone; use targeted tests.
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
