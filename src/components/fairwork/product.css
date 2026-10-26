@@ -2,7 +2,7 @@
   --fw-blue: #2454ff;
   --fw-blue-soft: #e9efff;
   --fw-navy: #0b1b33;
-  --fw-muted: #73819a;
+  --fw-muted: #5a6882;
   --fw-green: #0da174;
   --fw-amber: #dda600;
   --fw-card: rgba(255, 255, 255, 0.86);
@@ -831,7 +831,7 @@ body:has(.fw-product) {
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #7887a0;
+  color: #4f5d77;
   font: inherit;
   font-size: 10px;
   font-weight: 800;

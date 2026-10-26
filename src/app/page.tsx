@@ -642,6 +642,7 @@ export default function Home() {
             <div className="glass-blob blob-b" />
             <motion.div
               className="main-phone"
+              aria-hidden="true"
               animate={reduced ? {} : { y: [0, -13, 0], rotate: [-9, -7, -9] }}
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
             >

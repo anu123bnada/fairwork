@@ -307,7 +307,7 @@ export default function CinematicCore() {
           role="img"
         />
         {!ready && (
-          <div className="v6-sculpture" aria-label="ORYQEN spatial sculpture">
+          <div className="v6-sculpture" role="img" aria-label="ORYQEN spatial sculpture">
             <div className="v6-halo v6-halo-a" />
             <div className="v6-halo v6-halo-b" />
             <div className="v6-halo v6-halo-c" />
