@@ -30,6 +30,13 @@ export function JurisdictionCheck({ hoursPerWeek }: { hoursPerWeek?: unknown }) 
             <p>Applies to: {f.rule.scope}</p>
             <blockquote lang={f.rule.quoteLanguage}>{f.rule.quote}</blockquote>
             <p><a href={f.rule.sourceUrl} target="_blank" rel="noopener noreferrer">Open the source</a></p></details>}</li>)}</ul>
+        <h5>Other cited rules for {result.name}</h5>
+        <ul>{result.references.map(f => <li key={f.id}><strong>{KIND[f.kind]}:</strong> {f.title}. {f.detail}
+          {f.rule && <details><summary>Source: {f.rule.sourceTitle}</summary>
+            <p>{f.rule.publisher}. Retrieved {f.rule.retrievedOn}. {f.rule.sourceDate ? `Source date ${f.rule.sourceDate}.` : "The source shows no date."} Status: {f.rule.sourceStatus === "unofficial_consolidation" ? "unofficial consolidated text" : "official text"}. {f.rule.validity.note}</p>
+            <p>Applies to: {f.rule.scope}</p>
+            <blockquote lang={f.rule.quoteLanguage}>{f.rule.quote}</blockquote>
+            <p><a href={f.rule.sourceUrl} target="_blank" rel="noopener noreferrer">Open the source</a></p></details>}</li>)}</ul>
         <details><summary>What this check does not cover</summary><ul>{result.limitations.map(text => <li key={text}>{text}</li>)}</ul></details>
       </>}
   </section>;

@@ -10,7 +10,7 @@
 export type SourceStatus = "unofficial_consolidation" | "official_text";
 export type RuleReference = {
   id: string;
-  topic: "daily_working_time" | "rest_breaks";
+  topic: "daily_working_time" | "rest_breaks" | "rest_period" | "annual_leave" | "notice_period";
   sourceTitle: string;
   publisher: string;
   sourceUrl: string;
@@ -59,9 +59,42 @@ export const GERMANY: JurisdictionEntry = {
       validity: { from: null, to: null, note: arbzgNote },
       parameters: { breakMinutesOver6h: 30, breakMinutesOver9h: 45, minBlockMinutes: 15, maxHoursWithoutBreak: 6 },
     },
+    {
+      id: "de-arbzg-5", topic: "rest_period", sourceTitle: "Arbeitszeitgesetz (ArbZG) § 5 Ruhezeit", publisher: arbzgPublisher,
+      sourceUrl: "https://www.gesetze-im-internet.de/arbzg/__5.html",
+      quote: "Die Arbeitnehmer müssen nach Beendigung der täglichen Arbeitszeit eine ununterbrochene Ruhezeit von mindestens elf Stunden haben.",
+      quoteLanguage: "de",
+      summary: "After the end of daily working time employees must have an uninterrupted rest period of at least 11 hours. (Paragraph 5(1); the Act lists exceptions in the following paragraphs that this reference does not evaluate.)",
+      retrievedOn: "2026-10-26", sourceDate: null, sourceStatus: "unofficial_consolidation",
+      scope: "Germany (federal). Employees covered by the Arbeitszeitgesetz; paragraph 5(2) and (3) and other sections contain exceptions that are not evaluated here.",
+      validity: { from: null, to: null, note: arbzgNote },
+      parameters: { minRestHours: 11 },
+    },
+    {
+      id: "de-burlg-3", topic: "annual_leave", sourceTitle: "Bundesurlaubsgesetz (BUrlG) § 3 Dauer des Urlaubs", publisher: arbzgPublisher,
+      sourceUrl: "https://www.gesetze-im-internet.de/burlg/__3.html",
+      quote: "Der Urlaub beträgt jährlich mindestens 24 Werktage. Als Werktage gelten alle Kalendertage, die nicht Sonn- oder gesetzliche Feiertage sind.",
+      quoteLanguage: "de",
+      summary: "Annual leave is at least 24 Werktage. Werktage are all calendar days that are not Sundays or public holidays, so Monday to Saturday count. This is a statutory minimum; contracts and collective agreements may give more.",
+      retrievedOn: "2026-10-26", sourceDate: null, sourceStatus: "unofficial_consolidation",
+      scope: "Germany (federal). Employees covered by the Bundesurlaubsgesetz; the 24 days assume a six-day working week and the Act contains further provisions (part-year entitlement, carry-over) not evaluated here.",
+      validity: { from: null, to: null, note: "The page labels its table of contents as non-official ('Nichtamtlich') and shows no 'as of' date; amendments after retrieval are not reflected." },
+      parameters: { minLeaveWerktage: 24, werktageBasisDaysPerWeek: 6 },
+    },
+    {
+      id: "de-bgb-622", topic: "notice_period", sourceTitle: "Bürgerliches Gesetzbuch (BGB) § 622 Kündigungsfristen bei Arbeitsverhältnissen", publisher: arbzgPublisher,
+      sourceUrl: "https://www.gesetze-im-internet.de/bgb/__622.html",
+      quote: "Das Arbeitsverhältnis eines Arbeiters oder eines Angestellten (Arbeitnehmers) kann mit einer Frist von vier Wochen zum Fünfzehnten oder zum Ende eines Kalendermonats gekündigt werden. Für eine Kündigung durch den Arbeitgeber beträgt die Kündigungsfrist, wenn das Arbeitsverhältnis in dem Betrieb oder Unternehmen zwei Jahre bestanden hat, einen Monat zum Ende eines Kalendermonats, fünf Jahre bestanden hat, zwei Monate zum Ende eines Kalendermonats, acht Jahre bestanden hat, drei Monate zum Ende eines Kalendermonats, zehn Jahre bestanden hat, vier Monate zum Ende eines Kalendermonats, zwölf Jahre bestanden hat, fünf Monate zum Ende eines Kalendermonats, 15 Jahre bestanden hat, sechs Monate zum Ende eines Kalendermonats, 20 Jahre bestanden hat, sieben Monate zum Ende eines Kalendermonats.",
+      quoteLanguage: "de",
+      summary: "The basic notice period is four weeks to the 15th or the end of a calendar month. When the employer gives notice, the period grows with length of service: 1 month after 2 years, 2 after 5, 3 after 8, 4 after 10, 5 after 12, 6 after 15 and 7 months after 20 years, each to the end of a calendar month. (Paragraph 622(1) and (2) as retrieved; the quotation joins the retrieved segments. Paragraphs on probation, small employers and contracts are not evaluated.)",
+      retrievedOn: "2026-10-26", sourceDate: null, sourceStatus: "unofficial_consolidation",
+      scope: "Germany (federal), statutory default for employment contracts. Probation periods, very small employers, collective agreements and contract terms can change the notice period; this reference does not evaluate them.",
+      validity: { from: null, to: null, note: "The page labels its table of contents as non-official ('Nichtamtlich') and shows no 'as of' date; amendments after retrieval are not reflected." },
+      parameters: { basicNoticeWeeks: 4, employerNoticeMonthsAfter2y: 1, employerNoticeMonthsAfter5y: 2, employerNoticeMonthsAfter8y: 3, employerNoticeMonthsAfter10y: 4, employerNoticeMonthsAfter12y: 5, employerNoticeMonthsAfter15y: 6, employerNoticeMonthsAfter20y: 7 },
+    },
   ],
   limitations: [
-    "Only daily working time and rest breaks are covered. Pay, leave, notice and every other topic are not.",
+    "Covered: daily working time, rest breaks, the 11-hour rest period, the statutory minimum leave and the statutory notice periods. Pay (including the minimum wage), overtime pay, sick pay, probation, part-time rules and every other topic are not.",
     "Collective agreements, sector rules and statutory exceptions can change what applies to a particular job. A works council, union or qualified adviser can confirm.",
   ],
 };

@@ -74,3 +74,31 @@ describe("working-time check", () => {
     expect(check("DE", 40, 5).support === "supported" && (check("DE", 40, 5) as { stale: boolean }).stale).toBe(false);
   });
 });
+
+describe("rest period, annual leave and notice references", () => {
+  const rules = () => (GERMANY.support === "supported" ? GERMANY.rules : []);
+  const byId = (id: string) => rules().find(rule => rule.id === id)!;
+  it("encodes exactly the figures in the quoted German text", () => {
+    expect(byId("de-arbzg-5").quote).toContain("ununterbrochene Ruhezeit von mindestens elf Stunden"); expect(byId("de-arbzg-5").parameters).toEqual({ minRestHours: 11 });
+    expect(byId("de-burlg-3").quote).toContain("mindestens 24 Werktage"); expect(byId("de-burlg-3").quote).toContain("nicht Sonn- oder gesetzliche Feiertage"); expect(byId("de-burlg-3").parameters).toEqual({ minLeaveWerktage: 24, werktageBasisDaysPerWeek: 6 });
+    const notice = byId("de-bgb-622");
+    expect(notice.quote).toContain("vier Wochen zum Fünfzehnten oder zum Ende eines Kalendermonats");
+    for (const [phrase, months] of [["zwei Jahre", 1], ["fünf Jahre", 2], ["acht Jahre", 3], ["zehn Jahre", 4], ["zwölf Jahre", 5], ["15 Jahre", 6], ["20 Jahre", 7]] as const) { expect(notice.quote).toContain(phrase); expect(Object.values(notice.parameters)).toContain(months); }
+    expect(notice.parameters.basicNoticeWeeks).toBe(4);
+    for (const id of ["de-arbzg-5", "de-burlg-3", "de-bgb-622"]) expect(byId(id).sourceUrl).toMatch(/^https:\/\/www\.gesetze-im-internet\.de\//);
+  });
+  it("shows the cited rules as references with their sources and never as findings about the employer", () => {
+    const result = check("DE", null, null);
+    if (result.support !== "supported") throw new Error("expected support");
+    expect(result.references.map(item => item.id)).toEqual(["rest-period", "annual-leave", "notice-period"]);
+    expect(result.references.every(item => item.kind === "info" && item.rule !== null)).toBe(true);
+    expect(JSON.stringify(result.references)).not.toMatch(/violat|illegal|unlawful|broke the law/i);
+    expect(result.findings.map(item => item.id)).toEqual(["need-hours-days"]); // the working-time findings are unchanged
+  });
+  it("converts leave to the user's working days only with stated arithmetic, and not without the figure", () => {
+    const leave = (days: number | null) => { const r = check("DE", 40, days); return r.support === "supported" ? r.references.find(item => item.id === "annual-leave")!.detail : ""; };
+    expect(leave(5)).toContain("20 days"); expect(leave(5)).toContain("24 ÷ 6 × 5"); expect(leave(5)).toContain("not a statement in the source");
+    expect(leave(6)).toContain("24 days"); expect(leave(3)).toContain("12 days");
+    expect(leave(null)).not.toMatch(/\d+ days \(/);
+  });
+});

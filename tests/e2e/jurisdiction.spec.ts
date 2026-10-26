@@ -29,3 +29,20 @@ test("country references cite primary sources, ask for missing figures, and show
   await panel.getByLabel("Country").selectOption("GB");
   await expect(panel.getByRole("note")).toContainText("No verified rules for United Kingdom yet");
 });
+
+test("Germany also shows the cited rest-period, leave and notice rules with sources, and converts leave only with stated arithmetic", async ({ page }) => {
+  await page.route("**/api/v1/**", route => route.fulfill({ status: 503, json: { error: { code: "SERVICE_UNAVAILABLE" } } }));
+  await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id, displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  await page.route("**/api/v1/agreements?*", route => route.fulfill({ json: { data: { offer, agreementId: id, confirmation: null, answers: [], canConfirm: false } } }));
+  await page.route("**/api/v1/offers/assessment?*", route => route.fulfill({ json: { data: { offerId: id, offerVersion: 2, termHash: hash, assessment: assessOfferTerms(terms) } } }));
+  await page.route("**/api/v1/offers/analyses**", route => route.fulfill({ json: { data: { offerId: id, items: [] } } }));
+  await page.goto(`/app/check?offerId=${id}`);
+  const panel = page.getByRole("region", { name: "Country employment references" });
+  await panel.getByLabel("Working days per week (from the offer)").fill("5");
+  await expect(panel).toContainText("Other cited rules for Germany");
+  await expect(panel).toContainText("at least 11 hours of uninterrupted rest");
+  await expect(panel).toContainText("24 Werktage"); await expect(panel).toContainText("20 days"); await expect(panel).toContainText("not a statement in the source");
+  await expect(panel).toContainText("statutory notice periods");
+  await expect(panel.locator("blockquote").filter({ hasText: "Ruhezeit von mindestens elf Stunden" })).toHaveCount(1);
+  await expect(panel.locator("a[href='https://www.gesetze-im-internet.de/bgb/__622.html']")).toHaveCount(1);
+});
