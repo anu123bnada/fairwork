@@ -3,7 +3,7 @@
 Nothing in this document has been executed against any hosted system. Local evidence only.
 No push, deployment or hosted-database change has been made. Approval is requested, not assumed.
 
-## 1. The sixteen pending migrations
+## 1. The seventeen pending migrations
 
 Apply in this order. Each runs in one transaction and starts with a guard that requires the
 `postgres` identity. All seven were applied cleanly, in order, to the **real local Supabase
@@ -30,8 +30,9 @@ in the roster migration), so real-Postgres application is the meaningful check.
 | 14 | `20261028140000_recruiter_verification` | New tables `company_domains`, `company_domain_events`, `recruiter_verifications`, `recruiter_decisions`, `recruiter_events` (forced RLS); helpers owned by the policy role (needs temporary `CREATE` on schema `private`, as in earlier migrations); RPCs `recruiter_company_search/create/list/read/delete/queue/decide` and `company_domain_claim/list/remove`, authenticated-only. Deletes occur only inside user-triggered RPCs (a worker erasing their own check) and expiry purge after 90 days | No | None (new empty tables) |
 | 15 | `20261028160000_vault_attachments` | New table `vault_attachments` (owner-only forced RLS; cascades when a document is deleted), RPCs `vault_attach/vault_detach/vault_attachments`, authenticated-only. Links the worker's own vault document to the worker's own work record; reads `private.work_records` only to confirm the caller is its worker | No | None (new empty table) |
 | 16 | `20261028170000_organization_plans` | New append-only table `org_plan_assignments` (forced RLS; representatives read their own organization's rows; operators with the authority capability and a second factor insert, never for an organization in which they hold authority); RPCs `org_entitlement_read` and `org_entitlement_assign`; a helper owned by the policy role that counts an organization's live listings; a column-limited read grant and one policy for the policy role on `opportunity_listings` (needs temporary `CREATE` on schema `private`, as in earlier migrations) | Adds one read grant and one select policy on `private.opportunity_listings` for the policy role | None (new empty table; organizations without an assignment read as the basic plan). Code that calls the new RPCs falls back to the basic plan if they do not exist yet |
+| 17 | `20261028180000_abuse_reports` | New append-only tables `abuse_reports` and `abuse_report_events` (forced RLS; reporters read their own, reviewers with `review_operator` and a second factor read all); RPCs `report_create/list/withdraw/queue/review`, authenticated-only. Reports are never shown to the person or organization they name and the reviewer queue never contains the reporter's identity | No | None (new empty tables) |
 
-(You asked about four migrations. Sixteen are pending: the original four, plus the compatibility fix (5), saved
+(You asked about four migrations. Seventeen are pending: the original four, plus the compatibility fix (5), saved
 analysis (6), team roster (7) and the credential register (8). Apply them together, in order.)
 
 A scan for `DROP TABLE/COLUMN/SCHEMA`, `TRUNCATE`, `ALTER ... DROP/RENAME` and `UPDATE ... SET`

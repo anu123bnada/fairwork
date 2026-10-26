@@ -51,7 +51,7 @@ Counts: IMPLEMENTED (local) 4 (modules 04, 09, 13 and 18 with a test key); PARTI
 
 | # | Integration | Status | Evidence / gap |
 |---|---|---|---|
-| 1 | Supabase production DB, Auth, RLS, migrations | **CONFIGURED BUT UNVERIFIED** | `.env.local` holds a hosted project URL and publishable key. Sixteen migrations are pending and unapplied. Two project refs exist in the repo; the owner must confirm which is production |
+| 1 | Supabase production DB, Auth, RLS, migrations | **CONFIGURED BUT UNVERIFIED** | `.env.local` holds a hosted project URL and publishable key. Seventeen migrations are pending and unapplied. Two project refs exist in the repo; the owner must confirm which is production |
 | 2 | Supabase private Storage | **MISSING** | `ORYQEN_VAULT_STORAGE_URL`, `ORYQEN_VAULT_STORAGE_SERVICE_KEY` unset; bucket SQL ready in `scripts/hosted/vault-storage-setup.sql` |
 | 3 | Vercel production project | **MISSING/UNVERIFIED** | No `.vercel` link in the repo; `APP_ORIGIN` is localhost and `FAIRWORK_DATA_MODE=synthetic`; config validator FAILs on both |
 | 4 | Gemini | **CONNECTED AND VERIFIED (synthetic data only)** | 28 Oct: real provider code returned a validated analysis for synthetic text on `gemini-3.1-flash-lite` (13 s). The configured `gemini-3.8-flash` returned 503 high-demand; owner should set `GEMINI_MODEL` to a stable model. Policy approval false: AI stays disabled for real users by design |
@@ -68,7 +68,7 @@ Counts: IMPLEMENTED (local) 4 (modules 04, 09, 13 and 18 with a test key); PARTI
 
 1. Confirm the production Supabase project (name, ref, region) and the Vercel project and production domain.
 2. Run `node scripts/generate-credential-key.mjs --kid <id> --out <path outside the repo>`; store the file in a password manager; set `ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY`, `ORYQEN_CREDENTIAL_PUBLIC_KEYS` as Vercel secrets.
-3. Take and test-restore a logical backup, then approve applying the sixteen migrations in order (`ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
+3. Take and test-restore a logical backup, then approve applying the seventeen migrations in order (`ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
 4. Run `scripts/hosted/vault-storage-setup.sql` in the project, create the private bucket `evidence-vault`, set `ORYQEN_VAULT_STORAGE_URL` and `ORYQEN_VAULT_STORAGE_SERVICE_KEY` (server-only).
 5. Set Vercel environment: `APP_ORIGIN=https://<domain>`, `FAIRWORK_DATA_MODE=supabase`, `AUTH_REGISTRATION_ENABLED=true` after the email template/sender is approved, `NEXT_PUBLIC_CONTACT_EMAIL`.
 6. Approve a first deployment of this branch to a preview URL; then `node scripts/validate-production-config.mjs` and the hosted two-account test (`scripts/test-hosted-two-accounts.mjs`) and `scripts/verify-vault-storage.mjs` can run.

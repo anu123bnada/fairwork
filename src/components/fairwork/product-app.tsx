@@ -31,6 +31,8 @@ import { EmploymentHistory } from "./employment-history";
 import { EvidenceVault } from "./evidence-vault";
 import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { OrgPlanAssignment } from "./org-plan-panel";
+import { MyReports } from "./report-problem";
+import { ReportQueue } from "./report-queue";
 import { DeveloperAccess } from "./developer-access";
 import { PayCompare } from "./pay-compare";
 import { Reminders } from "./reminders";
@@ -1262,11 +1264,13 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <p className="fw-disclaimer">{t("set.inAppNote")}</p>
       <details className="fw-list-card"><summary>{t("export.title")}</summary><DataExportPanel /></details>
       <details className="fw-list-card"><summary>{t("set.privacy")}</summary><PrivacyRequests /></details>
+      <details className="fw-list-card"><summary>{t("rp.mine")}</summary><MyReports /></details>
       <details className="fw-list-card"><summary>{t("set.developer")}</summary><DeveloperAccess /></details>
       {profile && <details className="fw-list-card"><summary>{t("set.security")}</summary><AccountSecurity revision={profile.revision} /></details>}
       <Link className="fw-secondary" href="/forgot-password">{t("set.resetPassword")}</Link>
       {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>{t("set.assignPlans")}</summary><PlanAssignment /></details>}
       {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>Assign organization plans (operator)</summary><OrgPlanAssignment /></details>}
+      {profile?.capabilities.includes("review_operator") && <details className="fw-list-card"><summary>Review reports (reviewer)</summary><ReportQueue /></details>}
       {profile?.capabilities.includes("privacy_operator") && <details className="fw-list-card"><summary>{t("set.reviewPrivacy")}</summary><PrivacyRequests operator /></details>}
       <Link className="fw-dark-button" href={routeFor("employer")}>{t("set.employerView")}</Link>
       <Link className="fw-secondary" href={routeFor("cases")}>{t("set.caseReview")}</Link>

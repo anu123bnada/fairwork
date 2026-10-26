@@ -266,3 +266,7 @@ Real-stack harness (alone, `--manage-app`): **212 PASS, 0 FAIL, 0 SKIPPED** (exi
 ### 28 Oct 2026 — full release gate on `1acb58a` (exit 0)
 
 **PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6 — NOT READY: owner input required.** unit-integration 326 s, browser-journeys 963 s (includes accessibility, route matrix, per-language specs), real-PostgreSQL security 61 s, production build, Android debug APK and Windows unsigned installer. The two failures of the previous run (F-29 localization guard list, F-30 screenshot protocol error under resource contention) are resolved. Strict module count: `ORYQEN_22_MODULE_ACCEPTANCE.md` (1 complete and verified, 20 partial, 1 blocked).
+
+### 28 Oct 2026 — private reporting flow (migration 17)
+
+`abuse-reports-db` 8/8 on PGlite and on a disposable real PostgreSQL cluster; real-stack harness 217 PASS, 0 FAIL, 0 SKIPPED (exit 0) including the reporting journey (idempotent filing, hidden from other accounts, reviewer queue without the reporter, version conflicts, write-back note, withdrawal); browser specs for filing from a recruiter result, following it in Settings, and translation. Live Gemini through the application's provider code with synthetic text passed on `gemini-3.1-flash-lite` (13 s).

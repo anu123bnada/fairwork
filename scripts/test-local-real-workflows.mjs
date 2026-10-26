@@ -20,6 +20,7 @@ import { localVaultJourney } from './local-vault-journey.mjs';
 import { localDeveloperJourney } from './local-developer-journey.mjs';
 import { localRecruiterJourney } from './local-recruiter-journey.mjs';
 import { localOrgPlanJourney } from './local-orgplan-journey.mjs';
+import { localReportJourney } from './local-report-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
@@ -376,6 +377,7 @@ try {
   }
   stage = 'real case review and suppression';
   await localCaseJourney({ worker, employer, reviewer: approver, operator, workId: ids.workId, request, record, localSql, evidence, origin, sharedRead:share.read });
+  await localReportJourney({ worker, employer, reviewer: operator, request, record });
   stage = 'integrity activity';
   const beforeWithdrawal = await request(worker, `/api/v1/work-records?workId=${ids.workId}`);
   const currentWork = beforeWithdrawal.versions.find(v => v.version === beforeWithdrawal.currentVersion);

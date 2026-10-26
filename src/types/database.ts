@@ -36,6 +36,11 @@ export type Database = {
       entitlement_assign: { Args: { request: Json }; Returns: Json };
       org_entitlement_read: { Args: { request: Json }; Returns: Json };
       org_entitlement_assign: { Args: { request: Json }; Returns: Json };
+      report_create: { Args: { request: Json }; Returns: Json };
+      report_list: { Args: { request: Json }; Returns: Json };
+      report_withdraw: { Args: { request: Json }; Returns: Json };
+      report_queue: { Args: { request: Json }; Returns: Json };
+      report_review: { Args: { request: Json }; Returns: Json };
       vault_register: { Args: { request: Json }; Returns: Json };
       vault_list: { Args: { request: Json }; Returns: Json };
       vault_attach: { Args: { request: Json }; Returns: Json };

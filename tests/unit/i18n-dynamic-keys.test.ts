@@ -14,6 +14,8 @@ const families: Record<string, string[]> = {
   "ai.name.": ["gemini", "openai", "selfhosted", "fallback"],
   "rv.status.": ["verified", "partial", "unverified", "conflicting"],
   "re.d.": ["confirm", "dispute", "withdraw"],
+  "rp.c.": ["fee_request", "impersonation", "fake_listing", "harassment", "data_misuse", "other"],
+  "rp.s.": ["received", "reviewing", "needs_information", "closed_actioned", "closed_no_action", "withdrawn"],
 };
 const sameInAllLanguages = new Set(["ai.name.gemini", "ai.name.openai"]); // product names
 

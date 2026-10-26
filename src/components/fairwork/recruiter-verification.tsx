@@ -6,6 +6,7 @@ import { scamIndicators, type ScamIndicator } from "@/features/scam/check";
 import { emailDomain } from "@/features/recruiter/domain";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import { ReportProblem } from "./report-problem";
 
 const STATUS_KEY: Record<RecruiterStatus, MessageKey> = { VERIFIED: "rv.status.verified", PARTIALLY_VERIFIED: "rv.status.partial", UNVERIFIED: "rv.status.unverified", CONFLICTING_EVIDENCE: "rv.status.conflicting" };
 const EFFECT: Record<Evidence["effect"], string> = { supports: "Supports", contradicts: "Does not match", neutral: "Note", not_checked: "Not checked" };
@@ -109,6 +110,7 @@ export function RecruiterVerification({ defaultEmployer = "", defaultRole = "" }
         {wording && (wording.length === 0 ? <p role="status">{t("rv.wordingNone")}</p> : <ul aria-label={t("rv.wordingTitle")}>{wording.map(entry => <li key={entry.id}><strong>{entry.title}</strong>: “{entry.quote}”. {entry.description}</li>)}</ul>)}
       </details>
       <details><summary>{t("rv.limits")}</summary><ul>{open.limits.map(text => <li key={text}>{text}</li>)}</ul></details>
+      <ReportProblem kind="recruiter_check" subjectRef={open.claim.verificationId} subjectLabel={`${open.claim.recruiterName} · ${open.claim.claimedEmployer}`.slice(0, 120)} />
       <button type="button" className="fw-secondary" disabled={busy} onClick={() => void showResult(open.claim.verificationId)}>{t("rv.again")}</button>
       {confirmDelete
         ? <span role="group" aria-label={t("rv.confirmDelete")}> {t("rv.deleteQuestion")} <button type="button" className="fw-secondary" disabled={busy} onClick={() => void remove()}>{t("rv.deleteNow")}</button><button type="button" className="fw-secondary" onClick={() => setConfirmDelete(false)}>{t("rv.keep")}</button></span>

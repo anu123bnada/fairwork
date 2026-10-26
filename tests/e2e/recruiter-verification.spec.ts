@@ -79,3 +79,46 @@ test("the recruiter panel is translated and does not overflow a phone", async ({
   await expect(page.locator("body")).not.toContainText(/\brv\.[a-zA-Z.]+\b/);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 });
+
+test("a recruiter result can be reported privately, once per request, and the report is followed in Settings", async ({ page }) => {
+  const bodies: Record<string, unknown>[] = [];
+  await open(page, []);
+  await page.route("**/api/v1/reports", route => {
+    if (route.request().method() === "POST") { bodies.push(route.request().postDataJSON()); return route.fulfill({ json: { data: { reportId: bodies.at(-1)!.reportId, replayed: false } } }); }
+    return route.fulfill({ json: { data: { items: bodies.length ? [{ reportId: bodies[0]!.reportId, subjectKind: "recruiter_check", subjectLabel: "Asha Perera · Acme Tools", category: "fee_request", details: bodies[0]!.details, createdAt: "2026-10-28T10:00:00Z", status: "needs_information", revision: 2, events: [{ event: "received", note: null, at: "2026-10-28T10:00:00Z" }, { event: "needs_information", note: "Which message was this?", at: "2026-10-28T11:00:00Z" }] }] : [] } } });
+  });
+  const panel = page.getByRole("region", { name: "Recruiter verification" });
+  await panel.getByLabel("Recruiter's name as given to you").fill("Asha Perera");
+  await panel.getByRole("checkbox", { name: /I understand/ }).check();
+  await panel.getByRole("button", { name: "Check this recruiter" }).click();
+  const result = page.getByRole("article", { name: "Recruiter verification result" });
+  await result.getByText("Report a problem with this").click();
+  await expect(result).toContainText("never shown to the person or organization you name");
+  await result.getByLabel("What happened?").selectOption("fee_request");
+  const send = result.getByRole("button", { name: "Send report" });
+  await expect(send).toBeDisabled();
+  await result.getByLabel(/What should reviewers know/).fill("Asked me to pay a fee by gift card.");
+  await send.click();
+  await expect(result.getByRole("status").filter({ hasText: "Report sent" })).toBeVisible();
+  expect(bodies[0]).toMatchObject({ subjectKind: "recruiter_check", subjectRef: verificationId, category: "fee_request" });
+  expect(bodies[0]!.reportId).toBe(bodies[0]!.idempotencyKey);
+
+  await page.goto("/app/settings");
+  await page.getByText("My reports", { exact: true }).click();
+  const mine = page.getByRole("region", { name: "My reports" });
+  await expect(mine).toContainText("reviewers need more information");
+  await expect(mine).toContainText("Which message was this?");
+  await expect(mine.getByRole("button", { name: "Withdraw this report" })).toBeVisible();
+});
+
+for (const locale of ["si", "ta", "de"] as const) {
+  test(`the report form is translated in ${locale}`, async ({ page }) => {
+    await open(page, []);
+    await page.goto("/app/settings"); await page.getByLabel("Language").selectOption(locale);
+    await page.route("**/api/v1/reports", route => route.fulfill({ json: { data: { items: [] } } }));
+    await page.goto("/app/settings");
+    await page.getByText(translate(locale, "rp.mine"), { exact: true }).click();
+    await expect(page.getByRole("region", { name: translate(locale, "rp.mine") })).toContainText(translate(locale, "rp.none"));
+    await expect(page.locator("body")).not.toContainText(/\brp\.[a-zA-Z._]+\b/);
+  });
+}

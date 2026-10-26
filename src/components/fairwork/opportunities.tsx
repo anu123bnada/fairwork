@@ -6,6 +6,7 @@ import { defaultPreferences, opportunityCommand, opportunityPage, type Opportuni
 import { explainMatch, type MatchReason } from "@/features/opportunities/matching";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import { ReportProblem } from "./report-problem";
 
 const inputText = (data: FormData, key: string) => String(data.get(key) ?? "").trim();
 const amount = (data: FormData, key: string) => inputText(data, key) === "" ? null : Number(data.get(key));
@@ -86,6 +87,7 @@ export function OpportunitiesScreen() {
       {explainMatch(item, data.preferences).length === 0 && <p>{t("op.addPrefs")}</p>}
       {item.status === "published" && <div className="fw-discovery-actions"><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "saved" ? "none" : "saved" })}>{item.choice === "saved" ? t("op.removeSaved") : t("op.saveListing")}</button><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "hidden" ? "none" : "hidden" })}>{item.choice === "hidden" ? t("op.showAgain") : t("op.notInterested")}</button></div>}
       {item.canEdit && <button className="fw-secondary" disabled={busy} onClick={() => setEditing(item)}>{t("op.editListing")}</button>}
+      {!item.canEdit && <ReportProblem kind="listing" subjectRef={item.id} subjectLabel={item.fields.title.slice(0, 120)} />}
     </article>)}
     {data?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void load(view, query, data.nextCursor)}>{t("op.more")}</button>}
   </section>;
