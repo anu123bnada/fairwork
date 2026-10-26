@@ -65,7 +65,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    <h3 className="fw-section-label">{t("pp.skills")}</h3><div className="fw-demo-previous-role"><span>{t("pp.skillsNote")}</span></div>
   </>}
   <button className="fw-secondary" disabled={busy} onClick={()=>void reload()}>{t("pp.reload")}</button>
-  {passport?.passportId&&!error&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button></details>}
+  {passport?.passportId&&!error&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
   <div className="fw-demo-passport-action"><p className="fw-disclaimer">{t("pp.preview")}</p><Link className="fw-primary" href="/app/share">{t("pp.share")}</Link></div>
  </div>;
 }

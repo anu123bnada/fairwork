@@ -5,6 +5,7 @@ import { appRequest } from "@/features/authority/client";
 import { passportSchema,type Passport } from "@/features/work/passport-schema";
 import { shareField,shareList,shareProjection,shareReceipt } from "@/features/work/sharing-schema";
 import { useI18n } from "@/i18n/use-i18n";
+import { RecipientQr } from "./recipient-qr";
 import type { MessageKey } from "@/i18n";
 const endpoint="/api/v1/passport/sharing";
 const display=(value:string)=>value.replaceAll("_"," ");
@@ -61,6 +62,7 @@ export function PassportSharing(){
    {!projection.entries.length&&<p>{t("sh.noFields")}</p>}
    {preview&&!projection.active&&projection.entries.length>0&&<><label className="fw-field"><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)}/>{t("sh.inspected")}</label><button className="fw-primary" disabled={busy||!reviewed} onClick={()=>void perform(async()=>{const id=projection.grantId;await command({operation:"activate",grantId:id});await open(id,true);setMessage(t("sh.activated"));})}>{t("sh.activate")}</button></>}
    {preview&&projection.active&&<button className="fw-secondary" disabled={busy} onClick={()=>void perform(async()=>{await navigator.clipboard.writeText(`${window.location.origin}/app/share?grantId=${projection.grantId}`);setMessage(t("sh.linkCopied"));})}>{t("sh.copyLink")}</button>}
+   {preview&&projection.active&&<RecipientQr url={`${window.location.origin}/app/share?grantId=${projection.grantId}`}/>}
   </section>}
   <h3>{t("sh.grants")}</h3>
   {!list&&!error&&<p role="status">{t("sh.loadingGrants")}</p>}

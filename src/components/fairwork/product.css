@@ -2766,3 +2766,10 @@ body:has(.fw-product) {
 @media (max-width: 767px) {
   .fw-product .fw-bottom-nav { width: 100%; }
 }
+
+/* Printing or saving a screen as PDF: keep the content, drop the controls and navigation. */
+@media print {
+  .fw-product .fw-bottom-nav, .fw-product .fw-fixed-action, .fw-product .fw-header-icon, .fw-product .fw-back, .fw-product button, .fw-product .fw-demo-passport-action { display: none !important; }
+  .fw-product details:not([open]) > :not(summary) { display: none !important; }
+  body { background: #fff !important; }
+}

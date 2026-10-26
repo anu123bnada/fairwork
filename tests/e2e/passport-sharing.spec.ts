@@ -60,3 +60,19 @@ for (const locale of ["si","ta","de"] as const) {
   await expect(page.locator("body")).not.toContainText(/\bsh\.[a-zA-Z._]+\b/);
  });
 }
+
+test("an active grant shows a QR code for the recipient link that grants nothing by itself", async ({page})=>{
+ const id="40000000-0000-4000-8000-000000000001",recipient="40000000-0000-4000-8000-000000000002",grant="40000000-0000-4000-8000-0000000000aa";
+ await page.route("**/api/v1/me",route=>route.fulfill({json:{data:{id,displayName:"Synthetic owner",locale:"en",timeZone:"UTC",revision:1,capabilities:[]}}}));
+ await page.route("**/api/v1/passport",route=>route.fulfill({json:{data:{policyVersion:"private-work-passport.v1",passportId:id,ownerId:id,createdAt:"2026-10-18T00:00:00Z",entries:[],nextCursor:null}}}));
+ await page.route("**/api/v1/passport/sharing**",route=>{
+  if(route.request().url().includes("mode=preview"))return route.fulfill({json:{data:{projectionVersion:"passport.v1",grantId:grant,expiresAt:"2999-01-01T00:00:00Z",active:true,entries:[{task_summary:"Synthetic summary"}]}}});
+  return route.fulfill({json:{data:{items:[{grantId:grant,itemId:grant,recipientId:recipient,owner:true,active:true,revoked:false,expiresAt:"2999-01-01T00:00:00Z"}],nextCursor:null}}});
+ });
+ await page.goto("/app/share");
+ await page.getByRole("button",{name:"Preview grant"}).click();
+ const qr=page.getByRole("img",{name:"QR code for the recipient link"});
+ await expect(qr).toBeVisible();
+ await expect(page.getByText("The QR code itself grants nothing.")).toBeVisible();
+ expect(await qr.getAttribute("src")).toMatch(/^data:image\/png;base64,/);
+});

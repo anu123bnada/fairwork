@@ -1356,6 +1356,11 @@ export const en = {
   "offers.filterDecision": "Show decision",
   "offers.allDecisions": "All decisions",
   "offers.noMatch": "No loaded offer matches. Clear the search or the filter, or load more offers.",
+  "sh.qrAlt": "QR code for the recipient link",
+  "sh.qrNote": "Scanning this opens the link, but only the named signed-in account can read the record. The QR code itself grants nothing.",
+  "sh.qrFail": "The QR code could not be drawn. Use the copied link instead.",
+  "pp.print": "Print or save as PDF",
+  "pp.printNote": "Uses your device's print dialog on the records shown here. The page is a copy for you; it is not a signed certificate.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -2702,6 +2707,11 @@ export const si: Partial<Messages> = {
   "offers.filterDecision": "තීරණය පෙන්වන්න",
   "offers.allDecisions": "සියලු තීරණ",
   "offers.noMatch": "පූරණය කළ කිසිදු දීමනාවක් නොගැලපේ. සෙවුම හෝ පෙරහන ඉවත් කරන්න, නැතහොත් තවත් දීමනා පූරණය කරන්න.",
+  "sh.qrAlt": "ලබන්නාගේ සබැඳිය සඳහා QR කේතය",
+  "sh.qrNote": "මෙය ස්කෑන් කිරීමෙන් සබැඳිය විවෘත වේ, නමුත් වාර්තාව කියවිය හැක්කේ නම් කළ පුරන ගිණුමට පමණි. QR කේතයෙන් පමණක් කිසිවක් නොලැබේ.",
+  "sh.qrFail": "QR කේතය ඇඳිය නොහැකි විය. ඒ වෙනුවට පිටපත් කළ සබැඳිය භාවිත කරන්න.",
+  "pp.print": "මුද්‍රණය කරන්න හෝ PDF ලෙස සුරකින්න",
+  "pp.printNote": "මෙහි පෙන්වන වාර්තා සඳහා ඔබේ උපාංගයේ මුද්‍රණ සංවාදය භාවිත කරයි. පිටුව ඔබ සඳහා පිටපතකි; එය අත්සන් කළ සහතිකයක් නොවේ.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4045,6 +4055,11 @@ export const ta: Partial<Messages> = {
   "offers.filterDecision": "முடிவைக் காட்டு",
   "offers.allDecisions": "அனைத்து முடிவுகளும்",
   "offers.noMatch": "ஏற்றப்பட்ட எந்தச் சலுகையும் பொருந்தவில்லை. தேடலை அல்லது வடிகட்டியை அழிக்கவும், அல்லது மேலும் சலுகைகளை ஏற்றவும்.",
+  "sh.qrAlt": "பெறுபவர் இணைப்புக்கான QR குறியீடு",
+  "sh.qrNote": "இதை ஸ்கேன் செய்தால் இணைப்பு திறக்கும்; ஆனால் பதிவைப் பெயரிட்ட, உள்நுழைந்த கணக்கு மட்டுமே படிக்க முடியும். QR குறியீடு தானாக எதையும் வழங்காது.",
+  "sh.qrFail": "QR குறியீட்டை வரைய முடியவில்லை. நகலெடுத்த இணைப்பைப் பயன்படுத்தவும்.",
+  "pp.print": "அச்சிடு அல்லது PDF ஆகச் சேமி",
+  "pp.printNote": "இங்கே காட்டப்படும் பதிவுகளுக்கு உங்கள் சாதனத்தின் அச்சு உரையாடலைப் பயன்படுத்தும். இந்தப் பக்கம் உங்களுக்கான நகல்; கையொப்பமிட்ட சான்றிதழ் அல்ல.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -5388,4 +5403,9 @@ export const de: Partial<Messages> = {
   "offers.filterDecision": "Entscheidung anzeigen",
   "offers.allDecisions": "Alle Entscheidungen",
   "offers.noMatch": "Kein geladenes Angebot passt. Leeren Sie Suche oder Filter oder laden Sie weitere Angebote.",
+  "sh.qrAlt": "QR-Code für den Empfängerlink",
+  "sh.qrNote": "Das Scannen öffnet den Link, aber nur das benannte, angemeldete Konto kann den Eintrag lesen. Der QR-Code selbst gewährt nichts.",
+  "sh.qrFail": "Der QR-Code konnte nicht gezeichnet werden. Verwenden Sie stattdessen den kopierten Link.",
+  "pp.print": "Drucken oder als PDF speichern",
+  "pp.printNote": "Nutzt den Druckdialog Ihres Geräts für die hier gezeigten Einträge. Die Seite ist eine Kopie für Sie, kein signiertes Zertifikat.",
 };
