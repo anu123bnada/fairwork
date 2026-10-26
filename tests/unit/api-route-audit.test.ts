@@ -17,6 +17,7 @@ const NO_ORIGIN_CHECK: Record<string, string> = {
 const NO_ENVELOPE: Record<string, string> = {
   "src/app/api/v1/vault/blob/route.ts": "streams a file behind a short-lived signed token",
   "src/app/.well-known/oryqen-keys.json/route.ts": "public key set in a fixed document format",
+  "src/app/api/v1/developer/openapi.json/route.ts": "public OpenAPI document in its standard format",
 };
 // Routes that read the raw request body themselves, because they stream it with their own size cap.
 const RAW_BODY: Record<string, string> = {
