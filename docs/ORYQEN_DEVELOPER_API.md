@@ -1,7 +1,8 @@
 # ORYQEN Developer API (module 21)
 
-Status 27 Oct 2026: **one scoped endpoint is built and tested (credential verification), with key management, per-key
-rate limits and usage metering. Webhooks, further scopes, organization-level keys and a published API specification are NOT built.**
+Status 27 Oct 2026: **one scoped endpoint (credential verification) with key management, per-key rate limits and usage metering, plus
+signed webhooks with retries and a delivery log, are built and tested. Further scopes, organization-level keys, a persistent
+delivery queue and a published API specification are NOT built.**
 Nothing has been published; a hosted deployment needs the owner's approval (migration 11 of the pending set).
 
 ## What exists
@@ -38,7 +39,31 @@ It does **not** mean the person or employer is trustworthy. Reviewed credentials
 - The status check an anonymous holder can make (`/api/v1/credentials/status`) stays public and unchanged.
 - The database function that checks keys is callable without a session (it has to be). It returns only valid/invalid plus scopes, and counts the call. This is the second function exposed to anonymous callers after `credential_status`; a test pins the exact list.
 
+## Webhooks
+
+A signed-in person can register up to three https endpoints of their own (Settings, Developer access). ORYQEN posts a signed JSON
+event to each. Events today: `credential.revoked` (sent when the holder revokes one of their credentials) and `ping` (a manual test).
+A credential that stops being valid because its source record changed is **not** announced, because that change is computed live rather
+than recorded as an event; verifiers see it through the verification endpoint.
+
+```json
+{ "id": "<event uuid>", "type": "credential.revoked", "createdAt": "2026-10-27T10:00:00.000Z", "data": { "credentialId": "<uuid>", "reason": "holder_requested" } }
+```
+
+Headers: `Oryqen-Signature: t=<unix seconds>,v1=<hex>` where `v1` is HMAC-SHA256 of `<t>.<raw body>` with the endpoint secret;
+`Oryqen-Event-Id`; `Oryqen-Event-Type`; `Content-Type: application/json`.
+
+Receiver checklist: recompute the HMAC over the raw body and compare in constant time; reject a timestamp more than 5 minutes
+from your clock; remember event ids you have processed and ignore repeats (retries reuse the same id); answer 2xx quickly.
+
+Rules: addresses must be https on port 443 with no credentials and must resolve only to public addresses. The check runs inside the
+TLS connection's own DNS lookup, so a name that changes its answer cannot reach a private network, and redirects are never followed.
+Delivery makes up to three attempts (immediately, after 1 s, after 5 s) on network errors, 408, 429 and 5xx; other answers are final.
+Every attempt is logged and the last one is shown beside the endpoint. The signing secret is shown once at creation, is stored so
+ORYQEN can sign deliveries, and is readable only by its owner's session. Delivery is best effort in the background of the revoke request
+and is **not** queued across a server restart: a missed event can always be reconstructed through the verification endpoint.
+
 ## Not built
 
-Webhooks (signed delivery, retries, replay protection, an endpoint registry), additional scopes, organization-owned keys,
+A persistent delivery queue with longer retry schedules, more event types, additional scopes, organization-owned keys,
 key expiry and rotation reminders, IP allow-lists, an OpenAPI document and a developer portal page, sandbox keys.

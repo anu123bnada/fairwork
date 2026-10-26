@@ -42,6 +42,11 @@ export type Database = {
       developer_key_list: { Args: { request: Json }; Returns: Json };
       developer_key_revoke: { Args: { request: Json }; Returns: Json };
       developer_key_check: { Args: { request: Json }; Returns: Json };
+      webhook_create: { Args: { request: Json }; Returns: Json };
+      webhook_list: { Args: { request: Json }; Returns: Json };
+      webhook_targets: { Args: { request: Json }; Returns: Json };
+      webhook_delete: { Args: { request: Json }; Returns: Json };
+      webhook_log: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

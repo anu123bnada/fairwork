@@ -29,5 +29,27 @@ export async function localDeveloperJourney({ worker, employer, workId, request,
   must((await call(created.key, { credential: issued.token })).status === 401, 'A revoked key stops working at once, and only its owner could revoke it');
   const after = (await request(worker, '/api/v1/developer/keys')).items.find(item => item.keyId === created.keyId);
   must(after.revokedAt !== null && after.callsLast24h >= 3, 'Usage is metered: the owner sees the number of checks and the revocation');
+  // Webhooks: real database, real signing, real background delivery. The endpoint name cannot resolve, so every delivery fails
+  // honestly; what is proven is validation, secrecy, ownership, retries and the delivery log.
+  await request(worker, '/api/v1/developer/webhooks', { url: 'https://127.0.0.1/hook' }, [422]);
+  await request(worker, '/api/v1/developer/webhooks', { url: 'http://hooks.oryqen-journey.invalid/in' }, [422]);
+  const hook = await request(worker, '/api/v1/developer/webhooks', { url: 'https://hooks.oryqen-journey.invalid/in' });
+  must(/^[A-Za-z0-9_-]{43}$/.test(hook.secret), 'A person registers a public https endpoint; private and insecure addresses are refused and the signing secret is shown once');
+  const hooks = await request(worker, '/api/v1/developer/webhooks');
+  must(hooks.items.length === 1 && !JSON.stringify(hooks).includes(hook.secret) && (await request(employer, '/api/v1/developer/webhooks')).items.length === 0, 'The endpoint list never contains the secret and other accounts do not see it');
+  const ping = await request(worker, '/api/v1/developer/webhooks/test', { webhookId: hook.webhookId });
+  must(ping.outcome === 'failed' && ping.statusCode === null && (await request(worker, '/api/v1/developer/webhooks')).items[0].lastDelivery.eventType === 'ping', 'A test event to an unreachable endpoint is reported as failed and logged');
+  await request(employer, '/api/v1/developer/webhooks/test', { webhookId: hook.webhookId }, [404]);
+  const second = await request(worker, '/api/v1/credentials', { workId, lifetimeDays: 30, idempotencyKey: randomUUID() });
+  await request(worker, '/api/v1/credentials/revoke', { credentialId: second.credentialId });
+  let delivery = null;
+  for (let i = 0; i < 40 && !(delivery?.eventType === 'credential.revoked' && delivery.attempt === 3); i += 1) {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    delivery = (await request(worker, '/api/v1/developer/webhooks')).items[0].lastDelivery;
+  }
+  must(delivery?.eventType === 'credential.revoked' && delivery.attempt === 3 && delivery.outcome === 'failed', 'Revoking a credential sends a signed event in the background, retried up to three times, and every attempt is logged');
+  await request(employer, '/api/v1/developer/webhooks/delete', { webhookId: hook.webhookId }, [404]);
+  await request(worker, '/api/v1/developer/webhooks/delete', { webhookId: hook.webhookId });
+  must((await request(worker, '/api/v1/developer/webhooks')).items.length === 0, 'Only the owner can remove an endpoint');
   return { skipped: false };
 }

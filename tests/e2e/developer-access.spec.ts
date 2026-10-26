@@ -5,6 +5,7 @@ const SECRET = "A".repeat(43);
 async function signedIn(page: Page) {
   await page.route("**/api/v1/**", route => route.fulfill({ status: 503, json: { error: { code: "SERVICE_UNAVAILABLE" } } }));
   await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: id(1), displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  await page.route("**/api/v1/developer/webhooks", route => route.request().method() === "GET" ? route.fulfill({ json: { data: { items: [] } } }) : route.fallback());
 }
 
 test("a person creates a key, sees the full key once, then only metadata, and revokes it with a confirmation", async ({ page, context }) => {
@@ -53,4 +54,55 @@ test("a refused creation shows a plain error and the page holds on a phone", asy
   await panel.getByRole("button", { name: "Create key" }).click();
   await expect(panel.getByRole("alert")).toBeVisible(); await expect(panel.getByRole("group", { name: "New key" })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+});
+
+test("a person adds a webhook endpoint, sees its signing secret once, sends a test event, and removes it with a confirmation", async ({ page }) => {
+  await signedIn(page);
+  await page.route("**/api/v1/developer/keys", route => route.fulfill({ json: { data: { items: [] } } }));
+  let hooks: unknown[] = [{ webhookId: id(21), url: "https://old.example.test/in", createdAt: "2026-10-01T00:00:00Z", lastDelivery: { at: "2026-10-02T00:00:00Z", outcome: "failed", statusCode: 503, eventType: "credential.revoked", attempt: 3 } }];
+  const created: Record<string, unknown>[] = []; let removed = "", pinged = "";
+  await page.route("**/api/v1/developer/webhooks", route => {
+    if (route.request().method() === "POST") {
+      created.push(route.request().postDataJSON());
+      hooks = [...hooks, { webhookId: id(22), url: "https://hooks.example.test/oryqen", createdAt: "2026-10-27T00:00:00Z", lastDelivery: null }];
+      return route.fulfill({ json: { data: { webhookId: id(22), url: "https://hooks.example.test/oryqen", secret: "S".repeat(43), note: "Copy this signing secret now. It cannot be shown again." } } });
+    }
+    return route.fulfill({ json: { data: { items: hooks } } });
+  });
+  await page.route("**/api/v1/developer/webhooks/test", route => { pinged = route.request().postDataJSON().webhookId; return route.fulfill({ json: { data: { eventId: id(30), outcome: "delivered", statusCode: 204 } } }); });
+  await page.route("**/api/v1/developer/webhooks/delete", route => { removed = route.request().postDataJSON().webhookId; hooks = hooks.filter(item => (item as { webhookId: string }).webhookId !== removed); return route.fulfill({ json: { data: { webhookId: removed, status: "deleted" } } }); });
+  await page.goto("/app/settings");
+  await page.getByText("Developer access").click();
+  const panel = page.getByRole("region", { name: "Developer access" });
+  await expect(panel).toContainText("Oryqen-Signature"); await expect(panel).toContainText("last delivery failed (HTTP 503)"); await expect(panel).toContainText("credential.revoked");
+  await panel.getByLabel("Endpoint address (https)").fill("https://hooks.example.test/oryqen");
+  await panel.getByRole("button", { name: "Add endpoint" }).click();
+  const secret = panel.getByRole("group", { name: "New signing secret" });
+  await expect(secret).toContainText("cannot be shown again"); await expect(secret.getByLabel("Signing secret")).toHaveValue("S".repeat(43));
+  expect(created).toEqual([{ url: "https://hooks.example.test/oryqen" }]);
+  await secret.getByRole("button", { name: "I have saved it" }).click(); await expect(panel).not.toContainText("S".repeat(43));
+  const item = panel.getByRole("listitem").filter({ hasText: "hooks.example.test" });
+  await item.getByRole("button", { name: "Send test event" }).click();
+  await expect(panel.getByRole("status").filter({ hasText: "Test event delivered (HTTP 204)" })).toBeVisible(); expect(pinged).toBe(id(22));
+  const old = panel.getByRole("listitem").filter({ hasText: "old.example.test" });
+  await old.getByRole("button", { name: "Remove endpoint" }).click(); expect(removed).toBe("");
+  await old.getByRole("button", { name: "Remove now" }).click();
+  await expect(panel).not.toContainText("old.example.test"); expect(removed).toBe(id(21));
+});
+
+test("a refused or unreachable endpoint shows a plain explanation", async ({ page }) => {
+  await signedIn(page);
+  await page.route("**/api/v1/developer/keys", route => route.fulfill({ json: { data: { items: [] } } }));
+  await page.route("**/api/v1/developer/webhooks", route => route.request().method() === "POST"
+    ? route.fulfill({ status: 422, json: { error: { code: "VALIDATION_FAILED" } } })
+    : route.fulfill({ json: { data: { items: [{ webhookId: id(21), url: "https://down.example.test/in", createdAt: "2026-10-01T00:00:00Z", lastDelivery: null }] } } }));
+  await page.route("**/api/v1/developer/webhooks/test", route => route.fulfill({ json: { data: { eventId: id(30), outcome: "failed", statusCode: null } } }));
+  await page.goto("/app/settings");
+  await page.getByText("Developer access").click();
+  const panel = page.getByRole("region", { name: "Developer access" });
+  await panel.getByLabel("Endpoint address (https)").fill("https://127.0.0.1/hook");
+  await panel.getByRole("button", { name: "Add endpoint" }).click();
+  await expect(panel.getByRole("alert")).toBeVisible(); await expect(panel.getByRole("group", { name: "New signing secret" })).toHaveCount(0);
+  await panel.getByRole("button", { name: "Send test event" }).click();
+  await expect(panel.getByRole("status").filter({ hasText: "Test event not delivered (no response)" })).toBeVisible();
 });
