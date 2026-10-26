@@ -36,7 +36,7 @@ No module is "COMPLETE" because none has run against hosted Supabase, Storage, a
 | 12 | Security & Privacy Command | Auth, MFA, RLS, quotas, origin checks, data export, secrets scan, route audit, HSTS | Passkeys, retention controls, account-deletion workflow (requests only) | 0 production vulnerabilities; static route audit | none | PARTIAL |
 | 13 | Administration & Trust Operations | Capability+MFA queues, settings, audit, gateway runtime panel | Abuse reports, hosted operator procedures | Capability gated | none | IMPLEMENTED (local) |
 | 14 | Premium Multiplatform UX | 13 screens at 3 widths, consistent panels | Dark theme, WCAG audit, device visual review | n/a | Physical devices | PARTIAL |
-| 15 | Global Localization | en/si/ta/de catalogs (~600 strings each), formatters; translated: home, saved offers, research, work record, add-offer/check/questions, agreements, drafts, cases, recruiter panels | **Still English:** sign-in/registration, import tools, rule-analysis panels, admin console; all drafts need native review; no server-side locale | n/a | Native reviewers | PARTIAL |
+| 15 | Global Localization | en/si/ta/de catalogs (~600 strings each), formatters; translated: home, saved offers, research, work record, add-offer/check/questions, agreements, drafts, cases, recruiter panels | **Still English:** sign-in/registration, rule-analysis panels, admin console; all drafts need native review; no server-side locale | n/a | Native reviewers | PARTIAL |
 | 16 | Country-Aware Intelligence | Germany rules with quotes, sources, dates; other countries show an explicit limitation | Only Germany; no Sri Lanka primary text; counsel review | n/a | Legal sources | PARTIAL |
 | 17 | Recruiter Scam Protection | Text indicators, look-alike domains, **Recruiter Identity & Affiliation Verification (new)**: live dated evidence, deterministic status | Hosted DNS egress unverified; no reporting flow; org approval is a demo policy | Never reads professional-network pages | DNS/HTTP egress | PARTIAL |
 | 18 | Verifiable Credentials | Ed25519 core, register, issue/revoke/status, QR, browser verification; real-stack journey now runs with a throwaway key | **No production key** | Key never in repo | Owner key ceremony | IMPLEMENTED (local, test key) |
@@ -85,7 +85,7 @@ Counts: IMPLEMENTED (local) 4 (modules 04, 09, 13 and 18 with a test key); PARTI
 
 ## 5. Next engineering tasks that need no owner input
 
-1. Translate sign-in/registration, the import tools and rule-analysis panels, then shorten the coverage note accordingly.
+1. Translate sign-in/registration and the rule-analysis panels, then shorten the coverage note accordingly.
 2. Agreement expiry reminders and a unified timeline (module 20).
 3. Persistent webhook delivery queue and more events/scopes (module 21).
 4. Organization plans and an operator UI for entitlements (module 22).

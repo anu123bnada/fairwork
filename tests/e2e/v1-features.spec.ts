@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { assessOfferTerms } from "../../src/features/offer/assessment";
+import { translate } from "../../src/i18n";
 const id = "40000000-0000-4000-8000-000000000001", otherId = "40000000-0000-4000-8000-0000000000e1";
 const me = { data: { id, displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } };
 async function signedIn(page: Page) {
@@ -88,3 +89,18 @@ test("organization team roster shows membership facts only and cannot change aut
   await expect(roster).toContainText("expired"); await expect(roster).toContainText("cannot change anyone");
   await expect(roster.getByRole("button")).toHaveCount(0);
 });
+
+for (const locale of ["si", "ta", "de"] as const) {
+  test(`the local PDF and screenshot readers are translated in ${locale}`, async ({ page }) => {
+    await signedIn(page);
+    await page.route("**/api/v1/companies**", route => route.fulfill({ json: { data: { items: [], nextCursor: null } } }));
+    await page.route("**/api/v1/offers/drafts", route => route.fulfill({ json: { data: { items: [], nextCursor: null } } }));
+    await page.goto("/app/settings"); await page.getByLabel("Language").selectOption(locale);
+    await page.goto("/app/add-offer");
+    await page.getByRole("tab").filter({ hasText: /^PDF$/ }).first().click().catch(() => undefined);
+    await expect(page.getByRole("region", { name: translate(locale, "im.pdf.aria") })).toContainText(translate(locale, "im.pdf.title"));
+    await page.getByLabel(translate(locale, "im.pdf.file")).setInputFiles({ name: "offer.pdf", mimeType: "application/pdf", buffer: pdfBytes(["Salary LKR 90000 per month"]) });
+    await expect(page.getByText(translate(locale, "im.pdf.readOne", { read: 1, total: 1 }))).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/\bim\.[a-zA-Z.]+\b/);
+  });
+}
