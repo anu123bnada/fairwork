@@ -1,4 +1,4 @@
-# ORYQEN session handoff (26 October 2026)
+# ORYQEN session handoff (updated 27 October 2026)
 
 Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 `docs/ORYQEN_V1_MASTER_SPECIFICATION.md` (the authoritative 22-module target). Do not repeat the audit.
@@ -8,10 +8,10 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 - Repo `C:\Users\vehiv\Desktop\fairwork`, branch `feature/oryqen-sprint-oct25`. Nothing pushed, deployed,
   or applied to hosted systems. Untracked and deliberately left alone: `src/server/identity.ts.bak`,
   `landing/v6/next-env.d.ts`.
-- Local Docker stack (Supabase `oryqen-local-dev`, mail on 55424) is up with 39 migrations; the app
+- Local Docker stack (Supabase `oryqen-local-dev`, mail on 55424) is up with 43 migrations (all local; includes entitlements, vault and developer keys); the app
   server on port 3100 is stopped. Start it with `node scripts/run-local-development.mjs`.
   Demo worker: `oryqen-demo-worker@example.test`; password in git-ignored `.tmp/demo-password.txt`.
-- Seven migrations are not on hosted Supabase; ordering and risks are in
+- Eleven migrations are not on hosted Supabase; ordering and risks are in
   `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`. The owner has not yet confirmed which Supabase and Vercel
   projects are production; do not ask again until a hosted operation is genuinely needed.
 
@@ -62,10 +62,27 @@ Register, status, issuing, revoke, published keys, QR and `/verify` are built an
 `node scripts/run-local-development.mjs`. The harness reports credential steps as SKIPPED, never PASS, when the app has no key.
 **The owner holds the production key**: `node scripts/generate-credential-key.mjs --kid <id> --out <path outside repo>`.
 
+## Done in the 27 Oct batch (commits after `073604d`)
+
+Entitlements and plan panel; recruiter scam checks; Evidence Vault (private documents, local disk store verified,
+hosted Storage not verified); Developer API (scoped keys, credential verification endpoint); translated home,
+saved offers, company research, vault, plan and pay panels (si, ta, de drafts); German rest-period, leave and
+notice references; Compare pay panel; `release:verify` now builds the Android debug APK and Windows preview
+installer in full mode. Real-stack harness: 181 PASS (vault, developer API and entitlement journeys included).
+Local environment for the harness: `ORYQEN_CREDENTIAL_KEY_ID=local-test-key-1`,
+`ORYQEN_CREDENTIAL_SIGNING_KEY` (private JWK from `.tmp/test-credential-key.json`) and
+`ORYQEN_VAULT_LOCAL_DIR=<repo>/.tmp/vault-local` exported before `node scripts/run-local-development.mjs`.
+New local migrations must be applied by hand to the Docker database
+(`docker exec -i supabase_db_oryqen-local-dev psql -U postgres -v ON_ERROR_STOP=1 < <file>` then insert the version
+into `supabase_migrations.schema_migrations`); the harness fails its migration inventory check otherwise.
+
 ## Next exact task
 
-(1) Entitlements admin interface and organization plans (model, API and credential limit are built: `docs/ORYQEN_ENTITLEMENTS_DESIGN.md`); (2) Evidence Vault file storage with private bucket and signed URLs; (3) employer-side
-credential views and register audit export; (4) widen translations with native review; (5) research history.
+(1) Read `release-results/release-verify.md` from the latest `npm run release:verify:full` and fix any FAIL.
+(2) Remaining backlog by priority: Check flow and work-record screen translations; webhooks for the Developer API;
+Evidence Vault attachments to records and shares; smart alerts (expiry reminders); organization management screens;
+Windows and Android end-to-end against a hosted backend (blocked on approval); Gemini live proof blocked on provider quota.
+(3) Owner-only items are listed in `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`.
 
 ## Release gate
 `npm run release:verify` (quick) or `npm run release:verify:full` writes `release-results/release-verify.{json,md}` with PASS/FAIL/SKIPPED/BLOCKED per gate. SKIPPED and BLOCKED are never passes.

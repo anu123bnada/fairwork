@@ -20,8 +20,8 @@ export const windowsRelease: Release = {
   version: "0.1.0 (preview)",
   platform: "Windows 10 / 11, x64",
   type: "EXE installer (NSIS, per-user)",
-  size: "121,260,491 bytes (115.6 MiB)",
-  sha256: "64925b35e269250bd68aff8672398abe0e19eee024baf0d65456f6a36911fae7",
+  size: "121,260,469 bytes (115.6 MiB)",
+  sha256: "8f09c36a41c62d622dbb1ed58c2978dca481b8154b3dc4b4d4380d9a140d3819",
   signing: "Unsigned — Windows SmartScreen will warn.",
   signed: false,
 };

@@ -26,7 +26,7 @@ function run(command, args, { cwd = process.cwd(), env = {}, timeout = 1_800_000
   const started = Date.now();
   const outcome = spawnSync(command, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', timeout, windowsHide: true, maxBuffer: 64 * 1024 * 1024, shell: command === 'npm' || command.endsWith('.bat') });
   const output = `${outcome.stdout ?? ''}\n${outcome.stderr ?? ''}`;
-  return { ok: outcome.status === 0, output, tail: output.trim().split('\n').slice(-6).join('\n'), seconds: Math.round((Date.now() - started) / 1000), timedOut: outcome.error?.code === 'ETIMEDOUT' };
+  return { ok: outcome.status === 0, output, tail: output.trim().split('\n').slice(-40).join('\n'), seconds: Math.round((Date.now() - started) / 1000), timedOut: outcome.error?.code === 'ETIMEDOUT' };
 }
 
 // A command check. `blockedOnExit` marks scripts whose non-zero exit means "owner input needed", not "defect".
@@ -36,7 +36,9 @@ function command(id, category, spec, args, options = {}) {
   const outcome = run(spec, args, options);
   if (outcome.ok) return add(id, category, 'PASS', `${options.passDetail ?? 'succeeded'} (${outcome.seconds}s)`);
   if (options.blockedOnExit) return add(id, category, 'BLOCKED', options.blockedDetail ?? 'needs owner input', { evidence: outcome.tail });
-  add(id, category, 'FAIL', outcome.timedOut ? 'timed out' : 'failed', { evidence: outcome.tail });
+  mkdirSync('release-results/logs', { recursive: true });
+  writeFileSync(`release-results/logs/${id}.log`, outcome.output);
+  add(id, category, 'FAIL', outcome.timedOut ? 'timed out' : `failed (full output in release-results/logs/${id}.log)`, { evidence: outcome.tail });
 }
 
 // ---------------------------------------------------------------- code quality and tests
@@ -107,8 +109,8 @@ if (wanted('android-build')) {
 if (wanted('windows-build')) {
   if (!full) add('windows-build', 'windows', 'SKIPPED', 'long gate; rerun with --full');
   else {
-    const build = run('npm', ['run', 'build:windows'], { cwd: 'desktop' });
-    const installers = existsSync('test-results/windows-artifacts') ? readdirSync('test-results/windows-artifacts').filter(name => /\.exe$/i.test(name) && !/uninstall/i.test(name)) : [];
+    const build = run('npm', ['run', 'build:windows', '--', '-c.directories.output=../test-results/windows-verify'], { cwd: 'desktop' });
+    const installers = existsSync('test-results/windows-verify') ? readdirSync('test-results/windows-verify').filter(name => /\.exe$/i.test(name) && !/uninstall/i.test(name)) : [];
     if (build.ok && installers.length) add('windows-build', 'windows', 'PASS', `unsigned preview installer built: ${installers.join(', ')}. Not code-signed: not a release`);
     else add('windows-build', 'windows', 'FAIL', 'the Windows installer build failed', { evidence: build.tail });
   }
@@ -118,7 +120,7 @@ if (wanted('windows-release')) {
   add('windows-release', 'windows', certified ? 'PASS' : 'BLOCKED', certified ? 'code-signing certificate configured (presence only)' : 'no Windows code-signing certificate; only unsigned builds can be produced');
 }
 function artifactIntegrity() {
-  const roots = ['test-results/windows-artifacts', 'mobile/poc/android/app/build/outputs'].filter(existsSync);
+  const roots = ['test-results/windows-artifacts', 'test-results/windows-verify', 'mobile/poc/android/app/build/outputs'].filter(existsSync);
   const files = [];
   const walk = directory => { for (const name of readdirSync(directory)) { const file = path.join(directory, name); if (statSync(file).isDirectory()) walk(file); else if (/\.(exe|apk|aab)$/i.test(name)) files.push(file); } };
   roots.forEach(walk);

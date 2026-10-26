@@ -22,7 +22,10 @@ test("Settings switches the interface language, persists it across reloads, sets
   await expect(page.locator("html")).toHaveAttribute("lang", "si");
   const stats = coverage("si");
   await expect(page.getByRole("note")).toContainText(translate("si", "language.coverageNote", { count: stats.translated }));
-  expect(stats.translated).toBeLessThan(100);
+  // Tripwire: the note says most screens are still English, which stays true while the catalog is a small part of the interface
+  // (several hundred screens strings are untranslated: Check flow, work records, agreements, cases, registration). Raise this
+  // number only together with the wording of language.coverageNote when translation really covers most screens.
+  expect(stats.translated).toBeLessThan(400);
   await page.reload();
   await expect(page.getByRole("heading", { name: translate("si", "settings.title") })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "si");

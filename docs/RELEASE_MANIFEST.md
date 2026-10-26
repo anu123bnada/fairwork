@@ -12,14 +12,14 @@ Every value below was produced by a command in this session; none is estimated.
 | Path | `test-results/windows-artifacts/ORYQEN-Preview-0.1.0-x64-Setup.exe` |
 | Type | NSIS per-user installer, Windows 10/11 x64 (unsigned preview) |
 | Version | 0.1.0 (`ORYQEN Preview`) |
-| Size | 121,260,491 bytes (115.6 MiB) |
-| SHA-256 | `64925b35e269250bd68aff8672398abe0e19eee024baf0d65456f6a36911fae7` |
-| Built | 2026-10-24 11:35 (+05:30) via `npm --prefix desktop run build:windows` |
+| Size | 121,260,469 bytes (115.6 MiB) |
+| SHA-256 | `8f09c36a41c62d622dbb1ed58c2978dca481b8154b3dc4b4d4380d9a140d3819` |
+| Built | Rebuilt 2026-10-26 by an earlier `release:verify:full` run via `npm --prefix desktop run build:windows`; the 24 Oct build (SHA-256 `64925b35...fae7`, 121,260,491 bytes) was overwritten. Electron builds are not byte-reproducible, so the hash differs for identical source. `release:verify` now builds into `test-results/windows-verify` so it can no longer overwrite this file |
 | Signing | **Not signed.** `Get-AuthenticodeSignature` reports `NotSigned`; SmartScreen will warn |
 | Shell | Electron 45.0.0, `app.enableSandbox()`, context isolation on, node integration off, no preload bridge |
 | Contents | `app.asar` with exactly `main.cjs`, `policy.cjs`, `offline.html`, `package.json` |
-| Integrity | Packaged `main.cjs`, `policy.cjs`, `offline.html` byte-identical to `desktop/` source (verified by extraction + `diff`) |
-| Secrets | No service-role keys or tokens in `app.asar` (grep for `service_role`/`SUPABASE_SERVICE`/JWT prefixes returned nothing) |
+| Integrity | Packaged `main.cjs`, `policy.cjs`, `offline.html` byte-identical to `desktop/` source (re-checked on the 26 Oct rebuild by searching the unpacked `app.asar` for the exact bytes) |
+| Secrets | No `service_role`, `SUPABASE_SERVICE`, `GEMINI_API_KEY` or credential-signing names in `app.asar` (re-checked on the 26 Oct rebuild) |
 | Backend | Remote `https://oryqen.vercel.app` (hosted deployment, not a local bundle) |
 
 Unpacked runtime used for smoke acceptance: `test-results/windows-artifacts/win-unpacked/ORYQEN Preview.exe`.
