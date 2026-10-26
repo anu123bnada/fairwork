@@ -32,6 +32,7 @@ import { EvidenceVault } from "./evidence-vault";
 import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { OrgPlanAssignment } from "./org-plan-panel";
 import { MyReports } from "./report-problem";
+import { buildOfferSummary } from "@/features/offer/summary";
 import { ReportQueue } from "./report-queue";
 import { DeveloperAccess } from "./developer-access";
 import { PayCompare } from "./pay-compare";
@@ -886,6 +887,14 @@ function CheckScreen() {
       </div>
       {/* The rules read English field names from this text, so it is deliberately not translated. */}
       <RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
+      <section className="fw-list-card" aria-label={t("sum.button")}>
+        <p>{t("sum.note")}</p>
+        <button type="button" className="fw-secondary" onClick={() => {
+          const text = buildOfferSummary({ version: offer.version, termHash: offer.termHash, snapshot: offer.snapshot ?? {}, unresolved: offer.unresolved.map(item => ({ field: item.field, question: item.question })), generatedAt: new Date() }, t, field => labelFor(field, t));
+          const url = URL.createObjectURL(new Blob([text], { type: "text/markdown;charset=utf-8" })), link = document.createElement("a");
+          link.href = url; link.download = `oryqen-offer-summary-revision-${offer.version}.md`; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
+        }}>{t("sum.button")}</button>
+      </section>
       <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       <RecruiterVerification defaultEmployer={terms.employer ?? terms.company ?? ""} defaultRole={terms.jobTitle ?? terms.role ?? ""} />
       {missing.length ? (

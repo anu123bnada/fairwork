@@ -53,3 +53,16 @@ for (const locale of ["si", "ta", "de"] as LocaleCode[]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `${locale} questions overflow`).toBeLessThanOrEqual(0);
   });
 }
+
+for (const locale of ["en", "si"] as LocaleCode[]) {
+  test(`the offer check can download a summary of the saved terms (${locale})`, async ({ page }) => {
+    await signedIn(page);
+    if (locale !== "en") { await page.goto("/app/settings"); await page.getByLabel("Language").selectOption(locale); }
+    await page.goto(`/app/check?offerId=${id}`);
+    const [download] = await Promise.all([page.waitForEvent("download"), page.getByRole("button", { name: translate(locale, "sum.button") }).click()]);
+    expect(download.suggestedFilename()).toBe("oryqen-offer-summary-revision-2.md");
+    const text = (await import("node:fs")).readFileSync(await download.path(), "utf8");
+    expect(text).toContain(translate(locale, "sum.title")); expect(text).toContain("Workshop Assistant"); expect(text).toContain(hash);
+    expect(text).toContain(translate(locale, "sum.notAgreement"));
+  });
+}
