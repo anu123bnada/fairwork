@@ -70,7 +70,7 @@ copy; items marked "labeled" are disclosed to users in the product.
   instances; use a pooler or raise the limit.
 - The local real-stack harness needs roughly 3 GB or more of free memory; at 0.6 to 1.6 GB it
   fails with browser/Docker resource errors that are not application defects.
-- Entitlements and billing are not implemented. Self-reported employment history has no
+- Billing is not implemented and no payment provider exists. Plans are operator-assigned (placeholder limits, one metered limit: active credentials); organization plans and an assignment interface are not built. Self-reported employment history has no
   verification path and does not appear on the Passport.
 
 ## Added in the missing-functionality session (26 Oct)

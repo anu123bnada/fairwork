@@ -190,3 +190,12 @@ the new endpoint is mocked.
 | New browser tests | 6, with real Ed25519 verification in the browser: genuine, tampered, expired, wrong key, malformed, revoked/unknown/unreachable status never shown as valid, pasted token, phone layout, create/QR/revoke flow, signing-not-configured message |
 | Key ceremony script | refuses repository paths, missing key id and overwrites; success prints only public material |
 | Defects found while building | (1) anonymous verifiers lacked schema usage (fixed, with a test that proves nothing else became anonymous-callable); (2) a malformed token reached a table constraint instead of a clean validation error; (3) the verify page needed the shared brand header and its guard test caught it |
+
+## Entitlements batch and release gate (26 Oct 2026)
+
+| Check | Result |
+|---|---|
+| Real-stack harness (throwaway test key, local Docker PostgreSQL with the new migration) | **163 PASS, 0 FAIL, exit 0**; includes free-plan default, no-billing and non-operator-cannot-grant checks. First attempt failed honestly because the local database lacked the new migration (catalog check), then passed after applying it locally |
+| Vitest | all files passed except none failing; new: catalog 5, server helpers 4, route limit 1, SQL 5 (PGlite and real PostgreSQL) |
+| Browser | credentials and Trust Chain specs 10 passed (limit-reached message added) |
+| `npm run release:verify` (quick mode) | typecheck, lint, vitest, audit, brand assets, Electron policy tests PASS; production build, browser suite and database security SKIPPED without `--full`; configuration, AI policy, credential key, download links, Android release and Windows signing BLOCKED on owner inputs; Android toolchain SKIPPED. Verdict NOT READY: owner input required. Two defects in the new script found and fixed (a lint error; Android preflight reported pass because it exits 0 without `--require-ready`) |

@@ -46,7 +46,7 @@ it("publishes only public keys, and answers 404 when signing is not configured",
 });
 it("lists the holder's credentials and reports whether signing is available", async () => {
   mocks.rpc.mockResolvedValue({ data: { items: [] }, error: null });
-  expect((await (await listGet(new Request(base))).json()).data).toEqual({ signingConfigured: false, verifyBase: `${ORIGIN}/verify`, items: [] });
+  expect((await (await listGet(new Request(base))).json()).data).toEqual({ signingConfigured: false, verifyBase: `${ORIGIN}/verify`, items: [], allowance: { planName: "Free worker protection", limit: 10, used: 0, remaining: 10 } }); // an unreadable plan reads as free
   sign(); expect((await (await listGet(new Request(base))).json()).data.signingConfigured).toBe(true);
   expect((await listGet(new Request(`${base}?holderId=${id(2)}`))).status).toBe(422);
   mocks.getUser.mockResolvedValue({ data: { user: null }, error: null }); expect((await listGet(new Request(base))).status).toBe(401);
@@ -70,4 +70,13 @@ it("refuses to issue without a configured key and revokes only through the datab
   mocks.rpc.mockResolvedValue({ data: { credentialId: id(3), status: "revoked" }, error: null });
   expect((await (await revokePost(post("/revoke", { credentialId: id(3) }))).json()).data).toEqual({ credentialId: id(3), status: "revoked" });
   expect(mocks.rpc).toHaveBeenLastCalledWith("credential_revoke", { request: { credentialId: id(3) } });
+});
+it("applies the plan's credential limit before signing, and a plan read failure falls back to the free limit", async () => {
+  sign();
+  const active = (n: number) => ({ items: Array.from({ length: n }, (_, i) => ({ credentialId: id(100 + i), sourceId: id(10), sourceVersion: 1, assurance: "independently_reviewed", issuedAt: "2026-10-26T00:00:00Z", expiresAt: "2027-01-01T00:00:00Z", token: "x".repeat(120), status: "valid", reason: null })) });
+  const answer = (count: number, plan: string) => mocks.rpc.mockImplementation(async (name: string) => name === "credential_list" ? { data: active(count), error: null } : name === "entitlement_read" ? { data: { plan, assignedAt: null }, error: null } : { data: null, error: { message: "NOT_FOUND", code: "P0001" } });
+  const attempt = () => issuePost(post("", { workId: id(10), idempotencyKey: id(900) }));
+  answer(10, "worker_free"); expect((await attempt()).status).toBe(429); expect(mocks.work).not.toHaveBeenCalled();
+  answer(10, "worker_plus"); mocks.work.mockRejectedValue(new Error("stop")); expect((await attempt()).status).not.toBe(429); expect(mocks.work).toHaveBeenCalled();
+  answer(10, "platinum"); expect((await attempt()).status).toBe(429);
 });

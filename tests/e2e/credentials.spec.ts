@@ -127,3 +127,12 @@ test("when signing is not configured the interface says so instead of offering a
   const panel = page.getByRole("region", { name: "Trust Chain" });
   await expect(panel).toContainText("this server has no signing key configured"); await expect(panel.getByRole("button", { name: "Create a shareable credential" })).toHaveCount(0);
 });
+
+test("when the plan's credential limit is reached the interface explains it instead of offering to create one", async ({ page }) => {
+  await trustPage(page, true, []);
+  await page.route("**/api/v1/credentials", route => route.request().method() === "GET" ? route.fulfill({ json: { data: { signingConfigured: true, verifyBase: `${ISSUER}/verify`, items: [], allowance: { planName: "Free worker protection", limit: 10, used: 10, remaining: 0 } } } }) : route.fallback());
+  await page.goto("/app/passport");
+  const panel = page.getByRole("region", { name: "Trust Chain" });
+  await expect(panel).toContainText("You have 10 of 10 active credentials on the Free worker protection plan");
+  await expect(panel.getByRole("button", { name: "Create a shareable credential" })).toHaveCount(0);
+});

@@ -5,7 +5,8 @@ import { appRequest } from "@/features/authority/client";
 import type { TrustClaim } from "@/features/trust/schema";
 
 export type CredentialItem = { credentialId: string; sourceId: string; sourceVersion: number; assurance: string; issuedAt: string; expiresAt: string; token: string; status: "valid" | "revoked" | "expired" | "unknown"; reason: string | null };
-export type CredentialsData = { signingConfigured: boolean; verifyBase: string; items: CredentialItem[] };
+export type CredentialAllowance = { planName: string; limit: number; used: number; remaining: number };
+export type CredentialsData = { signingConfigured: boolean; verifyBase: string; items: CredentialItem[]; allowance?: CredentialAllowance };
 
 const STATUS = { valid: "Valid", revoked: "Revoked", expired: "Expired", unknown: "Unknown" } as const;
 const when = (value: string) => new Date(value).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -51,9 +52,11 @@ export function IssueCredential({ claim, data, onIssued }: { claim: TrustClaim; 
     finally { setBusy(false); }
   }
   if (issued) return <ShareView verifyUrl={issued.verifyUrl} expiresAt={issued.expiresAt} caveat={claim.verification.caveat} onClose={() => { setIssued(null); setOpen(false); }} />;
+  if (data.allowance && data.allowance.remaining === 0) return <p role="note">You have {data.allowance.used} of {data.allowance.limit} active credentials on the {data.allowance.planName} plan. Revoke one you no longer share to create another.</p>;
   if (!open) return <button type="button" className="fw-secondary" onClick={() => setOpen(true)}>Create a shareable credential</button>;
   return <div role="group" aria-label="Create a credential">
     <p>A credential lets someone check this claim without seeing your account. You choose what it says and how long it lasts.</p>
+    {data.allowance && <p role="note">{data.allowance.used} of {data.allowance.limit} active credentials used on the {data.allowance.planName} plan.</p>}
     <label className="fw-field">What it says (you can shorten it, not add to it)<input value={statement} maxLength={300} onChange={event => setStatement(event.target.value)} /></label>
     <label className="fw-field">Valid for<select value={days} onChange={event => setDays(event.target.value)}><option value="30">30 days</option><option value="90">90 days</option><option value="365">1 year</option></select></label>
     {error && <p role="alert">{error}</p>}

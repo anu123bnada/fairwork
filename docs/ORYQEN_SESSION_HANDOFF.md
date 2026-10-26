@@ -64,5 +64,8 @@ Register, status, issuing, revoke, published keys, QR and `/verify` are built an
 
 ## Next exact task
 
-(1) Entitlements model; (2) Evidence Vault file storage with private bucket and signed URLs; (3) employer-side
+(1) Entitlements admin interface and organization plans (model, API and credential limit are built: `docs/ORYQEN_ENTITLEMENTS_DESIGN.md`); (2) Evidence Vault file storage with private bucket and signed URLs; (3) employer-side
 credential views and register audit export; (4) widen translations with native review; (5) research history.
+
+## Release gate
+`npm run release:verify` (quick) or `npm run release:verify:full` writes `release-results/release-verify.{json,md}` with PASS/FAIL/SKIPPED/BLOCKED per gate. SKIPPED and BLOCKED are never passes.

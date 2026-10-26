@@ -7,6 +7,10 @@ import { expect } from '@playwright/test';
 // If the app was started without a signing key this journey reports SKIPPED; it never counts as a pass.
 export async function localCredentialJourney({ worker, employer, outsider, workId, request, record, origin, evidence }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
+  const plan = await request(worker, '/api/v1/entitlements');
+  must(plan.plan.id === 'worker_free' && plan.billing.available === false && plan.essentialFeatures.includes('privacy_requests') && plan.limits[0].limit === 10, 'A new account is on the free worker plan, essential protections are listed and no billing is offered');
+  await request(worker, '/api/v1/operator/entitlements', { subjectId: employer.id, plan: 'worker_plus', reason: 'Not an operator', idempotencyKey: randomUUID() }, [403]);
+  must((await request(employer, '/api/v1/entitlements')).plan.id === 'worker_free', 'A non-operator cannot grant a plan to anyone');
   const mine = await request(worker, '/api/v1/credentials');
   if (!mine.signingConfigured) { console.log('SKIPPED: credential journey (the local app has no signing key configured)'); return { skipped: true }; }
   const body = { workId, lifetimeDays: 30, idempotencyKey: randomUUID() };

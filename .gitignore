@@ -46,3 +46,4 @@ mobile/**/local.properties
 *.db
 *service-account*.json
 *credentials*.json
+release-results/

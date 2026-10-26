@@ -53,7 +53,7 @@ a step for it.
 | 19 | Fairness & Salary Benchmarking | PARTIAL | **New:** pay-period normalization with explicit assumptions and same-currency or sourced-rate comparison (no invented rates) | Not yet in the UI; no benchmark datasets |
 | 20 | Smart Alerts & Timeline | PARTIAL | In-app notification center and workflow notifications | Expiry reminders, email, Android push, preferences |
 | 21 | Developer API & Integrations | NOT STARTED | — | Everything |
-| 22 | Sustainable Business Platform | NOT STARTED | — | Entitlements model, metering, plans; no billing provider |
+| 22 | Sustainable Business Platform | PARTIAL | Entitlement catalog (essential protections pinned and never gated), operator plan assignment migration with SQL tests on real PostgreSQL, entitlements API, credential limit metering; see `ORYQEN_ENTITLEMENTS_DESIGN.md` | Billing (none, by design), organization plans, admin interface, wider metering |
 
 ## Platform status
 
@@ -83,7 +83,7 @@ a step for it.
 1. ~~Trust Chain read model~~ done (see above); next: stored claim ledger with expiry, linked disputes and Passport grants.
 2. ~~Verifiable credentials~~ built against a test key; remaining: production key from the owner, employer-side views, audit export.
 3. Evidence Vault file storage with private bucket, signed short-lived URLs, malware and type validation.
-4. Entitlements model (free worker protection tier fixed in code), usage metering, admin plan controls; no billing.
+4. ~~Entitlements model~~ built (no billing); remaining: admin interface for assignments, organization plans, wider metering.
 5. Research history persistence, employer-claim versus registry contradiction detection, recruiter checks.
 6. Widen translation coverage and add native-speaker review; add a server-side locale preference migration.
 7. More jurisdictions only from verified primary sources.

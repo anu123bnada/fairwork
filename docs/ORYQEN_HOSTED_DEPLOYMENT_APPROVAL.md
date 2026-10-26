@@ -3,7 +3,7 @@
 Nothing in this document has been executed against any hosted system. Local evidence only.
 No push, deployment or hosted-database change has been made. Approval is requested, not assumed.
 
-## 1. The eight pending migrations
+## 1. The nine pending migrations
 
 Apply in this order. Each runs in one transaction and starts with a guard that requires the
 `postgres` identity. All seven were applied cleanly, in order, to the **real local Supabase
@@ -22,8 +22,9 @@ in the roster migration), so real-Postgres application is the meaningful check.
 | 7 | `20261026130000_company_team_roster` | `private.company_team` (owned by `fw_policy_exec`, temporary schema CREATE grant revoked afterwards) and `api.company_team` | No table changes | None |
 
 | 8 | `20261026140000_credential_register` | New tables `credentials` and `credential_events` (append-only, forced RLS), RPCs `credential_register/list/revoke/status`, two helper functions owned by the policy role. **Security-relevant grants, please review:** (a) `GRANT USAGE ON SCHEMA api TO anon` so anonymous verifiers can call `api.credential_status`; a test proves it is the only `api` function anonymous callers can execute; (b) column-limited `SELECT` for the policy role on `work_record_versions(work_id,version,state)` and `work_integrity_events(work_id,version,operation)`, plus `USING (true)` policies for that role only | No | None (new empty tables). Live status depends on those grants |
+| 9 | `20261026160000_plan_entitlements` | New append-only table `plan_assignments` (forced RLS), RPCs `entitlement_read` and `entitlement_assign` (authority operator with second factor; no self-assignment). No payment data. | No | None (new empty table; everyone reads as the free plan) |
 
-(You asked about four migrations. Eight are pending: the original four, plus the compatibility fix (5), saved
+(You asked about four migrations. Nine are pending: the original four, plus the compatibility fix (5), saved
 analysis (6), team roster (7) and the credential register (8). Apply them together, in order.)
 
 A scan for `DROP TABLE/COLUMN/SCHEMA`, `TRUNCATE`, `ALTER ... DROP/RENAME` and `UPDATE ... SET`
