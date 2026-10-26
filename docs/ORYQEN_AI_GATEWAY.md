@@ -35,3 +35,17 @@ Not integrated: AI summaries of company research, agreement analysis, career mat
 ## Owner decisions still needed
 
 Which providers (if any besides Gemini) are approved for real user data, with their regions and retention terms; the Gemini quota or billing tier; whether to run a self-hosted model (this machine has no GPU, so none was run); daily budgets.
+
+## Model selection evidence (28 Oct 2026, ListModels and probes with synthetic text only)
+
+The provider's own model list (60 models, `generateContent` capable) was read with the configured key. Probes of three candidates:
+
+| Model | Result | Note |
+|---|---|---|
+| `gemini-3.8-flash` (currently configured) | 503 UNAVAILABLE, "high demand" | Overloaded on the day; the gateway treats 503 as transient |
+| `gemini-3.5-flash` | 200 in 1.5 s | Versioned release (3.5-flash-05-2026); preferred when speed matters |
+| `gemini-3.1-flash-lite` | 200 in 13–18 s; full application provider test passed | Versioned release (3.1-flash-lite-05-2026); proven end to end |
+| `gemini-2.5-flash` | 404, "no longer available to new users" | Do not use for this account |
+
+Recommendation: set `GEMINI_MODEL=gemini-3.5-flash` (or `gemini-3.1-flash-lite`) in the hosting secrets. Model names are only ever taken from the provider's
+list; the application never guesses one. Real-user processing stays off until the owner approves the policy fields.
