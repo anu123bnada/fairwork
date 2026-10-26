@@ -24,7 +24,7 @@ const wanted = id => !only || only.includes(id);
 
 function run(command, args, { cwd = process.cwd(), env = {}, timeout = 1_800_000 } = {}) {
   const started = Date.now();
-  const outcome = spawnSync(command, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', timeout, windowsHide: true, maxBuffer: 64 * 1024 * 1024, shell: command === 'npm' });
+  const outcome = spawnSync(command, args, { cwd, env: { ...process.env, ...env }, encoding: 'utf8', timeout, windowsHide: true, maxBuffer: 64 * 1024 * 1024, shell: command === 'npm' || command.endsWith('.bat') });
   const output = `${outcome.stdout ?? ''}\n${outcome.stderr ?? ''}`;
   return { ok: outcome.status === 0, output, tail: output.trim().split('\n').slice(-6).join('\n'), seconds: Math.round((Date.now() - started) / 1000), timedOut: outcome.error?.code === 'ETIMEDOUT' };
 }
@@ -81,16 +81,44 @@ if (wanted('android-release')) {
   const preflight = run(node, ['mobile/poc/scripts/release-preflight.mjs', '--require-ready']);
   add('android-release', 'android', preflight.ok ? 'PASS' : 'BLOCKED', preflight.ok ? 'release preflight passed' : 'release preflight lists owner decisions (application ID, domain, keystore, device acceptance)', preflight.ok ? {} : { evidence: preflight.tail });
 }
-if (wanted('android-toolchain')) {
+// The doctor prints a JSON inventory and exits non-zero when no test device is attached, so the verdict comes from its fields.
+let androidInventory = null;
+if (wanted('android-toolchain') || wanted('android-build')) {
   const doctor = run(node, ['mobile/poc/scripts/doctor.mjs']);
-  add('android-toolchain', 'android', doctor.ok ? 'PASS' : 'SKIPPED', doctor.ok ? 'Android SDK and Java found' : 'Android toolchain not available on this machine; no Android build was attempted', doctor.ok ? {} : { evidence: doctor.tail });
+  try { androidInventory = JSON.parse(doctor.output.slice(doctor.output.indexOf('{'), doctor.output.lastIndexOf('}') + 1)); } catch { androidInventory = null; }
+}
+if (wanted('android-toolchain')) {
+  if (!androidInventory) add('android-toolchain', 'android', 'SKIPPED', 'the Android inventory could not be read; no Android build was attempted');
+  else add('android-toolchain', 'android', androidInventory.buildReady ? 'PASS' : 'SKIPPED', androidInventory.buildReady ? `SDK, build tools and Java ${androidInventory.javaMajor} found; device testing ${androidInventory.deviceTestingReady ? 'ready' : 'not ready (no authorized device or emulator running)'}` : 'Android SDK, build tools or a compatible Java were not found; no Android build was attempted');
+}
+if (wanted('android-build')) {
+  if (!full) add('android-build', 'android', 'SKIPPED', 'long gate; rerun with --full');
+  else if (!androidInventory?.buildReady) add('android-build', 'android', 'SKIPPED', 'Android toolchain not ready; no Android build was attempted');
+  else {
+    const javaHome = path.dirname(path.dirname(androidInventory.javaExecutable));
+    const env = { JAVA_HOME: javaHome, ANDROID_HOME: androidInventory.androidSdk, GRADLE_USER_HOME: path.resolve('.tmp/android-gradle') };
+    const sync = run(node, ['node_modules/@capacitor/cli/bin/capacitor', 'copy', 'android'], { cwd: 'mobile/poc', env });
+    const gradle = sync.ok ? run(path.resolve('mobile/poc/android/gradlew.bat'), ['assembleDebug', '--no-daemon', '--no-watch-fs', '--max-workers=1', '--console=plain'], { cwd: 'mobile/poc/android', env }) : sync;
+    const apk = 'mobile/poc/android/app/build/outputs/apk/debug/app-debug.apk';
+    if (gradle.ok && existsSync(apk)) add('android-build', 'android', 'PASS', `debug-signed preview APK built (${statSync(apk).size} bytes, sha256 ${createHash('sha256').update(readFileSync(apk)).digest('hex').slice(0, 16)}...). Debug-signed: not a release`, { artifact: apk });
+    else add('android-build', 'android', 'FAIL', 'the Android debug build failed', { evidence: gradle.tail });
+  }
+}
+if (wanted('windows-build')) {
+  if (!full) add('windows-build', 'windows', 'SKIPPED', 'long gate; rerun with --full');
+  else {
+    const build = run('npm', ['run', 'build:windows'], { cwd: 'desktop' });
+    const installers = existsSync('test-results/windows-artifacts') ? readdirSync('test-results/windows-artifacts').filter(name => /\.exe$/i.test(name) && !/uninstall/i.test(name)) : [];
+    if (build.ok && installers.length) add('windows-build', 'windows', 'PASS', `unsigned preview installer built: ${installers.join(', ')}. Not code-signed: not a release`);
+    else add('windows-build', 'windows', 'FAIL', 'the Windows installer build failed', { evidence: build.tail });
+  }
 }
 if (wanted('windows-release')) {
   const certified = present('CSC_LINK') || present('WIN_CSC_LINK') || present('ORYQEN_WINDOWS_CERTIFICATE_PATH');
   add('windows-release', 'windows', certified ? 'PASS' : 'BLOCKED', certified ? 'code-signing certificate configured (presence only)' : 'no Windows code-signing certificate; only unsigned builds can be produced');
 }
 function artifactIntegrity() {
-  const roots = ['desktop/dist', 'mobile/poc/android/app/build/outputs'].filter(existsSync);
+  const roots = ['test-results/windows-artifacts', 'mobile/poc/android/app/build/outputs'].filter(existsSync);
   const files = [];
   const walk = directory => { for (const name of readdirSync(directory)) { const file = path.join(directory, name); if (statSync(file).isDirectory()) walk(file); else if (/\.(exe|apk|aab)$/i.test(name)) files.push(file); } };
   roots.forEach(walk);
@@ -102,7 +130,7 @@ if (wanted('artifact-integrity')) artifactIntegrity();
 
 // ---------------------------------------------------------------- report
 const counts = Object.fromEntries(['PASS', 'FAIL', 'SKIPPED', 'BLOCKED'].map(status => [status, results.filter(result => result.status === status).length]));
-const verdict = counts.FAIL ? 'NOT READY: defects found' : counts.BLOCKED ? 'NOT READY: owner input required' : counts.SKIPPED ? 'INCOMPLETE: checks were skipped' : 'READY';
+const verdict = only ? (counts.FAIL ? 'PARTIAL RUN: defects found' : 'PARTIAL RUN: selected checks only; not a release verdict') : counts.FAIL ? 'NOT READY: defects found' : counts.BLOCKED ? 'NOT READY: owner input required' : counts.SKIPPED ? 'INCOMPLETE: checks were skipped' : 'READY';
 const report = { generatedAt: new Date().toISOString(), mode: full ? 'full' : 'quick', verdict, counts, results };
 mkdirSync('release-results', { recursive: true });
 writeFileSync('release-results/release-verify.json', JSON.stringify(report, null, 2));
