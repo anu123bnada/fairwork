@@ -86,6 +86,15 @@ it("enforces AI pause in the database while retaining consent and budget protect
  expect(await rpc("platform_notices",{},admin)).toEqual({announcement:"Synthetic maintenance notice"});
  await expect(rpc("platform_notices",{key:"analysis_paused"},admin)).rejects.toThrow("VALIDATION_FAILED");
 });
+it("accepts any safe configured model and the self-hosted provider, and still refuses unsafe identifiers",async()=>{
+ const base={noticeVersion:"offer-analysis.v1",consent:true,processingRegion:"isolated fixture only",dataUse:"isolated synthetic test",policyHash:"e".repeat(64)};
+ // The per-account minute limit set by the previous test applies to each account, so each provider is authorized by a different account.
+ await rpc("authorize_ai_transmission",{...base,provider:"gemini",model:"gemini-3.1-flash-lite",inputHash:"1".repeat(64)},owner);
+ await rpc("authorize_ai_transmission",{...base,provider:"openai",model:"gpt-5-mini",inputHash:"2".repeat(64)},support);
+ await rpc("authorize_ai_transmission",{...base,provider:"selfhosted",model:"llama3.1:8b-instruct",inputHash:"3".repeat(64)},auditor);
+ for(const bad of [{provider:"gemini",model:"gpt-4o"},{provider:"gemini",model:"../other?key=x"},{provider:"openai",model:""},{provider:"anthropic",model:"claude-x"},{provider:"selfhosted",model:"a b"},{provider:"gemini",model:"x".repeat(101)}])
+  await expect(rpc("authorize_ai_transmission",{...base,...bad,inputHash:"4".repeat(64)},owner),JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
+});
 it.skipIf(!process.env.FAIRWORK_LOCAL_POSTGRES_PORT)("serializes simultaneous conflicting PostgreSQL commands",async()=>{
  const a=await localPostgresConnection(),b=await localPostgresConnection();const target=randomUUID();
  const commandBody=command("incident",target,0,{title:"Concurrent fixture event",category:"security",status:"open",priority:"normal",assignedTo:null});

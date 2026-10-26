@@ -64,6 +64,22 @@ else {
   add('ai', complete ? 'PASS' : 'FAIL', 'AI flags are inconsistent: enabling needs approval, key, model, approval reference, processing region and data-use text together');
 }
 
+// ---- AI fallbacks: each listed provider must be complete and approved on its own settings, never on the primary's
+const fallbackNames = (env.ORYQEN_AI_FALLBACK_PROVIDERS ?? '').split(',').map(item => item.trim()).filter(Boolean);
+if (fallbackNames.length) {
+  const problems = [];
+  const primary = env.ORYQEN_AI_PROVIDER ?? 'gemini';
+  for (const name of [...new Set(fallbackNames)]) {
+    const upper = name.toUpperCase();
+    if (!['gemini', 'openai', 'selfhosted'].includes(name)) { problems.push(`${name} is not a known provider`); continue; }
+    if (name === primary) { problems.push(`${name} is already the primary provider`); continue; }
+    const need = [`ORYQEN_AI_${upper}_POLICY_APPROVAL_REF`, `ORYQEN_AI_${upper}_PROCESSING_REGION`, `ORYQEN_AI_${upper}_DATA_USE`].filter(item => !has(item));
+    const credential = name === 'gemini' ? has('GEMINI_API_KEY') && has('GEMINI_MODEL') : name === 'openai' ? has('OPENAI_API_KEY') : has('ORYQEN_SELFHOSTED_AI_URL') && has('ORYQEN_SELFHOSTED_AI_MODEL');
+    if (need.length || !credential) problems.push(`${name} is incomplete (${[...need, ...(credential ? [] : ['credentials or model'])].join(', ')})`);
+  }
+  add('ai-fallbacks', problems.length ? 'FAIL' : aiOn && aiApproved ? 'PASS' : 'WARN', problems.length ? problems.join('; ') : 'fallback providers are complete and separately approved; they are used only when AI is enabled and the person consents to them');
+}
+
 // ---- telemetry and downloads
 if (has('ORYQEN_TELEMETRY_DB_URL')) {
   let user; try { user = new URL(env.ORYQEN_TELEMETRY_DB_URL).username; } catch { user = ''; }

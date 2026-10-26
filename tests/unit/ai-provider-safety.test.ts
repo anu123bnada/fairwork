@@ -2,6 +2,7 @@ import { beforeEach, afterEach, expect, it, vi } from "vitest";
 import { executeAiOfferAnalysis, toGeminiResponseSchema } from "@/server/ai/provider";
 import { authorizeAiTransmission } from "@/server/ai/consent";
 import { aiConfiguration } from "@/server/ai/config";
+import { resetAiRuntimeState } from "@/server/ai/breaker";
 import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
 import { z } from "zod";
 import { aiOfferAnalysisDataSchema } from "@/features/offer/ai-schema";
@@ -29,6 +30,7 @@ it("accepts a comma-grouped amount supported by the exact source", async () => {
  expect((await executeAiOfferAnalysis(quoted)).status).toBe("SUCCESS");
 });
 beforeEach(() => {
+ resetAiRuntimeState(); // the gateway keeps per-provider breaker and budget state in memory; each test starts clean
  vi.resetAllMocks(); vi.stubGlobal("fetch", vi.fn());
  vi.stubEnv("OPENAI_API_KEY", "synthetic-test-key"); vi.stubEnv("GEMINI_API_KEY", "synthetic-test-key");
  vi.stubEnv("ORYQEN_AI_ENABLED", "true"); vi.stubEnv("ORYQEN_AI_PROVIDER", "openai");
@@ -217,6 +219,7 @@ it("bounds streamed errors by bytes, cancels oversized streams and preserves quo
 it("does not let observer failures, missing bodies or stream failures replace the original HTTP error",async()=>{
  vi.stubEnv("ORYQEN_AI_PROVIDER","gemini");
  for(const body of [null,new ReadableStream({start(controller){controller.error(new Error("private failure"));}})]){
+  resetAiRuntimeState(); // a 404 now pauses the provider; each body shape is judged on its own
   vi.mocked(fetch).mockResolvedValueOnce(new Response(body,{status:404}));
   const result=await executeAiOfferAnalysis(source,"WORKER",undefined,()=>{throw new Error("private observer");});
   expect(result.message).toContain("model or resource");expect(JSON.stringify(result)).not.toContain("private");

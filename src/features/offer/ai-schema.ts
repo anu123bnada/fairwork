@@ -5,7 +5,11 @@ export const offerRoleInputSchema = z.enum(["EMPLOYER", "WORKER"]);
 export const analyzeOfferInputSchema = z.strictObject({
   text: z.string().trim().min(10, "Offer text must contain at least 10 characters").max(10000, "Offer text exceeds maximum length of 10,000 characters"),
   role: offerRoleInputSchema.default("WORKER"),
-  consent: z.strictObject({ provider: z.enum(["openai", "gemini"]), noticeVersion: z.literal("offer-analysis.v1"), transmit: z.literal(true), policyHash: z.string().regex(/^[0-9a-f]{64}$/) }).optional(),
+  consent: z.strictObject({
+    provider: z.enum(["openai", "gemini", "selfhosted"]), noticeVersion: z.literal("offer-analysis.v1"), transmit: z.literal(true), policyHash: z.string().regex(/^[0-9a-f]{64}$/),
+    // Optional fallbacks the person also accepts, each bound to that provider's own policy hash. Text goes to a fallback only if it is named here.
+    fallbacks: z.array(z.strictObject({ provider: z.enum(["openai", "gemini", "selfhosted"]), policyHash: z.string().regex(/^[0-9a-f]{64}$/) })).max(2).optional(),
+  }).optional(),
 });
 
 export type AnalyzeOfferInput = z.infer<typeof analyzeOfferInputSchema>;
@@ -84,12 +88,15 @@ export type AiOfferAnalysisData = z.infer<typeof aiOfferAnalysisDataSchema>;
 
 export const aiOfferAnalysisResponseSchema = z.strictObject({
   configured: z.boolean(),
-  provider: z.enum(["gemini", "openai", "none"]).nullable(),
+  provider: z.enum(["gemini", "openai", "selfhosted", "none"]).nullable(),
   status: z.enum(["SUCCESS", "UNCONFIGURED", "RATE_LIMITED", "ERROR"]),
   message: z.string(),
   isAdvisory: z.literal(true),
   extractedAt: z.string(),
   data: aiOfferAnalysisDataSchema.nullable(),
+  // Present when a provider asked for a pause or the gateway paused it, and when several providers were tried.
+  retryAfterSeconds: z.number().int().nonnegative().optional(),
+  attempts: z.array(z.strictObject({ provider: z.enum(["gemini", "openai", "selfhosted"]), outcome: z.string().max(24) })).max(4).optional(),
 });
 
 export type AiOfferAnalysisResponse = z.infer<typeof aiOfferAnalysisResponseSchema>;

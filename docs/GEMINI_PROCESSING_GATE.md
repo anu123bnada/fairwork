@@ -97,8 +97,9 @@ Server-only configuration names: `GEMINI_API_KEY` (legacy `GOOGLE_API_KEY` suppo
 `ORYQEN_AI_POLICY_APPROVED`, `ORYQEN_AI_POLICY_APPROVAL_REF`.
 Keep both enablement/approval flags false or unset pending approval. No credential
 belongs in NEXT_PUBLIC variables, Android assets, logs or committed files. Existing
-`.env.local` was not modified. OpenAI remains an explicitly selected alternative;
-there is no automatic provider fallback.
+`.env.local` was not modified. OpenAI remains an explicitly selected alternative.
+Since 28 Oct 2026 an operator may also list approved fallback providers (see `ORYQEN_AI_GATEWAY.md`); a fallback receives text only when the
+person's consent names it and its own policy hash, so by default (no fallbacks listed) there is still no fallback.
 
 Implemented: authenticated/profile-scoped route; durable quotas; exact provider,
 model, disclosure, approval and redaction-version consent hash; server redaction;

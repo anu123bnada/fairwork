@@ -53,3 +53,14 @@ describe("production configuration validator", () => {
     expect(failing({ ...good, ORYQEN_TELEMETRY_DB_URL: "postgresql://postgres:pw@db.example.test/postgres" })).toContain("telemetry-role");
   });
 });
+
+describe("AI fallback configuration", () => {
+  const aiOn = { ORYQEN_AI_ENABLED: "true", ORYQEN_AI_POLICY_APPROVED: "true", GEMINI_API_KEY: "k", GEMINI_MODEL: "gemini-x", ORYQEN_AI_POLICY_APPROVAL_REF: "OWNER-APPROVAL-1", ORYQEN_AI_PROCESSING_REGION: "eu", ORYQEN_AI_DATA_USE: "no training" };
+  it("requires every listed fallback to be complete and approved on its own settings", () => {
+    expect(failing({ ...good, ...aiOn, ORYQEN_AI_FALLBACK_PROVIDERS: "openai" })).toContain("ai-fallbacks"); // the primary's approval does not approve OpenAI
+    expect(failing({ ...good, ...aiOn, ORYQEN_AI_FALLBACK_PROVIDERS: "openai", OPENAI_API_KEY: "k", ORYQEN_AI_OPENAI_POLICY_APPROVAL_REF: "OWNER-APPROVAL-2", ORYQEN_AI_OPENAI_PROCESSING_REGION: "us", ORYQEN_AI_OPENAI_DATA_USE: "no training" })).not.toContain("ai-fallbacks");
+    expect(failing({ ...good, ...aiOn, ORYQEN_AI_FALLBACK_PROVIDERS: "anthropic" })).toContain("ai-fallbacks");
+    expect(failing({ ...good, ...aiOn, ORYQEN_AI_FALLBACK_PROVIDERS: "gemini" })).toContain("ai-fallbacks");
+    expect(failing({ ...good, ...aiOn, ORYQEN_AI_FALLBACK_PROVIDERS: "selfhosted", ORYQEN_SELFHOSTED_AI_URL: "https://llm.example.test", ORYQEN_SELFHOSTED_AI_MODEL: "llama" })).toContain("ai-fallbacks");
+  });
+});

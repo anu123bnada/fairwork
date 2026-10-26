@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AppError } from "@/lib/errors";
 const mocks = vi.hoisted(() => ({ identity: vi.fn(), analyze: vi.fn() }));
 vi.mock("@/server/identity", () => ({ identityCommand: mocks.identity }));
-vi.mock("@/server/ai/provider", () => ({ executeAiOfferAnalysis: mocks.analyze }));
+vi.mock("@/server/ai/gateway", () => ({ analyzeOfferWithGateway: mocks.analyze, providerStatuses: () => [] }));
 import { POST } from "@/app/api/v1/offers/analyze/route";
 const request = (body: unknown, origin = "http://127.0.0.1:3100") => new Request("http://127.0.0.1:3100/api/v1/offers/analyze", { method: "POST", headers: { origin, "content-type": "application/json" }, body: JSON.stringify(body) });
 beforeEach(() => { vi.resetAllMocks(); vi.stubEnv("APP_ORIGIN", "http://127.0.0.1:3100"); vi.stubEnv("FAIRWORK_DATA_MODE", "synthetic"); });

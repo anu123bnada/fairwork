@@ -1,21 +1,20 @@
 import "server-only";
-import { aiConfiguration } from "./config";
+import { aiConfiguration, type AiProviderConfig } from "./config";
 import { z } from "zod";
 import { sanitizeGeminiDiagnostic, type GeminiDiagnostic } from "./gemini-diagnostic";
+import { classifyHttpStatus, classifyThrown, ProviderFailure, retryable, retryAfterFrom, type FailureKind } from "./failure";
+import { breaker, ledger } from "./breaker";
+import { redactOfferForAi } from "@/features/offer/ai-redaction";
+import {
+  aiOfferAnalysisDataSchema,
+  type AiOfferAnalysisData,
+  type AiOfferAnalysisResponse,
+} from "@/features/offer/ai-schema";
 
 // Under provider load a request can queue for several seconds before it is served or rejected.
 const GEMINI_TIMEOUT_MS = 35000;
-
-class ProviderFailure extends Error {
-  constructor(readonly kind: "quota" | "configuration" | "model" | "incomplete" | "blocked" | "invalid") { super(kind); }
-}
-function checkProviderStatus(response: Response) {
-  if (response.ok) return;
-  if (response.status === 429) throw new ProviderFailure("quota");
-  if ([400, 401, 403].includes(response.status)) throw new ProviderFailure("configuration");
-  if (response.status === 404) throw new ProviderFailure("model");
-  throw new ProviderFailure("invalid");
-}
+const OPENAI_TIMEOUT_MS = 25000;
+const RETRY_DELAYS_MS = [500, 1500] as const;
 
 // Bound provider output before JSON parsing. Never log response bodies, which
 // may contain user input, model thoughts or credential diagnostics.
@@ -36,6 +35,15 @@ async function readProviderJson(response: Response, maxBytes = 256 * 1024): Prom
   } finally { await reader.cancel().catch(() => {}); reader.releaseLock(); }
 }
 
+// Reads at most a small error body, only to find a pause hint; the body itself is never kept or logged.
+async function failureFor(response: Response, body: unknown = null): Promise<ProviderFailure> {
+  const kind = classifyHttpStatus(response.status) ?? "invalid";
+  if (kind !== "quota") return new ProviderFailure(kind);
+  let parsed = body;
+  if (parsed === null) { try { parsed = await readProviderJson(response, 16 * 1024); } catch { parsed = null; } }
+  return new ProviderFailure("quota", retryAfterFrom(response.headers, parsed));
+}
+
 const geminiEnvelope = z.object({
   promptFeedback: z.object({ blockReason: z.string().optional() }).optional(),
   candidates: z.array(z.object({
@@ -51,13 +59,6 @@ const openAiEnvelope = z.object({
   })).length(1),
   usage: z.object({ prompt_tokens: z.unknown().optional(), completion_tokens: z.unknown().optional() }).optional(),
 });
-import { redactOfferForAi } from "@/features/offer/ai-redaction";
-
-import {
-  aiOfferAnalysisDataSchema,
-  type AiOfferAnalysisData,
-  type AiOfferAnalysisResponse,
-} from "@/features/offer/ai-schema";
 
 const SYSTEM_PROMPT = `You are the ORYQEN Offer Intelligence Engine, a fair work advisor designed to protect workers and clarify employment agreements.
 Your task is to analyze raw job offer text, extract key terms, identify ambiguities or missing clauses, flag potential worker risks (red flags), and suggest polite follow-up questions.
@@ -143,77 +144,67 @@ Return a JSON object with this exact shape:
   "companyClaimNotice": "Company existence, registration, and employer legitimacy cannot be verified from offer text alone."
 }`;
 
+type Usage = { inputTokens?: number; outputTokens?: number };
+export type AiAttempt = { provider: string; outcome: "success" | FailureKind | "paused" | "consent_stale" };
+export type AiRunResult = { response: AiOfferAnalysisResponse; failure: FailureKind | null; retryAfterSeconds: number | null; attempted: boolean };
+
+const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
+
+// Runs one provider once for one consented request: breaker and budget first (no request is sent when either says no), then the call
+// with a bounded number of retries for transient faults only (the same consent covers the retry; it is the same analysis).
+export async function runProvider(config: AiProviderConfig, redactedText: string, role: "WORKER" | "EMPLOYER", hooks: { observeUsage?: (usage: Usage) => void; observeGeminiDiagnostic?: (diagnostic: GeminiDiagnostic) => void; sleep?: (ms: number) => Promise<void> } = {}): Promise<AiRunResult> {
+  const state = breaker.check(config.provider);
+  if (state.status === "open") return { response: failureResponse(config.provider, state.reason ?? "unavailable", state.retryAfterSeconds, true), failure: state.reason ?? "unavailable", retryAfterSeconds: state.retryAfterSeconds, attempted: false };
+  if (!ledger.withinBudget(config.provider, config.budget)) { breaker.failure(config.provider, "invalid"); return { response: failureResponse(config.provider, "budget", null), failure: "budget", retryAfterSeconds: null, attempted: false }; }
+  const sleep = hooks.sleep ?? wait;
+  ledger.attempt(config.provider);
+  try {
+    let data: AiOfferAnalysisData | undefined;
+    for (let attempt = 0; ; attempt += 1) {
+      try { data = await callProvider(config, redactedText, role, hooks); break; }
+      catch (error) {
+        const kind = classifyThrown(error);
+        if (!retryable(kind) || attempt >= RETRY_DELAYS_MS.length) throw error;
+        await sleep(RETRY_DELAYS_MS[attempt]!);
+      }
+    }
+    breaker.success(config.provider);
+    return { response: { configured: true, provider: config.provider, status: "SUCCESS", message: `Offer analyzed successfully using ${providerLabel(config.provider)}.`, isAdvisory: true, extractedAt: new Date().toISOString(), data }, failure: null, retryAfterSeconds: null, attempted: true };
+  } catch (error) {
+    const kind = classifyThrown(error), retryAfterSeconds = error instanceof ProviderFailure ? error.retryAfterSeconds : null;
+    breaker.failure(config.provider, kind, retryAfterSeconds); ledger.failure(config.provider, kind);
+    return { response: failureResponse(config.provider, kind, retryAfterSeconds), failure: kind, retryAfterSeconds, attempted: true };
+  }
+}
+
+const providerLabel = (provider: string) => provider === "gemini" ? "Google Gemini" : provider === "openai" ? "OpenAI" : "the self-hosted model";
+
+async function callProvider(config: AiProviderConfig, text: string, role: "WORKER" | "EMPLOYER", hooks: { observeUsage?: (usage: Usage) => void; observeGeminiDiagnostic?: (diagnostic: GeminiDiagnostic) => void }): Promise<AiOfferAnalysisData> {
+  const usageSink = (usage: Usage) => { ledger.success(config.provider, usage); hooks.observeUsage?.(usage); };
+  if (config.provider === "gemini") return callGeminiProvider(config.key!, text, role, config.model, usageSink, hooks.observeGeminiDiagnostic);
+  if (config.provider === "openai") return callOpenAiProvider("https://api.openai.com/v1/chat/completions", config.key, text, role, config.model, usageSink, true, OPENAI_TIMEOUT_MS);
+  return callOpenAiProvider(`${config.baseUrl}/v1/chat/completions`, config.key, text, role, config.model, usageSink, false, 60000);
+}
+
+// The primary provider only, exactly as before. Fallbacks live in executeAiOfferAnalysisWithFallback.
 export async function executeAiOfferAnalysis(
   text: string,
   role: "WORKER" | "EMPLOYER" = "WORKER",
-  observeUsage?: (usage:{inputTokens?:number;outputTokens?:number})=>void,
+  observeUsage?: (usage: Usage) => void,
   // Optional server-only, in-memory diagnostic sink. Never added to API output.
   observeGeminiDiagnostic?: (diagnostic: GeminiDiagnostic) => void,
 ): Promise<AiOfferAnalysisResponse> {
   const config = aiConfiguration();
-  const geminiKey = config?.provider === "gemini" ? config.key : undefined;
-  const openaiKey = config?.provider === "openai" ? config.key : undefined;
-
-  // 1. If no provider credentials are configured, return explicit UNCONFIGURED status
-  if (!geminiKey && !openaiKey) {
-    return {
-      configured: false,
-      provider: null,
-      status: "UNCONFIGURED",
-      message: "Live AI analysis is not enabled on this server. Manual review and explicitly labeled local rules remain available.",
-      isAdvisory: true,
-      extractedAt: new Date().toISOString(),
-      data: null,
-    };
-  }
-
+  if (!config) return unconfiguredResponse();
   // Apply the same minimization as the consent preview, even for direct API callers.
-  text = redactOfferForAi(text);
-  // 2. Call Gemini provider if configured
-  if (geminiKey) {
-    try {
-      const response = await callGeminiProvider(geminiKey, text, role, config!.model,observeUsage,observeGeminiDiagnostic);
-      return {
-        configured: true,
-        provider: "gemini",
-        status: "SUCCESS",
-        message: "Offer analyzed successfully using Google Gemini.",
-        isAdvisory: true,
-        extractedAt: new Date().toISOString(),
-        data: response,
-      };
-    } catch (error) {
-      // Consent applies to one provider. Never send data to a fallback provider.
-      return mapAiError(error, "gemini");
-    }
-  }
+  return (await runProvider(config, redactOfferForAi(text), role, { observeUsage, observeGeminiDiagnostic })).response;
+}
 
-  // 3. Call OpenAI provider
-  if (openaiKey) {
-    try {
-      const response = await callOpenAiProvider(openaiKey, text, role, config!.model,observeUsage);
-      return {
-        configured: true,
-        provider: "openai",
-        status: "SUCCESS",
-        message: "Offer analyzed successfully using OpenAI.",
-        isAdvisory: true,
-        extractedAt: new Date().toISOString(),
-        data: response,
-      };
-    } catch (error) {
-      return mapAiError(error, "openai");
-    }
-  }
-
+export function unconfiguredResponse(): AiOfferAnalysisResponse {
   return {
-    configured: false,
-    provider: null,
-    status: "UNCONFIGURED",
-    message: "No supported AI provider configured.",
-    isAdvisory: true,
-    extractedAt: new Date().toISOString(),
-    data: null,
+    configured: false, provider: null, status: "UNCONFIGURED",
+    message: "Live AI analysis is not enabled on this server. Manual review and explicitly labeled local rules remain available.",
+    isAdvisory: true, extractedAt: new Date().toISOString(), data: null,
   };
 }
 
@@ -237,7 +228,7 @@ async function callGeminiProvider(
   text: string,
   role: "WORKER" | "EMPLOYER",
   selectedModel: string,
-  observeUsage?: (usage:{inputTokens?:number;outputTokens?:number})=>void,
+  observeUsage?: (usage: Usage) => void,
   observeDiagnostic?: (diagnostic: GeminiDiagnostic) => void,
 ): Promise<AiOfferAnalysisData> {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent`;
@@ -273,13 +264,13 @@ async function callGeminiProvider(
   });
 
   if (!response.ok) {
-    let diagnostic = sanitizeGeminiDiagnostic(null);
-    try { diagnostic = sanitizeGeminiDiagnostic(await readProviderJson(response, 16 * 1024)); }
+    let diagnostic = sanitizeGeminiDiagnostic(null), body: unknown = null;
+    try { body = await readProviderJson(response, 16 * 1024); diagnostic = sanitizeGeminiDiagnostic(body); }
     catch { /* Malformed, oversized or interrupted diagnostics remain unknown. */ }
     try { observeDiagnostic?.(diagnostic); }
     catch { /* An observer must never change the HTTP error classification. */ }
+    throw await failureFor(response, body);
   }
-  checkProviderStatus(response);
   const result = geminiEnvelope.parse(await readProviderJson(response));
   if (result.promptFeedback?.blockReason) throw new ProviderFailure("blocked");
   const candidate = result.candidates?.[0];
@@ -289,19 +280,22 @@ async function callGeminiProvider(
   const rawJson = candidate.content?.parts.filter(part => part.thought !== true).map(part => part.text ?? "").join("");
   if (!rawJson) throw new ProviderFailure("invalid");
 
-  const validated=validateGroundedOutput(JSON.parse(rawJson), text);
-  observeUsage?.(safeUsage(result?.usageMetadata?.promptTokenCount,result?.usageMetadata?.candidatesTokenCount));
+  const validated = validateGroundedOutput(JSON.parse(rawJson), text);
+  observeUsage?.(safeUsage(result?.usageMetadata?.promptTokenCount, result?.usageMetadata?.candidatesTokenCount));
   return validated;
 }
 
+// OpenAI and any server that speaks the same chat-completions protocol (a self-hosted model). `store: false` is an OpenAI-only flag.
 async function callOpenAiProvider(
-  apiKey: string,
+  endpoint: string,
+  apiKey: string | undefined,
   text: string,
   role: "WORKER" | "EMPLOYER",
   selectedModel: string,
-  observeUsage?: (usage:{inputTokens?:number;outputTokens?:number})=>void,
+  observeUsage: ((usage: Usage) => void) | undefined,
+  hosted: boolean,
+  timeoutMs: number,
 ): Promise<AiOfferAnalysisData> {
-  const endpoint = "https://api.openai.com/v1/chat/completions";
   const payload = {
     model: selectedModel,
     messages: [
@@ -311,7 +305,7 @@ async function callOpenAiProvider(
     response_format: { type: "json_object" },
     temperature: 0.1,
     max_completion_tokens: 3000,
-    store: false,
+    ...(hosted ? { store: false } : {}),
   };
 
   const response = await fetch(endpoint, {
@@ -320,30 +314,30 @@ async function callOpenAiProvider(
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+      ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
     },
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(25000),
+    signal: AbortSignal.timeout(timeoutMs),
   });
 
-  checkProviderStatus(response);
+  if (!response.ok) throw await failureFor(response);
 
   const result = openAiEnvelope.parse(await readProviderJson(response));
   const candidate = result.choices[0]!;
   if (candidate.finish_reason === "length") throw new ProviderFailure("incomplete");
   if (candidate.finish_reason !== "stop" || candidate.message.refusal) throw new ProviderFailure("blocked");
   const rawJson = candidate.message.content;
-  if (!rawJson) throw new Error("Empty response from OpenAI.");
+  if (!rawJson) throw new ProviderFailure("invalid");
 
   const parsed = JSON.parse(rawJson);
-  const validated=validateGroundedOutput(parsed, text);
-  observeUsage?.(safeUsage(result?.usage?.prompt_tokens,result?.usage?.completion_tokens));
+  const validated = validateGroundedOutput(parsed, text);
+  observeUsage?.(safeUsage(result?.usage?.prompt_tokens, result?.usage?.completion_tokens));
   return validated;
 }
 
-function safeUsage(input:unknown,output:unknown){
- const valid=(value:unknown):value is number=>typeof value==="number"&&Number.isInteger(value)&&value>=0&&value<=10000000;
- return {...(valid(input)?{inputTokens:input}:{}),...(valid(output)?{outputTokens:output}:{})};
+function safeUsage(input: unknown, output: unknown) {
+  const valid = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 10000000;
+  return { ...(valid(input) ? { inputTokens: input } : {}), ...(valid(output) ? { outputTokens: output } : {}) };
 }
 
 function validateGroundedOutput(value: unknown, source: string): AiOfferAnalysisData {
@@ -365,25 +359,31 @@ function validateGroundedOutput(value: unknown, source: string): AiOfferAnalysis
   return data;
 }
 
-function mapAiError(error: unknown, provider: "gemini" | "openai"): AiOfferAnalysisResponse {
-  const kind = error instanceof ProviderFailure ? error.kind : null;
+function pauseText(retryAfterSeconds: number | null) {
+  if (retryAfterSeconds === null) return "";
+  const minutes = Math.ceil(retryAfterSeconds / 60);
+  return retryAfterSeconds < 90 ? ` The provider asks for a pause of about ${Math.max(1, retryAfterSeconds)} seconds.` : ` Automatic analysis is paused for about ${minutes} minutes so the exhausted quota is not retried.`;
+}
+
+export function failureResponse(provider: string, kind: FailureKind, retryAfterSeconds: number | null, paused = false): AiOfferAnalysisResponse {
   const isRateLimit = kind === "quota";
-  const timedOut = error instanceof Error && ["TimeoutError", "AbortError"].includes(error.name);
-  const message = isRateLimit ? "AI provider quota or rate limit reached. No automatic retry was made. Check the account quota before retrying."
+  const message = isRateLimit ? `AI provider quota or rate limit reached. No automatic retry was made. Check the account quota before retrying.${pauseText(retryAfterSeconds)}`
     : kind === "configuration" ? "The AI provider rejected the request configuration or credentials. Ask the operator to check model access and configuration."
     : kind === "model" ? "The AI provider could not find the requested model or resource. Ask the operator to verify model access and endpoint configuration."
     : kind === "incomplete" ? "AI output reached its token limit and was not accepted as a complete analysis. Shorten the offer or use manual review."
     : kind === "blocked" ? "The AI provider did not return a completed analysis. Review the text or use manual review; no AI findings were accepted."
-    : timedOut ? "AI analysis timed out. No automatic retry was made; use manual review or explicitly retry later."
+    : kind === "timeout" ? "AI analysis timed out. No automatic retry was made; use manual review or explicitly retry later."
+    : kind === "budget" ? "The usage budget the operator set for this AI provider is used up for now. Manual review and local rules remain available."
+    : paused ? `This AI provider was paused after repeated problems, so nothing was sent.${pauseText(retryAfterSeconds)} Manual review and local rules remain available.`
     : "AI analysis is temporarily unavailable. Please retry or use the rule-based manual review.";
-
   return {
     configured: true,
-    provider,
+    provider: provider as "gemini" | "openai" | "selfhosted",
     status: isRateLimit ? "RATE_LIMITED" : "ERROR",
     message,
     isAdvisory: true,
     extractedAt: new Date().toISOString(),
     data: null,
+    ...(retryAfterSeconds !== null ? { retryAfterSeconds } : {}),
   };
 }
