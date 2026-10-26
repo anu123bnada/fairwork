@@ -25,6 +25,14 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - Full gate on `ec242e8`: PASS 14, FAIL 0, BLOCKED 6 (owner inputs). See `ORYQEN_TEST_REPORT.md`. Recruiter verification is committed.
 
+- Later 28 Oct batches (all committed locally): translated agreement workflow, offer drafts, case review and employer recruiter panels
+  (and made `useI18n().t` stable per locale, which had made effects re-run every render); recruiter-check and pending-decision
+  reminders; private Vault-to-work-record links (migration 15, `ORYQEN_VAULT_DESIGN.md` area, real-stack journey); OpenAPI document at
+  `/api/v1/developer/openapi.json`; harness now starts the app with a loopback vault store and a throwaway in-memory signing key so
+  vault, credential and developer journeys run (206 PASS, 0 SKIPPED). `scripts/test-feature-postgres.mjs <test files>` runs one
+  integration file on a disposable real PostgreSQL cluster (one file per run).
+- Never start two harness runs at once (F-25). Heredocs containing unbalanced quotes break the Bash tool here; use the Write tool.
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
