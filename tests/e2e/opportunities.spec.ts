@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { translate } from "../../src/i18n";
 const id = "40000000-0000-4000-8000-000000000001";
 async function setup(page: Page) {
   let preferences: unknown = null, preferenceVersion = 0, choice = "none", denied = false;
@@ -65,3 +66,17 @@ test("publisher explicitly selects published status and submits a versioned comm
   expect(attempts[0]).toEqual(attempts[1]);
   expect(fixture.commands.at(-1)).toMatchObject({ operation: "listing", companyId: id, status: "published", expectedVersion: 0 });
 });
+
+for (const locale of ["si", "ta", "de"] as const) {
+  test(`opportunity discovery and match explanations are translated in ${locale}`, async ({ page }) => {
+    await setup(page);
+    await page.goto("/app/settings"); await page.getByLabel("Language").selectOption(locale);
+    await page.goto("/app/opportunities");
+    const region = page.getByRole("region", { name: translate(locale, "op.aria") });
+    await expect(region).toContainText(translate(locale, "op.intro"));
+    await expect(region).toContainText(translate(locale, "op.matchNote"));
+    await expect(region.getByRole("button", { name: translate(locale, "op.v.saved"), exact: true })).toBeVisible();
+    await expect(region.getByRole("button", { name: translate(locale, "op.saveListing") })).toBeVisible();
+    await expect(page.locator("body")).not.toContainText(/\bop\.[a-zA-Z._]+\b/);
+  });
+}

@@ -15,3 +15,18 @@ describe("transparent opportunity matching", () => {
     expect(opportunityQuery.safeParse({ view: "all", actorId: "other" }).success).toBe(false);
   });
 });
+
+describe("match explanation wording", () => {
+  it("the English catalog equals the engine text for every explanation", async () => {
+    const { translate } = await import("../../src/i18n");
+    const preferences = { ...defaultPreferences, role: "warehouse", location: "Kandy", workMode: "remote" as const, minimumPay: 40000 };
+    const reasons = [...explainMatch(item, preferences), ...explainMatch({ ...item, fields: { ...item.fields, salary: null } }, preferences)];
+    expect(reasons.map(reason => reason.id)).toEqual(expect.arrayContaining(["role", "location", "workMode", "pay", "payUnknown"]));
+    for (const reason of reasons) {
+      const key = reason.id === "role" || reason.id === "location" ? "op.m.textDetail" : reason.id === "workMode" ? "op.m.modeDetail" : reason.id === "pay" ? "op.m.payDetail" : "op.m.payUnknown";
+      expect(translate("en", key, reason.values)).toBe(reason.detail);
+      expect(translate("en", `op.m.${reason.id === "payUnknown" ? "pay" : reason.id}` as never)).toBe(reason.criterion);
+      expect(translate("en", `op.o.${reason.outcome}` as never)).toBe(reason.outcome);
+    }
+  });
+});
