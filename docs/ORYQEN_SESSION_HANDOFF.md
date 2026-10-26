@@ -76,10 +76,15 @@ New local migrations must be applied by hand to the Docker database
 (`docker exec -i supabase_db_oryqen-local-dev psql -U postgres -v ON_ERROR_STOP=1 < <file>` then insert the version
 into `supabase_migrations.schema_migrations`); the harness fails its migration inventory check otherwise.
 
-## Checkpoint (27 Oct 2026, end of batch)
+## Checkpoint (27 Oct 2026, sprint close)
 
-HEAD is the commit after `66e9636` (docs only). Final full gate: PASS 13, FAIL 0, BLOCKED 6 (owner inputs). Harness: 186 PASS.
-Local Docker database has 44 migrations applied by hand; the app dev server is stopped. Nothing pushed, deployed or applied to hosted systems.
+Final full gate: PASS 14, FAIL 0, BLOCKED 6 (owner inputs). Browser suite 226. Harness 186 PASS (before the last UI-only changes; rerun it after any server change).
+`docs/ORYQEN_FAILURE_REGISTER.md` has every failure seen in the background-task history with its classification; none is OPEN.
+Local Docker database: 44 migrations; `node scripts/apply-local-migrations.mjs` brings it up to date and the harness runs it first.
+To run the harness: export `ORYQEN_CREDENTIAL_KEY_ID=local-test-key-1`, `ORYQEN_CREDENTIAL_SIGNING_KEY` (private JWK from `.tmp/test-credential-key.json`) and
+`ORYQEN_VAULT_LOCAL_DIR=<repo>/.tmp/vault-local`, start `node scripts/run-local-development.mjs`, then `node scripts/test-local-real-workflows.mjs`.
+Android emulator work needs about 4.4 GB of free memory beyond the database stack; run `adb kill-server` first if the device shows unauthorized.
+Production steps are in `docs/ORYQEN_PRODUCTION_RUNBOOK.md`; nothing has been pushed, deployed or applied to hosted systems.
 
 ## Next exact task
 
