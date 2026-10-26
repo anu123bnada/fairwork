@@ -31,6 +31,7 @@ import { EmploymentHistory } from "./employment-history";
 import { EvidenceVault } from "./evidence-vault";
 import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { DeveloperAccess } from "./developer-access";
+import { PayCompare } from "./pay-compare";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -595,6 +596,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-hint-card"><strong>{t("home.hintStrong")}</strong><br />{t("home.hintBody")}</div>
       <OpenSavedAgreement />
       <SavedOffers />
+      <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>
       <DashboardRecords />
       <details className="fw-list-card"><summary>{t("home.recent")}</summary><NotificationFeed /></details>
       <Link className="fw-secondary" href="/app/opportunities">{t("home.discover")}</Link>
