@@ -1,4 +1,5 @@
 import type { AiOfferAnalysisData } from "./ai-schema";
+import { scamIndicators } from "@/features/scam/check";
 
 /**
  * Fast, deterministic rule-based extractor for local use when no AI provider is configured.
@@ -185,6 +186,9 @@ export function extractOfferTermsRuleBased(text: string): {
       recommendation: "Request written overtime hours, approval rules and compensation terms.",
     });
   }
+
+  // Recruiter-scam wording and email-domain indicators (module 17); wording checks only, never a verdict.
+  for (const indicator of scamIndicators(cleaned)) if (warningSigns.length < 12) warningSigns.push(indicator);
 
   // 6. Missing details
   const missingDetails = [];
