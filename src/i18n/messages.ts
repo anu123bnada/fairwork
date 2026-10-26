@@ -62,6 +62,9 @@ export const en = {
   "vault.download": "Download",
   "vault.delete": "Delete",
   "vault.empty": "No documents yet.",
+  "plan.title": "Your plan",
+  "plan.essentials": "These protections are always available on every plan:",
+  "plan.noBilling": "Nothing on this screen asks for payment.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -114,6 +117,9 @@ export const si: Partial<Messages> = {
   "vault.download": "බාගන්න",
   "vault.delete": "මකන්න",
   "vault.empty": "තවම ලේඛන නැත.",
+  "plan.title": "ඔබේ සැලැස්ම",
+  "plan.essentials": "මෙම ආරක්ෂණ සෑම සැලැස්මකම සැමවිටම ලබාගත හැක:",
+  "plan.noBilling": "මෙම තිරයේ කිසිවක් ගෙවීමක් ඉල්ලන්නේ නැත.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -163,6 +169,9 @@ export const ta: Partial<Messages> = {
   "vault.download": "பதிவிறக்கு",
   "vault.delete": "நீக்கு",
   "vault.empty": "இதுவரை ஆவணங்கள் இல்லை.",
+  "plan.title": "உங்கள் திட்டம்",
+  "plan.essentials": "இந்தப் பாதுகாப்புகள் எல்லாத் திட்டங்களிலும் எப்போதும் கிடைக்கும்:",
+  "plan.noBilling": "இந்தத் திரையில் எதுவும் பணம் கேட்கவில்லை.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -212,4 +221,7 @@ export const de: Partial<Messages> = {
   "vault.download": "Herunterladen",
   "vault.delete": "Löschen",
   "vault.empty": "Noch keine Dokumente.",
+  "plan.title": "Ihr Tarif",
+  "plan.essentials": "Diese Schutzfunktionen stehen in jedem Tarif immer zur Verfügung:",
+  "plan.noBilling": "Auf diesem Bildschirm wird keine Zahlung verlangt.",
 };

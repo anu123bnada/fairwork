@@ -29,6 +29,7 @@ import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-s
 import { participantOfferId, participantSignInPath } from "@/features/offer/participant-path";
 import { EmploymentHistory } from "./employment-history";
 import { EvidenceVault } from "./evidence-vault";
+import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -1242,10 +1243,12 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
         {["Job alerts", "Hours reminders"].map(label => <div className="fw-list-row" key={label}><span>{label}</span><small>Not available</small></div>)}
       </section>
       <LanguageSwitcher />
+      <PlanPanel />
       <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
       <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
       {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}
       <Link className="fw-secondary" href="/forgot-password">Reset password securely</Link>
+      {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>Assign plans (operator)</summary><PlanAssignment /></details>}
       {profile?.capabilities.includes("privacy_operator") && <details className="fw-list-card"><summary>Review privacy requests</summary><PrivacyRequests operator /></details>}
       <Link className="fw-dark-button" href={routeFor("employer")}>Switch to employer view</Link>
       <Link className="fw-secondary" href={routeFor("cases")}>Case review</Link>
