@@ -190,6 +190,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/202610150001_work_case_review.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261027100000_evidence_vault.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261028160000_vault_attachments.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261028190000_offer_notes.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -339,5 +340,69 @@ describe("evidence vault attachments to work records", () => {
     await clearQuotas();
     await expect(rpc("vault_attach", { documentId: ids[10]!, workId: WORK })).rejects.toThrow("RATE_LIMITED");
     for (const id of ids) { await clearQuotas(); await rpc("vault_delete", { documentId: id }); }
+  });
+});
+
+describe("private offer notes and supporting documents", () => {
+  const OFFER = crypto.randomUUID(), THEIRS = crypto.randomUUID();
+  beforeAll(async () => {
+    await db.exec("reset role");
+    await db.exec("set session_replication_role = replica");
+    for (const [offer, worker] of [[OFFER, WORKER], [THEIRS, OTHER]] as const) {
+      await db.query("insert into private.day3_offers(id,offer_id,company_id,worker_id,representative_id,requester_id,requester_role,version,term_hash,snapshot,created_by) values($1,$2,$3,$4,$5,$4,'WORKER',1,$6,'{}'::jsonb,$4)", [crypto.randomUUID(), offer, COMPANY, worker, APPROVER, SHA]);
+    }
+    await db.exec("set session_replication_role = origin");
+  });
+  const upload = async (owner = WORKER) => { const request = doc({}, owner); await rpc("vault_register", request, owner); return request.documentId as string; };
+  const note = (over: Record<string, unknown> = {}) => ({ noteId: crypto.randomUUID(), offerId: OFFER, body: "Ask about the overtime rate", idempotencyKey: crypto.randomUUID(), ...over });
+
+  it("adds, lists newest first, replays and deletes the worker's own notes", async () => {
+    await clearQuotas();
+    const first = note(); expect(await rpc("offer_note_add", first)).toEqual({ noteId: first.noteId, replayed: false });
+    expect(await rpc("offer_note_add", first)).toMatchObject({ replayed: true });
+    await expect(rpc("offer_note_add", { ...first, body: "Changed" })).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+    const second = note({ body: "Confirm probation length" }); await rpc("offer_note_add", second);
+    const listed = (await rpc("offer_note_list", { offerId: OFFER })).items as Record<string, unknown>[];
+    expect(listed.map(item => item.noteId)).toEqual([second.noteId, first.noteId]);
+    expect(await rpc("offer_note_list", { offerId: OFFER }, OTHER)).toMatchObject({ items: [] });
+    await rpc("offer_note_delete", { noteId: first.noteId });
+    await expect(rpc("offer_note_delete", { noteId: first.noteId })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("offer_note_delete", { noteId: second.noteId }, OTHER)).rejects.toThrow("NOT_FOUND");
+    await rpc("offer_note_delete", { noteId: second.noteId });
+  });
+
+  it("refuses notes on someone else's offer, bad bodies, extra fields and signed-out callers", async () => {
+    await clearQuotas();
+    await expect(rpc("offer_note_add", note({ offerId: THEIRS }))).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("offer_note_add", note({ offerId: crypto.randomUUID() }))).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("offer_note_add", note({ body: "   " }))).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("offer_note_add", note({ body: "x".repeat(1001) }))).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("offer_note_add", { ...note(), extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("offer_note_add", note(), null)).rejects.toThrow();
+    await expect(run("select * from private.offer_notes", [], claims(WORKER), "authenticated")).rejects.toThrow();
+  });
+
+  it("attaches and detaches the worker's own documents to their own offer, listing only theirs", async () => {
+    await clearQuotas();
+    const id = await upload();
+    expect(await rpc("vault_attach_offer", { documentId: id, offerId: OFFER })).toEqual({ documentId: id, offerId: OFFER, replayed: false });
+    expect(await rpc("vault_attach_offer", { documentId: id, offerId: OFFER })).toMatchObject({ replayed: true });
+    expect(((await rpc("vault_offer_attachments", { offerId: OFFER })).items as Record<string, unknown>[]).map(item => item.documentId)).toEqual([id]);
+    expect(await rpc("vault_offer_attachments", { offerId: OFFER }, OTHER)).toMatchObject({ items: [] });
+    await rpc("vault_detach_offer", { documentId: id, offerId: OFFER });
+    await expect(rpc("vault_detach_offer", { documentId: id, offerId: OFFER })).rejects.toThrow("NOT_FOUND");
+    await rpc("vault_delete", { documentId: id });
+  });
+
+  it("refuses foreign documents or offers, and removes links with the document", async () => {
+    await clearQuotas();
+    const mine = await upload(), theirs = await upload(OTHER);
+    await expect(rpc("vault_attach_offer", { documentId: theirs, offerId: OFFER })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_attach_offer", { documentId: mine, offerId: THEIRS })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_attach_offer", { documentId: mine, offerId: OFFER, extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    await rpc("vault_attach_offer", { documentId: mine, offerId: OFFER });
+    await rpc("vault_delete", { documentId: mine });
+    expect((await rpc("vault_offer_attachments", { offerId: OFFER })).items).toEqual([]);
+    await rpc("vault_delete", { documentId: theirs }, OTHER);
   });
 });

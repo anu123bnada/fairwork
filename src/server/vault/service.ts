@@ -1,7 +1,8 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { AppError, mapDatabaseError } from "@/lib/errors";
-import { checkVaultFile, vaultAttached, vaultAttachments, vaultDeleted, vaultFetched, vaultListResponse, vaultRegistered, vaultUploadFields } from "@/features/vault/schema";
+import { checkVaultFile, vaultAttached, vaultAttachments, vaultOfferAttached, vaultOfferAttachments, vaultDeleted, vaultFetched, vaultListResponse, vaultRegistered, vaultUploadFields } from "@/features/vault/schema";
+import { offerNoteAdded, offerNoteDeleted, offerNoteList } from "@/features/offer/notes";
 import type { z } from "zod";
 import type { BlobStore } from "./store";
 
@@ -59,3 +60,11 @@ export async function deleteDocument(documentId: string, deps: VaultDeps) {
 export const attachDocument = (documentId: string, workId: string, deps: VaultDeps) => call(deps, "vault_attach", { documentId, workId }, vaultAttached);
 export const detachDocument = (documentId: string, workId: string, deps: VaultDeps) => call(deps, "vault_detach", { documentId, workId }, vaultAttached);
 export const listAttachments = (workId: string, deps: VaultDeps) => call(deps, "vault_attachments", { workId }, vaultAttachments);
+
+// Supporting documents and review notes on the owner's own saved offers. Private to the owner; nothing here reaches the employer.
+export const attachOfferDocument = (documentId: string, offerId: string, deps: VaultDeps) => call(deps, "vault_attach_offer", { documentId, offerId }, vaultOfferAttached);
+export const detachOfferDocument = (documentId: string, offerId: string, deps: VaultDeps) => call(deps, "vault_detach_offer", { documentId, offerId }, vaultOfferAttached);
+export const listOfferAttachments = (offerId: string, deps: VaultDeps) => call(deps, "vault_offer_attachments", { offerId }, vaultOfferAttachments);
+export const addOfferNote = (input: { noteId: string; offerId: string; body: string; idempotencyKey: string }, deps: VaultDeps) => call(deps, "offer_note_add", input, offerNoteAdded);
+export const listOfferNotes = (offerId: string, deps: VaultDeps) => call(deps, "offer_note_list", { offerId }, offerNoteList);
+export const deleteOfferNote = (noteId: string, deps: VaultDeps) => call(deps, "offer_note_delete", { noteId }, offerNoteDeleted);

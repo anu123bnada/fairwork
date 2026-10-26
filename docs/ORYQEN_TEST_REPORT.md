@@ -3,6 +3,15 @@
 All numbers below come from commands run in this session on the local machine.
 Nothing was run against hosted systems.
 
+## Full release gate, 27 Oct 2026 (HEAD `cb365ff`, exit 0)
+
+`npm run release:verify:full`: **PASS 14, FAIL 0, SKIPPED 0, BLOCKED 6; verdict "NOT READY: owner input required"**.
+PASS: typecheck 27 s, lint 173 s, unit-integration 391 s, dependency audit, brand assets, secrets scan, Electron policy, production build 98 s,
+browser-journeys 1040 s, database-security (real PostgreSQL) 64 s, Android toolchain, Android debug-signed preview APK, Windows unsigned preview installer, artifact integrity (9 hashed).
+BLOCKED (all owner/external, none a defect): production configuration (APP_ORIGIN, FAIRWORK_DATA_MODE, credential signing, vault storage), AI policy approval,
+credential signing key, https download hosts for the Windows/APK links, Android release preflight (app ID, keystore, device), Windows code-signing certificate.
+The Android APK is debug-signed and the Windows installer is unsigned: neither is a production release.
+
 ## Commands and results
 
 | Check | Command | Result |

@@ -357,7 +357,7 @@ try {
   const share = await localSharingJourney({worker,employer,outsider:approver,workId:ids.workId,request,record,origin,evidence,localSql});
   await localTrustChainJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record });
   await localCredentialJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin, evidence });
-  await localVaultJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin });
+  await localVaultJourney({ worker, employer, outsider: approver, workId: ids.workId, offerId: privateOffer.offer.offerId, request, record, origin });
   await localDeveloperJourney({ worker, employer, workId: ids.workId, request, record, origin });
   await localRecruiterJourney({ worker, employer, outsider: approver, companyId: company.id, companyName: organization.companyName, request, record });
   await localOrgPlanJourney({ worker, employer, operator, companyId: company.id, request, record });
