@@ -262,3 +262,7 @@ BLOCKED (all owner decisions, none a defect): production configuration, AI polic
 ### 28 Oct 2026 — organization plans and wider translation
 
 Real-stack harness (alone, `--manage-app`): **212 PASS, 0 FAIL, 0 SKIPPED** (exit 0), including the new organization-plan journey (basic allowance 5, refusal at the limit, edit and draft allowed, operator assignment with replay, representative sees the team plan, sixth publication succeeds). One earlier run failed once on a 5 s wait in the sharing journey and passed twice afterwards (F-28). `plan-entitlements-db` 10/10 on PGlite and on a disposable real PostgreSQL cluster. New unit suites: localize-text (4), i18n-dynamic-keys (10), localization-coverage (2), org-plans (8). Browser specs added for translated Settings, AI panel, Passport, sharing, credentials, opportunities, guidance, feed.
+
+### 28 Oct 2026 — full release gate on `1acb58a` (exit 0)
+
+**PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6 — NOT READY: owner input required.** unit-integration 326 s, browser-journeys 963 s (includes accessibility, route matrix, per-language specs), real-PostgreSQL security 61 s, production build, Android debug APK and Windows unsigned installer. The two failures of the previous run (F-29 localization guard list, F-30 screenshot protocol error under resource contention) are resolved. Strict module count: `ORYQEN_22_MODULE_ACCEPTANCE.md` (1 complete and verified, 20 partial, 1 blocked).
