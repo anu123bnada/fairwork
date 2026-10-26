@@ -8,6 +8,7 @@ import { workflowCommandSchema, workflowReadSchema, type AgreementWorkflow, type
 import { participantWorkflowId } from "@/features/offer/participant-path";
 import { agreementReadSchema } from "@/features/offer/read-schema";
 import { useI18n } from "@/i18n/use-i18n";
+import { AgreementCompare } from "./agreement-compare";
 import type { MessageKey } from "@/i18n";
 
 export function CreateVersionedAgreement({ offerId, version, termHash, representativeId }: { offerId:string;version:number;termHash:string;representativeId?:string|null }) {
@@ -146,6 +147,7 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
       </>}
       <section className="fw-card fw-offer-detail-card"><label className="fw-field">{t("ag.linkLabel")}<input readOnly value={`/app/agreement-workflow?workflowId=${workflow.agreementId}`} onFocus={event=>event.target.select()}/></label><p>{t("ag.linkNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void load(workflow.agreementId)}>{t("ag.reloadSaved")}</button></section>
       {worker&&effective&&<Link className="fw-dark-button" href={`/app/work-record?agreementBasisId=${workflow.agreementId}`}>{t("ag.openWork")}</Link>}
+      <AgreementCompare versions={workflow.versions}/>
       <details className="fw-card fw-offer-detail-card"><summary>{t("ag.history",{count:workflow.versions.length})}</summary>{workflow.versions.map(version=><section key={version.version}><h3>{t("ag.versionLine",{version:version.version,status:t(statusKey(version.status))})}</h3><TermSummary version={version}/><p>{t("ag.versionCounts",{decisions:version.decisions.length,acks:version.acknowledgements.length})}</p></section>)}</details>
     </>}
   </>;
