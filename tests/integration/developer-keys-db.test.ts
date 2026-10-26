@@ -250,11 +250,7 @@ async function effective() {
 const payload={role:"Engineer",periodStart:"2026-01-02",periodEnd:"2026-01-02",hours:"8.00",tasks:"Completed maintenance",evidence:["Maintenance log checked by the worker"]};
 function workExpected(id:string,v:WorkVersion) {return {workId:id,expectedVersion:v.version,expectedHash:v.contentHash,expectedState:v.state,expectedEvidenceHash:v.evidenceHash};}
 async function created() {const d=await effective();const id=crypto.randomUUID();const input={operation:"create",workId:id,agreementId:d.id,agreementVersion:1,payload,idempotencyKey:crypto.randomUUID()};await work(input);return {id,input,d,v:(await workRead(id)).versions[0]!};}
-async function submitted() {const c=await created();await work({operation:"submit",...workExpected(c.id,c.v)});return {...c,v:(await workRead(c.id)).versions[0]!};}
 
-async function integrity(input:Record<string,unknown>,actor=WORKER){return (await run<{value:Record<string,unknown>}>("select api.work_integrity($1::jsonb) value",[{idempotencyKey:crypto.randomUUID(),...input}],claims(actor)))[0]!.value;}
-async function verified(){const c=await submitted();await work({operation:"decide",...workExpected(c.id,c.v),outcome:"verified",reason:"Reviewed exact work"},APPROVER);return {...c,v:(await workRead(c.id)).versions[0]!};}
-const withdraw=(c:{id:string;v:WorkVersion})=>({operation:"withdraw",...workExpected(c.id,c.v),reason:"Worker no longer presents this record"});
 
 
 const hashOf = (secret: string) => createHash("sha256").update(secret).digest("hex");
