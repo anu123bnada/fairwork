@@ -1,4 +1,5 @@
 import { test,expect } from "@playwright/test";
+import { translate } from "../../src/i18n";
 test.use({viewport:{width:390,height:844}});
 test("sharing previews an explicit summary and requires review before activating a named-recipient grant",async({page})=>{
  const id="40000000-0000-4000-8000-000000000001",recipient="40000000-0000-4000-8000-000000000002";
@@ -43,3 +44,19 @@ test("a named-recipient link survives sign-in without granting anonymous access"
  await expect(page).toHaveURL(new RegExp(`/app/share\\?grantId=${id}$`));
  await expect(page.getByRole("region",{name:"Recipient projection"})).toContainText("Authorized synthetic disclosure");
 });
+
+for (const locale of ["si","ta","de"] as const) {
+ test(`passport sharing is translated in ${locale}`,async({page})=>{
+  const id="40000000-0000-4000-8000-000000000001";
+  await page.route("**/api/v1/me",route=>route.fulfill({json:{data:{id,displayName:"Synthetic owner",locale:"en",timeZone:"UTC",revision:1,capabilities:[]}}}));
+  await page.route("**/api/v1/passport",route=>route.fulfill({json:{data:{policyVersion:"private-work-passport.v1",passportId:id,ownerId:id,createdAt:"2026-10-18T00:00:00Z",entries:[],nextCursor:null}}}));
+  await page.route("**/api/v1/passport/sharing**",route=>route.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await page.goto("/app/settings");await page.getByLabel("Language").selectOption(locale);
+  await page.goto("/app/share");
+  await expect(page.getByText(translate(locale,"sh.disclaimer"))).toBeVisible();
+  await expect(page.getByText(translate(locale,"sh.noGrants"))).toBeVisible();
+  await expect(page.getByText(translate(locale,"sh.noEligible"))).toBeVisible();
+  await expect(page.getByRole("button",{name:translate(locale,"sh.refresh")})).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/\bsh\.[a-zA-Z._]+\b/);
+ });
+}
