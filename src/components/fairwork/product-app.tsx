@@ -33,6 +33,7 @@ import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { DeveloperAccess } from "./developer-access";
 import { PayCompare } from "./pay-compare";
 import { Reminders } from "./reminders";
+import { DataExportPanel } from "./data-export";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -1256,6 +1257,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <LanguageSwitcher />
       <PlanPanel />
       <p className="fw-disclaimer">In-app activity covers saved offers and organization decisions. Email and push delivery are not connected. Your private account details are not publicly listed.</p>
+      <details className="fw-list-card"><summary>{t("export.title")}</summary><DataExportPanel /></details>
       <details className="fw-list-card"><summary>Manage privacy requests</summary><PrivacyRequests /></details>
       <details className="fw-list-card"><summary>Developer access</summary><DeveloperAccess /></details>
       {profile && <details className="fw-list-card"><summary>Account security and deactivation</summary><AccountSecurity revision={profile.revision} /></details>}

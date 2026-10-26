@@ -331,6 +331,12 @@ export const en = {
   "ask.copyFailed": "Could not copy. Select the question text to copy it manually.",
   "ask.continue": "Continue to agreement",
   "ask.signedIn": "Signed in account {id}",
+  "export.title": "Download my data",
+  "export.intro": "Save a copy of your own records (profile, offers, employment history, work records, Passport, credentials without their tokens, vault document list, plan and activity) as a file on this device. It is not uploaded anywhere. Keep it private.",
+  "export.button": "Create and download my data file",
+  "export.working": "Preparing your file…",
+  "export.done": "Your file was created. The list shows how many items each section contains.",
+  "export.unavailable": "could not be read",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -652,6 +658,12 @@ export const si: Partial<Messages> = {
   "ask.copyFailed": "පිටපත් කළ නොහැකි විය. අතින් පිටපත් කිරීමට ප්‍රශ්න පෙළ තෝරන්න.",
   "ask.continue": "ගිවිසුම වෙත ඉදිරියට",
   "ask.signedIn": "පිවිසුණු ගිණුම {id}",
+  "export.title": "මගේ දත්ත බාගන්න",
+  "export.intro": "ඔබේම වාර්තාවල පිටපතක් (පැතිකඩ, දීමනා, රැකියා ඉතිහාසය, වැඩ වාර්තා, පාස්පෝර්ට්, ටෝකන රහිත අක්තපත්‍ර, සුරක්ෂිත ගබඩා ලේඛන ලැයිස්තුව, සැලැස්ම සහ ක්‍රියාකාරකම්) මෙම උපාංගයේ ගොනුවක් ලෙස සුරකින්න. එය කොතැනකටවත් උඩුගත නොවේ. එය පෞද්ගලිකව තබාගන්න.",
+  "export.button": "මගේ දත්ත ගොනුව සාදා බාගන්න",
+  "export.working": "ඔබේ ගොනුව සූදානම් කරමින්…",
+  "export.done": "ඔබේ ගොනුව සාදන ලදී. සෑම කොටසකම අයිතම ගණන ලැයිස්තුවේ දැක්වේ.",
+  "export.unavailable": "කියවිය නොහැකි විය",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -970,6 +982,12 @@ export const ta: Partial<Messages> = {
   "ask.copyFailed": "நகலெடுக்க முடியவில்லை. கைமுறையாக நகலெடுக்க கேள்வி உரையைத் தேர்ந்தெடுக்கவும்.",
   "ask.continue": "ஒப்பந்தத்திற்குத் தொடர்க",
   "ask.signedIn": "உள்நுழைந்த கணக்கு {id}",
+  "export.title": "என் தரவைப் பதிவிறக்கு",
+  "export.intro": "உங்கள் சொந்தப் பதிவுகளின் (சுயவிவரம், சலுகைகள், வேலை வரலாறு, வேலைப் பதிவுகள், கடவுச்சீட்டு, டோக்கன் இல்லாத சான்றுகள், பெட்டக ஆவணப் பட்டியல், திட்டம், செயல்பாடு) நகலை இந்தச் சாதனத்தில் கோப்பாகச் சேமிக்கவும். அது எங்கும் பதிவேற்றப்படாது. அதைத் தனிப்பட்டதாக வைத்திருங்கள்.",
+  "export.button": "என் தரவுக் கோப்பை உருவாக்கிப் பதிவிறக்கு",
+  "export.working": "உங்கள் கோப்பைத் தயாரிக்கிறது…",
+  "export.done": "உங்கள் கோப்பு உருவாக்கப்பட்டது. ஒவ்வொரு பிரிவிலும் உள்ள உருப்படிகளின் எண்ணிக்கையைப் பட்டியல் காட்டுகிறது.",
+  "export.unavailable": "படிக்க முடியவில்லை",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -1288,4 +1306,10 @@ export const de: Partial<Messages> = {
   "ask.copyFailed": "Kopieren nicht möglich. Markieren Sie den Fragetext und kopieren Sie ihn manuell.",
   "ask.continue": "Weiter zur Vereinbarung",
   "ask.signedIn": "Angemeldetes Konto {id}",
+  "export.title": "Meine Daten herunterladen",
+  "export.intro": "Speichern Sie eine Kopie Ihrer eigenen Daten (Profil, Angebote, Berufsverlauf, Arbeitseinträge, Pass, Nachweise ohne ihre Token, Dokumentliste des Tresors, Tarif und Aktivität) als Datei auf diesem Gerät. Sie wird nirgendwohin hochgeladen. Halten Sie sie privat.",
+  "export.button": "Meine Datendatei erstellen und herunterladen",
+  "export.working": "Ihre Datei wird vorbereitet…",
+  "export.done": "Ihre Datei wurde erstellt. Die Liste zeigt, wie viele Einträge jeder Abschnitt enthält.",
+  "export.unavailable": "konnte nicht gelesen werden",
 };
