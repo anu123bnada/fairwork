@@ -76,13 +76,21 @@ New local migrations must be applied by hand to the Docker database
 (`docker exec -i supabase_db_oryqen-local-dev psql -U postgres -v ON_ERROR_STOP=1 < <file>` then insert the version
 into `supabase_migrations.schema_migrations`); the harness fails its migration inventory check otherwise.
 
+## Checkpoint (27 Oct 2026, end of batch)
+
+HEAD is the commit after `66e9636` (docs only). Final full gate: PASS 13, FAIL 0, BLOCKED 6 (owner inputs). Harness: 186 PASS.
+Local Docker database has 44 migrations applied by hand; the app dev server is stopped. Nothing pushed, deployed or applied to hosted systems.
+
 ## Next exact task
 
-(1) Read `release-results/release-verify.md` from the latest `npm run release:verify:full` and fix any FAIL.
-(2) Remaining backlog by priority: Check flow and work-record screen translations; webhooks for the Developer API;
-Evidence Vault attachments to records and shares; smart alerts (expiry reminders); organization management screens;
-Windows and Android end-to-end against a hosted backend (blocked on approval); Gemini live proof blocked on provider quota.
-(3) Owner-only items are listed in `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`.
+(1) Translate the remaining English screens: agreements, cases, registration, offer drafts, screenshot and PDF import widgets,
+the rule-analysis and assessment panels, employment history body, vault body text, privacy requests, guidance, passport.
+(2) Evidence Vault attachments to work records and shares; orphan-file reconciliation; malware-scanning decision.
+(3) Organization management screens beyond requests and roster; entitlement assignment to organizations.
+(4) Developer API: persistent delivery queue, more events and scopes, OpenAPI document.
+(5) Windows and Android end-to-end against a hosted backend, installer upgrade tests, device tests: blocked on hosted approval and hardware.
+(6) Gemini live proof: blocked on provider quota. Company research: more registries beyond GLEIF need verified keys and terms.
+(7) Owner-only items: `docs/ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md` (twelve pending migrations, secrets, bucket, identities).
 
 ## Release gate
 `npm run release:verify` (quick) or `npm run release:verify:full` writes `release-results/release-verify.{json,md}` with PASS/FAIL/SKIPPED/BLOCKED per gate. SKIPPED and BLOCKED are never passes.

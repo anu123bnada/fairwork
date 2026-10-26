@@ -209,3 +209,12 @@ the new endpoint is mocked.
 | Real-stack harness (real Auth, mail, TOTP, PostgreSQL, local vault store, throwaway signing key) | **181 PASS, exit 0**, including the entitlement, vault and developer API journeys |
 | New automated tests this batch | Vault: schema 3, store 5, service 6, SQL 6 (PGlite and real PostgreSQL), browser 3. Plans: unit 9, SQL 5, browser 4. Developer API: SQL 5 (PGlite and real PostgreSQL), unit 8, browser 2. Scam indicators 5. German references 3 unit plus 1 browser. Pay comparison 2 browser. Localized panels 3 browser (si, ta, de) |
 | Gemini live re-run | RESOURCE_EXHAUSTED on the configured model and on `gemini-3.1-flash-lite`: external quota blocker, no real-user AI enabled |
+
+## Final state of the 27 Oct 2026 batch
+
+| Check | Result |
+|---|---|
+| `npm run release:verify:full` on the final commit | **PASS 13, FAIL 0, SKIPPED 0, BLOCKED 6** (NOT READY: owner input required). **Browser suite 217 passed**, real-PostgreSQL case-review tests passed, typecheck, lint, vitest, audit (0 high or critical), production build, Android debug APK and Windows unsigned installer builds passed. BLOCKED, all needing the owner: production configuration, AI policy fields, credential signing key, https download hosts, Android release approvals, Windows code-signing certificate |
+| Real-stack harness with webhooks | **186 PASS, exit 0** (real Auth, mail, TOTP, PostgreSQL, local vault store, throwaway signing key). Developer webhook journey: validation, one-time secret, owner-only, test event failure logged, revoke event retried three times in the background and logged |
+| New SQL tests (PGlite and real PostgreSQL) | entitlements 5, vault 6, developer keys 5, developer webhooks 6: all pass on both engines |
+| Not run on real hardware | No Android device or emulator was attached; no Windows installer was installed and exercised in this batch; hosted Supabase Storage and a hosted backend were not touched |
