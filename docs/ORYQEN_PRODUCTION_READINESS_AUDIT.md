@@ -54,7 +54,7 @@ Counts: IMPLEMENTED (local) 4 (modules 04, 09, 13 and 18 with a test key); PARTI
 | 1 | Supabase production DB, Auth, RLS, migrations | **CONFIGURED BUT UNVERIFIED** | `.env.local` holds a hosted project URL and publishable key. Sixteen migrations are pending and unapplied. Two project refs exist in the repo; the owner must confirm which is production |
 | 2 | Supabase private Storage | **MISSING** | `ORYQEN_VAULT_STORAGE_URL`, `ORYQEN_VAULT_STORAGE_SERVICE_KEY` unset; bucket SQL ready in `scripts/hosted/vault-storage-setup.sql` |
 | 3 | Vercel production project | **MISSING/UNVERIFIED** | No `.vercel` link in the repo; `APP_ORIGIN` is localhost and `FAIRWORK_DATA_MODE=synthetic`; config validator FAILs on both |
-| 4 | Gemini | **CONFIGURED BUT UNVERIFIED** | Key and model set; metadata check says available; generation quota exhausted; policy approval false, AI disabled by design |
+| 4 | Gemini | **CONNECTED AND VERIFIED (synthetic data only)** | 28 Oct: real provider code returned a validated analysis for synthetic text on `gemini-3.1-flash-lite` (13 s). The configured `gemini-3.8-flash` returned 503 high-demand; owner should set `GEMINI_MODEL` to a stable model. Policy approval false: AI stays disabled for real users by design |
 | 5 | GLEIF | **CONNECTED AND VERIFIED** | Live checks passed (3/3); other providers MISSING (need keys/licences) |
 | 6 | Email / notifications | **MISSING** | No provider; Supabase default sender only; in-app notifications only |
 | 7 | Android | **CONFIGURED BUT UNVERIFIED** | SDK/Java 21 found, debug APK builds and installs; no release application ID, keystore or device acceptance |
