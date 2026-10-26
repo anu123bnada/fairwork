@@ -57,3 +57,7 @@ The signed-in home dashboard is translated in Sinhala, Tamil and German (28 new 
 ## Update 27 Oct 2026: saved offers, company research, vault and plan panels
 
 The saved-offers panel, the company research panel (including registry field labels, finding kinds, date formats and country names taken from the browser's own locale data), the Evidence Vault headings and the plan panel are translated. `tests/e2e/localized-panels.spec.ts` checks each language at phone width for translated headings, labels and results, no leftover keys, no overflow, and writes screenshots. Still English: the Check flow, work records, agreements, cases, registration, error messages from the server and the research limitation sentences returned by the server. All non-English strings remain unreviewed drafts.
+
+## Update 27 Oct 2026: work record screen, pay comparison, reminders
+
+The work record screen (summary, list, empty state, details, review, withdrawal, retraction and the entry form) is translated; `tests/e2e/localized-work-record.spec.ts` checks the empty state, form and record details in Sinhala, Tamil and German at phone width, and the Sinhala screenshot was reviewed. The English note about evidence storage was corrected to say that Evidence Vault documents are separate and not yet attached to records. About 220 strings per language are drafts awaiting native review.
