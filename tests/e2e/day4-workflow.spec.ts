@@ -1,4 +1,5 @@
 import { test,expect,type BrowserContext } from "@playwright/test";
+import { translate } from "../../src/i18n";
 import { mkdirSync } from "node:fs";
 import type { AgreementWorkflow } from "../../src/features/offer/workflow-schema";
 const worker="40000000-0000-4000-8000-000000000012", representative="40000000-0000-4000-8000-000000000013", id="40000000-0000-4000-8000-000000000021", item="40000000-0000-4000-8000-000000000051", company="40000000-0000-4000-8000-000000000001";
@@ -113,3 +114,17 @@ test("interrupted acknowledgement retries reuse the key; offline reload and expi
  await page.route("**/api/v1/agreement-workflows?*",route=>route.fulfill({status:401,json:{error:{code:"AUTH_REQUIRED"}}}));
  await page.getByRole("button",{name:"Reload authoritative agreement"}).click();await expect(page.getByRole("link",{name:"Sign in to reopen this agreement"})).toHaveAttribute("href",`/sign-in?workflowId=${id}`);
 });
+
+for (const locale of ["si","ta","de"] as const) {
+ test(`the agreement summary is translated in ${locale}`,async({context,page})=>{
+  const model=fixture();await session(context,worker,model,[]);
+  await page.setViewportSize({width:390,height:844});
+  await page.goto("/app/settings");await page.getByLabel("Language").selectOption(locale);
+  await page.goto(`/app/agreement-workflow?workflowId=${id}`);
+  await expect(page.getByRole("heading",{name:translate(locale,"ag.title")})).toBeVisible();
+  await expect(page.getByText(translate(locale,"ag.notSignature"))).toBeVisible();
+  await expect(page.getByRole("region",{name:translate(locale,"ag.termsAria",{version:1})})).toBeVisible();
+  await expect(page.locator("body")).not.toContainText(/\bag\.[a-zA-Z.]+\b/);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
+ });
+}

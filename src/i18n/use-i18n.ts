@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { DEFAULT_LOCALE, isLocale, translate, type LocaleCode, type MessageKey } from "./index";
 
 // Device-local language preference. Server-side persistence needs a reviewed migration because the
@@ -29,5 +29,7 @@ export function useLocale(): LocaleCode {
 }
 export function useI18n() {
   const locale = useLocale();
-  return { locale, setLocale: setStoredLocale, t: (key: MessageKey, vars?: Record<string, string | number>) => translate(locale, key, vars) };
+  // Stable per locale, so effects and callbacks that list `t` as a dependency do not re-run on every render.
+  const t = useCallback((key: MessageKey, vars?: Record<string, string | number>) => translate(locale, key, vars), [locale]);
+  return { locale, setLocale: setStoredLocale, t };
 }
