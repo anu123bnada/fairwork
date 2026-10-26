@@ -42,6 +42,8 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
   so translating them means making those engines locale-aware, not just the chrome), the admin console and server messages.
   NEXT: locale-aware assessment/extractor texts; persistent webhook queue; organization plans; audit export; Android emulator run when memory allows.
 
+- RULE: never run vitest, browsers or the harness beside `release:verify:full` (F-30); never edit `src/` while it runs.
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
