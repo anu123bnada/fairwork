@@ -586,6 +586,11 @@ export const en = {
   "cs.backList": "Back to case list",
   "cs.backWork": "Back to Work Record",
   "cs.viewPassport": "View Work Passport",
+  "reminders.checkOne": "A recruiter check for {name} will be deleted automatically in {days} day ({date}). Run it again if you still need it.",
+  "reminders.checkMany": "A recruiter check for {name} will be deleted automatically in {days} days ({date}). Run it again if you still need it.",
+  "reminders.checkOpen": "Open the offer check",
+  "reminders.queue": "{count} recruiter request(s) are waiting for your decision as an organization representative.",
+  "reminders.queueOpen": "Open the employer workspace",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -1162,6 +1167,11 @@ export const si: Partial<Messages> = {
   "cs.backList": "නඩු ලැයිස්තුවට ආපසු",
   "cs.backWork": "වැඩ වාර්තාවට ආපසු",
   "cs.viewPassport": "වැඩ ගමන් බලපත්‍රය බලන්න",
+  "reminders.checkOne": "{name} සඳහා බඳවා ගැනීමේ පරීක්ෂාව දින {days} කින් ({date}) ස්වයංක්‍රීයව මැකේ. තවමත් අවශ්‍ය නම් නැවත කරන්න.",
+  "reminders.checkMany": "{name} සඳහා බඳවා ගැනීමේ පරීක්ෂාව දින {days} කින් ({date}) ස්වයංක්‍රීයව මැකේ. තවමත් අවශ්‍ය නම් නැවත කරන්න.",
+  "reminders.checkOpen": "දීමනා පරීක්ෂාව විවෘත කරන්න",
+  "reminders.queue": "සංවිධාන නියෝජිතයෙකු ලෙස ඔබේ තීරණය බලා සිටින බඳවා ගැනීමේ ඉල්ලීම් {count} ක් ඇත.",
+  "reminders.queueOpen": "සේවායෝජක වැඩබිම විවෘත කරන්න",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -1735,6 +1745,11 @@ export const ta: Partial<Messages> = {
   "cs.backList": "வழக்குப் பட்டியலுக்குத் திரும்பு",
   "cs.backWork": "பணிப் பதிவுக்குத் திரும்பு",
   "cs.viewPassport": "பணிக் கடவுச்சீட்டைப் பார்",
+  "reminders.checkOne": "{name} க்கான ஆட்சேர்ப்புச் சரிபார்ப்பு {days} நாளில் ({date}) தானாக நீக்கப்படும். இன்னும் தேவைப்பட்டால் மீண்டும் நடத்தவும்.",
+  "reminders.checkMany": "{name} க்கான ஆட்சேர்ப்புச் சரிபார்ப்பு {days} நாட்களில் ({date}) தானாக நீக்கப்படும். இன்னும் தேவைப்பட்டால் மீண்டும் நடத்தவும்.",
+  "reminders.checkOpen": "சலுகைச் சரிபார்ப்பைத் திற",
+  "reminders.queue": "அமைப்புப் பிரதிநிதியாக உங்கள் முடிவுக்காக {count} ஆட்சேர்ப்புக் கோரிக்கை(கள்) காத்திருக்கின்றன.",
+  "reminders.queueOpen": "முதலாளி பணியிடத்தைத் திற",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -2308,4 +2323,9 @@ export const de: Partial<Messages> = {
   "cs.backList": "Zurück zur Fallliste",
   "cs.backWork": "Zurück zum Arbeitsnachweis",
   "cs.viewPassport": "Arbeitspass ansehen",
+  "reminders.checkOne": "Die Recruiter-Prüfung für {name} wird in {days} Tag ({date}) automatisch gelöscht. Führen Sie sie erneut durch, wenn Sie sie noch brauchen.",
+  "reminders.checkMany": "Die Recruiter-Prüfung für {name} wird in {days} Tagen ({date}) automatisch gelöscht. Führen Sie sie erneut durch, wenn Sie sie noch brauchen.",
+  "reminders.checkOpen": "Angebotsprüfung öffnen",
+  "reminders.queue": "{count} Recruiter-Anfrage(n) warten auf Ihre Entscheidung als Organisationsvertreter.",
+  "reminders.queueOpen": "Arbeitgeberbereich öffnen",
 };

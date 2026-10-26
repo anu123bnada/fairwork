@@ -20,3 +20,13 @@ describe("credential expiry reminders", () => {
     expect(expiringCredentials([item("a", "valid", at(20))], NOW, 30)).toHaveLength(1);
   });
 });
+
+describe("recruiter check retention reminders", () => {
+  it("lists checks that will be erased within 14 days, soonest first, and ignores the rest", async () => {
+    const { expiringChecks } = await import("@/components/fairwork/reminders");
+    const check = (id: string, expiresAt: string) => ({ verificationId: id, recruiterName: id, expiresAt });
+    const result = expiringChecks([check("far", at(40)), check("soon", at(3)), check("gone", at(-1)), check("bad", "nope"), check("edge", at(14))], NOW);
+    expect(result.map(entry => entry.verificationId)).toEqual(["soon", "edge"]);
+    expect(result.map(entry => entry.daysLeft)).toEqual([3, 14]);
+  });
+});
