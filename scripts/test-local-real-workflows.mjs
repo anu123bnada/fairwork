@@ -14,6 +14,7 @@ import { localPrivacyJourney } from './local-privacy-journey.mjs';
 import { localSharingJourney } from './local-sharing-journey.mjs';
 import { localDeactivationJourney } from './local-deactivation-journey.mjs';
 import { localOfferHistoryJourney } from './local-offer-history-journey.mjs';
+import { localCredentialJourney, localTrustChainJourney } from './local-credential-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
@@ -330,6 +331,8 @@ try {
   record(`${expectedVersions.length} local migrations and restricted deferred integrity trigger contexts verified`);
   stage = 'named-recipient sharing';
   const share = await localSharingJourney({worker,employer,outsider:approver,workId:ids.workId,request,record,origin,evidence,localSql});
+  await localTrustChainJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record });
+  await localCredentialJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin, evidence });
   stage = 'privacy request tracking';
   const privacyRequestId = await localPrivacyJourney({worker, employer, approver, operator, localSql, record, evidence, origin});
   if (app) {

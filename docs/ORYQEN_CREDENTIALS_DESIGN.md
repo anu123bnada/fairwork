@@ -1,7 +1,9 @@
 # ORYQEN verifiable credentials: design and status (module 18)
 
-Status 26 Oct 2026: **core implemented and tested; issuance, status, verification pages and QR are
-designed but not built; no signing key exists.** Nothing here is issued to anyone.
+Status 26 Oct 2026: **implemented and verified against a throwaway test key; no production key exists.**
+Core, register, issuing API, public status endpoint, published-key endpoint, QR sharing and the verify page
+are built and tested (unit, SQL, browser with real Ed25519 verification, and the real local stack: 161
+harness checks). Nothing has been issued to a real person, and nothing can be until the owner supplies a key.
 
 ## What a credential says (and does not)
 
@@ -42,27 +44,45 @@ unknown `kid`; bad signature (tampered payload, swapped signature, wrong key); w
 not yet valid; revoked (against a supplied list); and correctly signed payloads that break the schema
 (self-reported assurance, missing caveat, lifetime over a year, extra fields). 11 tests cover these.
 
-## Not built yet (design)
+## What is built (all verified locally)
 
-1. **Register and status.** Table `private.credentials(jti, holder_id, source_kind, source_id, source_version,
-   claim_ref, issued_at, expires_at, revoked_at, revoked_reason, revoked_by)`: append-only events, forced RLS,
-   holder-only reads, issuance only through an RPC that re-reads the live claim. A public status
-   endpoint answers `valid | revoked | expired | unknown` for a `jti` (random UUID, unguessable, rate-limited).
-   Status is **computed live from the source record**: a retraction, withdrawal or correction of the work
-   record revokes the credential automatically, so a revoked claim cannot keep verifying.
-2. **Issuance API.** `POST /api/v1/credentials` for the signed-in holder: server recomputes the Trust Chain
-   claim (never trusts client data), checks eligibility, signs, stores the register row, returns the token and
-   the verify link. Idempotent. Quota-limited.
-3. **Verification page and QR.** The QR encodes `https://<origin>/verify#c=<token>`. The token sits in the URL
-   *fragment*, so it never reaches server logs. The page verifies in the browser against
-   `/.well-known/oryqen-keys.json` and asks the status endpoint only for the `jti`. It displays assurance in
-   words, the caveat, issue and expiry dates, and what the credential does not prove.
-4. **Holder controls.** List and revoke own credentials; revocation is immediate through status.
-5. **Audit.** Issue and revoke events recorded with actor and time in the register's event table.
+1. **Register and status** (`supabase/migrations/20261026140000_credential_register.sql`): `private.credentials`
+   (holder, source record and version, content-bound claim reference, token, expiry) and append-only
+   `credential_events`; forced RLS; holder-only reads. Registration re-checks, inside the database, that the
+   caller is the record's worker, the version is the current verified one, and the claim reference equals the hash
+   recomputed from the stored content, so a forged reference is refused. Status is **computed live**:
+   revoked by the holder, expired, or `source_changed` when the work record is withdrawn, retracted or
+   corrected. `api.credential_status` is the **only** function in the `api` schema anonymous callers may execute
+   (a test asserts this); it returns just `status`, `reason`, `checkedAt`. The policy role that powers it reads
+   only `work_id, version, state` and `work_id, version, operation` columns, never content or identities.
+2. **Issuing API** `POST /api/v1/credentials`: signed-in holder, same-origin, strict body. The server recomputes
+   the Trust Chain claim from the authorized record, signs, then registers. Idempotent: a retry returns the stored
+   token. Max 50 active credentials per holder. `GET` lists the holder's credentials with live status.
+   `POST /api/v1/credentials/revoke` is holder-only (others get NOT_FOUND).
+3. **Published keys** `/.well-known/oryqen-keys.json`: public keys only; 404 when signing is not configured so
+   verifiers fail closed. A published entry carrying private material is dropped.
+4. **Verify page** `/verify#c=<token>`: verifies the signature in the browser against the published keys, then asks
+   the status endpoint for only the random credential id. The token stays in the URL fragment and never reaches
+   the server (a browser test asserts no request contains it). Results are worded (Valid, Revoked, Expired,
+   Cannot confirm, Not verified, Signature valid but status unchecked); a revoked, expired or unknown credential
+   is never shown as valid.
+5. **Holder UI** (Trust Chain panel): create from a reviewed claim (shorten the statement, choose 30/90/365
+   days), QR code and link, list with live status, revoke with confirmation. Offered only for reviewed, active work
+   claims; when no key is configured it says so.
+6. **Key ceremony** `scripts/generate-credential-key.mjs` for the owner.
+
+## Not built
+
+Employer-side credential views; credentials for offer terms or self-reported claims (refused by design);
+audit export of register events; automatic email or push when a credential is revoked by a source change;
+key rotation tooling beyond publishing several public keys; an independent status cache.
 
 ## Key custody (owner decision, blocking issuance)
 
-No key exists. `generateSigningKey` is a test and ceremony helper. Proposed procedure: the owner generates an
+The owner has said they will generate and hold the key. No production key exists, and none was created here. Use
+`node scripts/generate-credential-key.mjs --kid <id> --out <path outside the repository>`: it writes the private key
+where you choose, refuses repository paths and overwrites, and prints only the public key and the variable names.
+Procedure: the owner generates an
 Ed25519 key offline, stores the private JWK in a password manager with an offline backup, and gives the
 application only `ORYQEN_CREDENTIAL_SIGNING_KEY` (JWK) and `ORYQEN_CREDENTIAL_KEY_ID` as hosting secrets;
 public keys are published via `ORYQEN_CREDENTIAL_PUBLIC_KEYS`. Rotation: add a new `kid`, keep old public keys

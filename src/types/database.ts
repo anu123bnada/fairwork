@@ -28,6 +28,10 @@ export type Database = {
       guidance_delete: { Args: { request: Json }; Returns: Json };
       analysis_history: { Args: { request: Json }; Returns: Json };
       company_team: { Args: { request: Json }; Returns: Json };
+      credential_register: { Args: { request: Json }; Returns: Json };
+      credential_list: { Args: { request: Json }; Returns: Json };
+      credential_revoke: { Args: { request: Json }; Returns: Json };
+      credential_status: { Args: { request: Json }; Returns: Json };
       offer_history: { Args: { request: Json }; Returns: Json };
       request_organization: { Args: { request: Json }; Returns: Json };
       appeal_organization_request: { Args: { request: Json }; Returns: Json };

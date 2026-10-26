@@ -54,9 +54,15 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 - `prepare-local-development.mjs` pins every migration by hash; add new ones, and delete only an
   *unapplied* stale copy under `.tmp/oryqen-local-dev/supabase/migrations` if a migration is revised.
 
+## Credentials (built, 26 Oct)
+
+Register, status, issuing, revoke, published keys, QR and `/verify` are built and verified (see
+`docs/ORYQEN_CREDENTIALS_DESIGN.md`). To try locally: `node .tmp/make-test-key.mjs` style throwaway key, export
+`ORYQEN_CREDENTIAL_KEY_ID` and `ORYQEN_CREDENTIAL_SIGNING_KEY` (single-line private JWK) before
+`node scripts/run-local-development.mjs`. The harness reports credential steps as SKIPPED, never PASS, when the app has no key.
+**The owner holds the production key**: `node scripts/generate-credential-key.mjs --kid <id> --out <path outside repo>`.
+
 ## Next exact task
 
-Trust Chain read model and the credential core are built (see tracker). Next: (1) credentials register
-migration + status endpoint + issuance API + verify page/QR once the owner decides key custody
-(`docs/ORYQEN_CREDENTIALS_DESIGN.md`); (2) entitlements model; (3) Evidence Vault file storage; (4) add a
-Trust Chain step to the real-stack harness (`scripts/test-local-real-workflows.mjs`) so it runs on real rows.
+(1) Entitlements model; (2) Evidence Vault file storage with private bucket and signed URLs; (3) employer-side
+credential views and register audit export; (4) widen translations with native review; (5) research history.

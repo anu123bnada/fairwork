@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { appRequest } from "@/features/authority/client";
 import { trustChainResponse, type TrustChainResponse, type TrustClaim } from "@/features/trust/schema";
 import { useI18n } from "@/i18n/use-i18n";
+import { IssueCredential, MyCredentials, type CredentialsData } from "./credentials-panel";
 
 const ASSURANCE: Record<TrustClaim["verification"]["assurance"], string> = {
   independently_reviewed: "Reviewed by an employer representative",
@@ -32,6 +33,8 @@ function matches(claim: TrustClaim, filter: Filter) {
 export function TrustChain() {
   const { t } = useI18n();
   const [data, setData] = useState<TrustChainResponse | null>(null), [error, setError] = useState(""), [filter, setFilter] = useState<Filter>("all");
+  const [credentials, setCredentials] = useState<CredentialsData | null>(null);
+  const loadCredentials = useCallback(async () => { try { setCredentials(await appRequest("/api/v1/credentials") as CredentialsData); } catch { setCredentials(null); } }, []);
   const load = useCallback(async () => {
     setError("");
     try { setData(trustChainResponse.parse(await appRequest("/api/v1/trust-chain"))); }
@@ -41,6 +44,7 @@ export function TrustChain() {
     let active = true;
     appRequest("/api/v1/trust-chain").then(raw => { if (active) setData(trustChainResponse.parse(raw)); })
       .catch(() => { if (active) setError("Your Trust Chain could not be loaded. Retry when connected."); });
+    appRequest("/api/v1/credentials").then(raw => { if (active) setCredentials(raw as CredentialsData); }).catch(() => { /* credentials are optional; the chain still works */ });
     return () => { active = false; };
   }, []);
   const claims = data?.claims.filter(claim => matches(claim, filter)) ?? [];
@@ -66,8 +70,10 @@ export function TrustChain() {
           <dt>Can it be challenged?</dt><dd>{claim.challenge.how}{claim.challenge.href && <> <Link href={claim.challenge.href}>Open</Link></>}</dd>
           <dt>Who can see it</dt><dd>{claim.visibility.summary}{claim.visibility.manageHref && <> <Link href={claim.visibility.manageHref}>Manage sharing</Link></>}</dd>
         </dl>
+        {credentials && <IssueCredential claim={claim} data={credentials} onIssued={() => void loadCredentials()} />}
         <details><summary>History ({claim.audit.length})</summary>{claim.audit.length ? <ol>{claim.audit.map((a, i) => <li key={i}>{when(a.at)} · {a.event}</li>)}</ol> : <p>No timestamped events are available for this claim.</p>}<small>Claim ID {claim.claimId.slice(0, 16)}…</small></details>
       </article>)}
+      {credentials && <MyCredentials data={credentials} onChanged={() => void loadCredentials()} />}
       <details><summary>What the Trust Chain does not guarantee</summary><ul>{data.limitations.map((text, i) => <li key={i}>{text}</li>)}</ul></details>
     </>}
   </section>;

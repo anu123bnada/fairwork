@@ -175,3 +175,18 @@ Final gates for this batch: browser suite **182 passed, 0 failed, 0 skipped, exi
 batch had a single failure (`stage9` passport download) because the new Trust Chain panel raised an extra alert when
 unmocked, the same class of fixture problem as before. The assertion now targets the specific download error and
 the new endpoint is mocked.
+
+### Verifiable credential register, API and verify page (26 Oct)
+
+| Check | Result |
+|---|---|
+| Browser suite (isolated production build) | **188 passed, 0 failed, 0 skipped, exit 0 (12.6 min)** |
+| Vitest | 89 files; **583 passed, 17 skipped, 0 failed** |
+| Typecheck / lint / production audit | pass / pass 0 warnings / 0 vulnerabilities (new dependency `qrcode@1.5.4`) |
+| Real-stack harness, `node scripts/test-local-real-workflows.mjs` (real Auth, mail, TOTP, PostgreSQL; app run with a throwaway test signing key) | **161 PASS, exit 0**; the first complete run this session. Includes 5 Trust Chain checks on real rows and 12 credential checks: forbidden actors refused, issue, replay returns the same credential, public key set has no private part, anonymous status valid/unknown, a real browser verifies the real signature and live status, holder-only revocation visible immediately, verify page shows revoked |
+| Migration on the real local Supabase PostgreSQL | applied (40 total); `anon` can execute exactly `api.credential_status` |
+| New SQL tests | 7 (register, replay, forged references, ownership, revoke, source withdrawal, expiry, privileges) |
+| New unit tests | issuing 7, routes 6 |
+| New browser tests | 6, with real Ed25519 verification in the browser: genuine, tampered, expired, wrong key, malformed, revoked/unknown/unreachable status never shown as valid, pasted token, phone layout, create/QR/revoke flow, signing-not-configured message |
+| Key ceremony script | refuses repository paths, missing key id and overwrites; success prints only public material |
+| Defects found while building | (1) anonymous verifiers lacked schema usage (fixed, with a test that proves nothing else became anonymous-callable); (2) a malformed token reached a table constraint instead of a clean validation error; (3) the verify page needed the shared brand header and its guard test caught it |

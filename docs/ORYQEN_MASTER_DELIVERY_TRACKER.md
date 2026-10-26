@@ -26,7 +26,7 @@ yet include Passport grants as claims, evidence files (none exist), disputes as 
 not exercised against real database rows (it reuses the already-validated service schemas); the real-stack harness needs
 a step for it.
 
-**Next:** verifiable credentials on top of it (`docs/ORYQEN_CREDENTIALS_DESIGN.md`).
+**Credentials** now build on it (`docs/ORYQEN_CREDENTIALS_DESIGN.md`). The Trust Chain has been **run on real database rows** by the real-stack harness (5 checks).
 
 ## Module status
 
@@ -49,7 +49,7 @@ a step for it.
 | 15 | Global Localization Engine | PARTIAL | **New:** English, Sinhala, Tamil, German catalogs with computed coverage and English fallback; device-persisted switcher; locale-aware dates and currencies; pay-period normalization; unit + browser tests | **Coverage is 22 strings per locale (nav, settings, language screen, new panels); all else stays English**; translations are unreviewed drafts; server-side preference needs a migration; phone/address formats, localized notifications |
 | 16 | Country-Aware Employment Intelligence | PARTIAL | **New:** Germany (ArbZG §3 daily time, §4 breaks) with exact quotes, URLs, retrieval dates, scope; Sri Lanka and all others show an explicit limitation | Only 1 supported country, 2 rules; source is an unofficial consolidation with no date; Sri Lankan primary text could not be retrieved |
 | 17 | Recruiter Scam Protection | PARTIAL | Offer-text indicators (upfront fees, document retention) in rules and AI | Domain mismatch, impersonation checks, reporting |
-| 18 | Verifiable Credentials & QR Proof | PARTIAL | **Core built:** Ed25519 JWS via `jose`, eligibility tied to the Trust Chain (self-reported can never be issued), mandatory demo-authority caveat, strict payload schema, 11 tests incl. tampering, alg-confusion, expiry, revocation, wrong key; design in `ORYQEN_CREDENTIALS_DESIGN.md` | No signing key (owner decision), no register or status endpoint, issuance API, QR or verification page |
+| 18 | Verifiable Credentials & QR Proof | IMPLEMENTED (local, test key) | Ed25519 core; register + live status migration (real Postgres applied); issuing, list, revoke, public status and published-key endpoints; QR sharing and `/verify` page with browser-side verification; 46 new tests plus **real-stack harness: issue, replay, anonymous status, browser verification, revocation, forbidden actors (all pass)**; owner key ceremony script | **No production key**; owner decision on issuer domain; no employer-side views, audit export or key-rotation tooling; the only authority behind it is the demo policy, so every credential says so |
 | 19 | Fairness & Salary Benchmarking | PARTIAL | **New:** pay-period normalization with explicit assumptions and same-currency or sourced-rate comparison (no invented rates) | Not yet in the UI; no benchmark datasets |
 | 20 | Smart Alerts & Timeline | PARTIAL | In-app notification center and workflow notifications | Expiry reminders, email, Android push, preferences |
 | 21 | Developer API & Integrations | NOT STARTED | — | Everything |
@@ -81,7 +81,7 @@ a step for it.
 ## Next batches (priority order)
 
 1. ~~Trust Chain read model~~ done (see above); next: stored claim ledger with expiry, linked disputes and Passport grants.
-2. Verifiable credentials: register, status endpoint, issuance API, QR and verification page (core and design done; **signing-key custody is an owner decision**).
+2. ~~Verifiable credentials~~ built against a test key; remaining: production key from the owner, employer-side views, audit export.
 3. Evidence Vault file storage with private bucket, signed short-lived URLs, malware and type validation.
 4. Entitlements model (free worker protection tier fixed in code), usage metering, admin plan controls; no billing.
 5. Research history persistence, employer-claim versus registry contradiction detection, recruiter checks.

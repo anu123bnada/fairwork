@@ -3,7 +3,7 @@
 Nothing in this document has been executed against any hosted system. Local evidence only.
 No push, deployment or hosted-database change has been made. Approval is requested, not assumed.
 
-## 1. The seven pending migrations
+## 1. The eight pending migrations
 
 Apply in this order. Each runs in one transaction and starts with a guard that requires the
 `postgres` identity. All seven were applied cleanly, in order, to the **real local Supabase
@@ -21,8 +21,10 @@ in the roster migration), so real-Postgres application is the meaningful check.
 | 6 | `20261026120000_saved_analysis_history` | New immutable table and `api.analysis_history` | No | None |
 | 7 | `20261026130000_company_team_roster` | `private.company_team` (owned by `fw_policy_exec`, temporary schema CREATE grant revoked afterwards) and `api.company_team` | No table changes | None |
 
-(You asked about four migrations. Seven are pending: the original four, plus three added in this
-session: the compatibility fix (5) and the saved-analysis (6) and team-roster (7) features.)
+| 8 | `20261026140000_credential_register` | New tables `credentials` and `credential_events` (append-only, forced RLS), RPCs `credential_register/list/revoke/status`, two helper functions owned by the policy role. **Security-relevant grants, please review:** (a) `GRANT USAGE ON SCHEMA api TO anon` so anonymous verifiers can call `api.credential_status`; a test proves it is the only `api` function anonymous callers can execute; (b) column-limited `SELECT` for the policy role on `work_record_versions(work_id,version,state)` and `work_integrity_events(work_id,version,operation)`, plus `USING (true)` policies for that role only | No | None (new empty tables). Live status depends on those grants |
+
+(You asked about four migrations. Eight are pending: the original four, plus the compatibility fix (5), saved
+analysis (6), team roster (7) and the credential register (8). Apply them together, in order.)
 
 A scan for `DROP TABLE/COLUMN/SCHEMA`, `TRUNCATE`, `ALTER ... DROP/RENAME` and `UPDATE ... SET`
 across these files found none. The only `DELETE` statement is inside the user-triggered
@@ -91,6 +93,7 @@ Required: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `A
 Authentication: `AUTH_REGISTRATION_ENABLED` (keep `false` until email delivery is approved).
 AI (keep disabled): `ORYQEN_AI_ENABLED`, `ORYQEN_AI_POLICY_APPROVED`, `ORYQEN_AI_POLICY_APPROVAL_REF`,
 `ORYQEN_AI_PROVIDER`, `ORYQEN_AI_PROCESSING_REGION`, `ORYQEN_AI_DATA_USE`, `GEMINI_MODEL`, `GEMINI_API_KEY`.
+Credentials (all three server-only, owner-held key; leave unset to keep issuing disabled): `ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY`, `ORYQEN_CREDENTIAL_PUBLIC_KEYS`.
 Optional: `ORYQEN_TELEMETRY_DB_URL` (restricted writer role; use a pooler, its role allows 4 connections),
 `NEXT_PUBLIC_WINDOWS_URL`, `NEXT_PUBLIC_APK_URL`, `NEXT_PUBLIC_PLAY_STORE_URL`, `NEXT_PUBLIC_CONTACT_EMAIL`.
 Never set: any service-role key, database owner URL or password in application settings.
@@ -100,7 +103,7 @@ Never set: any service-role key, database owner URL or password in application s
 - [ ] Owner confirms the Supabase project (ref, name, region) and the Vercel project.
 - [ ] Backup taken; identifier recorded.
 - [ ] Read-only preflight on the target passes (roles present; 32 prior migrations recorded).
-- [ ] Owner approves applying migrations 1-7 together, in order, as `postgres`.
+- [ ] Owner approves applying migrations 1-8 together, in order, as `postgres`, and has reviewed the `anon` schema usage grant and the policy-role column grants in migration 8.
 - [ ] After applying: the old app still lists saved offers (employer and worker).
 - [ ] Owner approves pushing the branch and deploying; `APP_ORIGIN` equals the production origin.
 - [ ] Hosted acceptance with two controlled accounts (`docs/ORYQEN_DEPLOYMENT_CHECKLIST.md` section 6).
