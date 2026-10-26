@@ -1351,6 +1351,11 @@ export const en = {
   "sum.integrity": "Saved-terms checksum",
   "sum.button": "Download this summary",
   "sum.note": "A text file built on this device from the saved terms; nothing is uploaded.",
+  "offers.search": "Search loaded offers by role",
+  "offers.searchNote": "This searches only the offers loaded on this page. Load more offers to include older ones.",
+  "offers.filterDecision": "Show decision",
+  "offers.allDecisions": "All decisions",
+  "offers.noMatch": "No loaded offer matches. Clear the search or the filter, or load more offers.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -2692,6 +2697,11 @@ export const si: Partial<Messages> = {
   "sum.integrity": "සුරකින ලද කොන්දේසි චෙක්සම්",
   "sum.button": "මෙම සාරාංශය බාගන්න",
   "sum.note": "සුරකින ලද කොන්දේසි වලින් මෙම උපාංගයේ සාදන ලද පෙළ ගොනුවක්; කිසිවක් උඩුගත නොකෙරේ.",
+  "offers.search": "පූරණය කළ දීමනා තනතුරෙන් සොයන්න",
+  "offers.searchNote": "මෙය මෙම පිටුවේ පූරණය කළ දීමනා පමණක් සොයයි. පැරණි ඒවා ඇතුළත් කිරීමට තවත් දීමනා පූරණය කරන්න.",
+  "offers.filterDecision": "තීරණය පෙන්වන්න",
+  "offers.allDecisions": "සියලු තීරණ",
+  "offers.noMatch": "පූරණය කළ කිසිදු දීමනාවක් නොගැලපේ. සෙවුම හෝ පෙරහන ඉවත් කරන්න, නැතහොත් තවත් දීමනා පූරණය කරන්න.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4030,6 +4040,11 @@ export const ta: Partial<Messages> = {
   "sum.integrity": "சேமித்த விதிமுறைகளின் சரிபார்ப்புத் தொகை",
   "sum.button": "இந்தச் சுருக்கத்தைப் பதிவிறக்கு",
   "sum.note": "சேமித்த விதிமுறைகளிலிருந்து இந்தச் சாதனத்தில் உருவாக்கிய உரைக் கோப்பு; எதுவும் பதிவேற்றப்படாது.",
+  "offers.search": "ஏற்றப்பட்ட சலுகைகளைப் பதவி மூலம் தேடு",
+  "offers.searchNote": "இது இந்தப் பக்கத்தில் ஏற்றப்பட்ட சலுகைகளை மட்டுமே தேடும். பழையவற்றைச் சேர்க்க மேலும் சலுகைகளை ஏற்றவும்.",
+  "offers.filterDecision": "முடிவைக் காட்டு",
+  "offers.allDecisions": "அனைத்து முடிவுகளும்",
+  "offers.noMatch": "ஏற்றப்பட்ட எந்தச் சலுகையும் பொருந்தவில்லை. தேடலை அல்லது வடிகட்டியை அழிக்கவும், அல்லது மேலும் சலுகைகளை ஏற்றவும்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -5368,4 +5383,9 @@ export const de: Partial<Messages> = {
   "sum.integrity": "Prüfsumme der gespeicherten Bedingungen",
   "sum.button": "Diese Zusammenfassung herunterladen",
   "sum.note": "Eine auf diesem Gerät aus den gespeicherten Bedingungen erstellte Textdatei; es wird nichts hochgeladen.",
+  "offers.search": "Geladene Angebote nach Position suchen",
+  "offers.searchNote": "Gesucht wird nur in den auf dieser Seite geladenen Angeboten. Laden Sie weitere Angebote, um ältere einzubeziehen.",
+  "offers.filterDecision": "Entscheidung anzeigen",
+  "offers.allDecisions": "Alle Entscheidungen",
+  "offers.noMatch": "Kein geladenes Angebot passt. Leeren Sie Suche oder Filter oder laden Sie weitere Angebote.",
 };

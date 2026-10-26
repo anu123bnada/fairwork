@@ -10,6 +10,7 @@ import { offerDecision, offerLifecycleResult } from "@/features/offer/lifecycle-
 import { OrganizationRequests } from "./organization-requests";
 import { CompanyProfiles } from "./company-profiles";
 import { RecruiterEmployerPanel } from "./recruiter-employer";
+import { filterOffers } from "@/features/offer/list-filter";
 import { OrganizationPlan } from "./org-plan-panel";
 import { OfferComparison } from "./offer-comparison";
 
@@ -21,6 +22,7 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
   const [selected, setSelected] = useState<string[]>([]);
   const [comparison, setComparison] = useState<string[] | null>(null);
   const [view, setView] = useState("active");
+  const [query, setQuery] = useState(""), [decisionFilter, setDecisionFilter] = useState("all");
   const pendingKeys = useRef(new Map<string, string>());
   const saving = useRef(false);
   const load = useCallback(async (cursor: string | null = null) => {
@@ -56,8 +58,14 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
     <h3>{context === "EMPLOYER" ? t("offers.employerTitle") : t("offers.title")}</h3>
     <p>{t("offers.privacy")}</p>
     <label className="fw-field">{t("offers.view")}<select value={view} disabled={busy} onChange={event => { setList(null); setError(""); setSelected([]); setComparison(null); setBusy(true); setView(event.target.value); }}><option value="active">{t("offers.viewActive")}</option><option value="archived">{t("offers.viewArchived")}</option><option value="all">{t("offers.viewAll")}</option></select></label>
+    {list && list.items.length > 0 && <>
+      <label className="fw-field">{t("offers.search")}<input type="search" maxLength={80} value={query} onChange={event => setQuery(event.target.value)} /></label>
+      <label className="fw-field">{t("offers.filterDecision")}<select value={decisionFilter} onChange={event => setDecisionFilter(event.target.value)}><option value="all">{t("offers.allDecisions")}</option><option value="considering">{t("offers.considering")}</option><option value="interested">{t("offers.interested")}</option><option value="accepted">{t("offers.accepted")}</option><option value="declined">{t("offers.declined")}</option></select></label>
+      <small>{t("offers.searchNote")}</small>
+    </>}
     {list && list.items.length > 1 && <p>{t("offers.compareHint")}</p>}
-    {list?.items.map(item => <div className="fw-list-row" key={item.offerId}>
+    {list && list.items.length > 0 && filterOffers(list.items, query, decisionFilter).length === 0 && <p>{t("offers.noMatch")}</p>}
+    {list && filterOffers(list.items, query, decisionFilter).map(item => <div className="fw-list-row" key={item.offerId}>
       <label><input type="checkbox" aria-label={t("offers.compareAria", { role: item.role || t("offers.untitled") })} checked={selected.includes(item.offerId)} disabled={busy || (!selected.includes(item.offerId) && selected.length >= 3)} onChange={event => { setComparison(null); setSelected(previous => event.target.checked ? [...previous, item.offerId] : previous.filter(id => id !== item.offerId)); }} /> <strong>{item.role || t("offers.untitled")}</strong><br />{t("offers.revision", { version: item.version, count: item.questions })}</label>
       <Link className="fw-small-action" href={`/app/agreement?offerId=${item.offerId}`}>{t("offers.open")}</Link>
       <label className="fw-field">{t("offers.decisionFor", { role: item.role || t("offers.untitled") })}<select disabled={busy} value={item.decision ?? "considering"} onChange={event => void update(item, item.archived ?? false, event.target.value)}><option value="considering">{t("offers.considering")}</option><option value="interested">{t("offers.interested")}</option><option value="accepted">{t("offers.accepted")}</option><option value="declined">{t("offers.declined")}</option></select></label>

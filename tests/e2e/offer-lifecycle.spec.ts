@@ -38,3 +38,21 @@ test("private decision and archive survive reload, and an ambiguous write retrie
   await region.getByLabel("Offer view").selectOption("active");
   await expect(decisions).toHaveValue("interested");
 });
+
+test("loaded offers can be searched by role and filtered by decision, and the page says it only covers loaded offers", async ({ page }) => {
+  const id = (n: number) => `40000000-0000-4000-8000-00000000000${n}`;
+  await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: id(1), displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  const row = (n: number, role: string, decision: string) => ({ offerId: id(n), companyId: id(1), version: 1, role, createdAt: "2026-10-25", questions: 0, archived: false, decision, lifecycleRevision: 0 });
+  await page.route("**/api/v1/offers?*", route => route.fulfill({ json: { data: { items: [row(2, "Welder", "interested"), row(3, "Warehouse Assistant", "considering"), row(4, "Cook", "declined")], nextCursor: null } } }));
+  await page.goto("/app/home");
+  const region = page.getByRole("region", { name: "Saved offers" });
+  await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(3);
+  await expect(region).toContainText("only the offers loaded on this page");
+  await region.getByLabel("Search loaded offers by role").fill("ware");
+  await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
+  await region.getByLabel("Search loaded offers by role").fill("");
+  await region.getByLabel("Show decision").selectOption("declined");
+  await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
+  await region.getByLabel("Search loaded offers by role").fill("welder");
+  await expect(region).toContainText("No loaded offer matches");
+});
