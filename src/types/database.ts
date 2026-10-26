@@ -34,6 +34,8 @@ export type Database = {
       credential_status: { Args: { request: Json }; Returns: Json };
       entitlement_read: { Args: { request: Json }; Returns: Json };
       entitlement_assign: { Args: { request: Json }; Returns: Json };
+      org_entitlement_read: { Args: { request: Json }; Returns: Json };
+      org_entitlement_assign: { Args: { request: Json }; Returns: Json };
       vault_register: { Args: { request: Json }; Returns: Json };
       vault_list: { Args: { request: Json }; Returns: Json };
       vault_attach: { Args: { request: Json }; Returns: Json };

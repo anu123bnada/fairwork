@@ -57,7 +57,8 @@ export async function localSharingJourney({worker,employer,outsider,workId,reque
   await reopening.getByRole('link',{name:'Back to sign in',exact:true}).click();
   await reopening.getByLabel('Email address').fill(employer.email);await reopening.getByLabel('Password',{exact:true}).fill(employer.password);
   await reopening.getByRole('button',{name:'Continue securely',exact:true}).click();
-  await expect(reopening.getByRole('region',{name:'Recipient projection'})).toContainText(summary);
+  try { await expect(reopening.getByRole('region',{name:'Recipient projection'})).toContainText(summary,{timeout:20000}); }
+  catch (error) { console.log(`DIAGNOSTIC reopened grant page: ${reopening.url()} :: ${(await reopening.locator('body').innerText()).replace(/\s+/g,' ').slice(0,400)}`); throw error; }
   record('Fresh real recipient sign-in and information-page navigation preserve the authorized grant link');
  } finally {await fresh.close();}
  const boundary=localSql(`begin;select case when not has_table_privilege('authenticated','private.passport_grants','SELECT') and not has_table_privilege('fw_projection_exec','private.work_record_versions','UPDATE') and not has_column_privilege('fw_policy_exec','private.work_passport_items','disclosure_summary','SELECT') and not has_function_privilege('authenticated','private.shared_passport_integrity(uuid,integer,uuid)','EXECUTE') then 'PASS' else 'FAIL' end;rollback;`);

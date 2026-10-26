@@ -10,6 +10,7 @@ import { offerDecision, offerLifecycleResult } from "@/features/offer/lifecycle-
 import { OrganizationRequests } from "./organization-requests";
 import { CompanyProfiles } from "./company-profiles";
 import { RecruiterEmployerPanel } from "./recruiter-employer";
+import { OrganizationPlan } from "./org-plan-panel";
 import { OfferComparison } from "./offer-comparison";
 
 export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPLOYER" }) {
@@ -81,6 +82,7 @@ export function EmployerWorkspace() {
     <CompanyProfiles />
     <CompanyResearch />
     <RecruiterEmployerPanel />
+    <OrganizationPlan />
     <TeamRoster />
     <Link className="fw-secondary" href="/app/opportunities">Manage opportunity listings</Link>
     <SavedOffers context="EMPLOYER" />

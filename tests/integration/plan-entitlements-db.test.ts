@@ -189,6 +189,8 @@ beforeAll(async () => {
     if(existsSync("supabase/migrations/202610140003_work_integrity_passport.sql")) await runMigration(await readFile("supabase/migrations/202610140003_work_integrity_passport.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/202610150001_work_case_review.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261026160000_plan_entitlements.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261024052407_opportunity_discovery.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261028170000_organization_plans.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -251,5 +253,70 @@ describe("plan entitlements", () => {
     await expect(rpc("entitlement_assign", assign(), null)).rejects.toThrow();
     await expect(run("update private.plan_assignments set plan='worker_free'", [], claims(APPROVER))).rejects.toThrow();
     await expect(run("insert into private.plan_assignments(subject_id,plan,actor_id,reason,idempotency_key) values($1,'worker_plus',$1,'x',gen_random_uuid())", [WORKER], claims(WORKER))).rejects.toThrow();
+  });
+});
+
+describe("organization plans", () => {
+  let other: string;
+  const orgAssign = (over: Record<string, unknown> = {}) => ({ companyId: other, plan: "org_team", reason: "Synthetic organization plan for a test", idempotencyKey: crypto.randomUUID(), ...over });
+  const listing = (company: string, status: string, id = crypto.randomUUID()) => ({ operation: "listing", id, companyId: company, fields: { title: "Synthetic role", description: "Synthetic fixture only.", location: "Colombo", workMode: "onsite", salary: 50000, currency: "LKR", payPeriod: "month" }, status, expectedVersion: 0, expiresAt: new Date(Date.now() + 86_400_000).toISOString(), idempotencyKey: crypto.randomUUID() });
+
+  beforeAll(async () => {
+    // A second organization whose only representative is OTHER, approved by an operator who holds no authority in it.
+    const provision = await run(`select api.provision_company($1::jsonb) as value`, [JSON.stringify({ name: "Synthetic plan company", idempotencyKey: crypto.randomUUID() })], claims(MEMBER));
+    other = String((provision[0] as { value: { id: string } }).value.id);
+    await run(`select api.decide_membership($1::jsonb) as value`, [JSON.stringify({ companyId: other, subjectId: OTHER, decision: "approve", expectedRevision: 0, expiresAt: new Date(Date.now() + 86_400_000).toISOString(), reviewedEvidenceRefs: ["demo:fixture/representative"], reason: "Synthetic test authority", policyVersion: "demo-authority.v1", idempotencyKey: crypto.randomUUID() })], claims(APPROVER));
+  });
+
+  it("defaults to the basic plan and shows live listings only to approved representatives", async () => {
+    await clearQuotas();
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY }, WORKER)).toEqual({ plan: "org_free", assignedAt: null, liveListings: 0 });
+    await expect(rpc("org_entitlement_read", { companyId: COMPANY }, OTHER)).rejects.toThrow("ACTION_FORBIDDEN"); // not a representative of that organization
+    await expect(rpc("org_entitlement_read", { companyId: crypto.randomUUID() }, WORKER)).rejects.toThrow("ACTION_FORBIDDEN");
+    await expect(rpc("org_entitlement_read", { companyId: COMPANY, extra: 1 }, WORKER)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("org_entitlement_read", { companyId: COMPANY }, null)).rejects.toThrow();
+  });
+
+  it("counts only published, unexpired listings of that organization, and can exclude the listing being edited", async () => {
+    await clearQuotas();
+    const published = listing(COMPANY, "published"), draft = listing(COMPANY, "draft");
+    await rpc("opportunity_command", published, WORKER); await rpc("opportunity_command", draft, WORKER);
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY }, WORKER)).toMatchObject({ liveListings: 1 });
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY, listingId: published.id }, WORKER)).toMatchObject({ liveListings: 0 });
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY }, APPROVER)).toMatchObject({ liveListings: 1 }); // another representative sees the organization's total
+    await rpc("opportunity_command", listing(other, "published"), OTHER);
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY }, WORKER)).toMatchObject({ liveListings: 1 }); // the other organization's listing is not counted
+  });
+
+  it("lets an operator with no authority in the organization assign a plan; the newest assignment wins", async () => {
+    await clearQuotas();
+    const request = orgAssign();
+    const first = await rpc("org_entitlement_assign", request, MEMBER);
+    expect(first).toMatchObject({ plan: "org_team", replayed: false });
+    expect(await rpc("org_entitlement_assign", request, MEMBER)).toMatchObject({ assignmentId: first.assignmentId, replayed: true });
+    await expect(rpc("org_entitlement_assign", { ...request, plan: "org_free" }, MEMBER)).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+    expect(await rpc("org_entitlement_read", { companyId: other }, OTHER)).toMatchObject({ plan: "org_team" });
+    await rpc("org_entitlement_assign", orgAssign({ plan: "org_free", reason: "Synthetic revert" }), MEMBER);
+    expect(await rpc("org_entitlement_read", { companyId: other }, OTHER)).toMatchObject({ plan: "org_free" });
+    expect(await rpc("org_entitlement_read", { companyId: COMPANY }, WORKER)).toMatchObject({ plan: "org_free" }); // unaffected
+  });
+
+  it("refuses non-operators, missing second factor, conflicts of interest, unknown organizations and malformed requests", async () => {
+    await clearQuotas();
+    await expect(rpc("org_entitlement_assign", orgAssign(), OTHER)).rejects.toThrow("ACTION_FORBIDDEN"); // a representative cannot grant their own organization a plan
+    await expect(rpc("org_entitlement_assign", orgAssign({ companyId: COMPANY }), APPROVER)).rejects.toThrow("ACTION_FORBIDDEN"); // an operator inside the organization may not
+    await expect(rpc("org_entitlement_assign", orgAssign(), MEMBER, "aal1")).rejects.toThrow("MFA_REQUIRED");
+    await expect(rpc("org_entitlement_assign", orgAssign({ companyId: crypto.randomUUID() }), MEMBER)).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("org_entitlement_assign", orgAssign({ plan: "enterprise" }), MEMBER)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("org_entitlement_assign", orgAssign({ reason: "  " }), MEMBER)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("org_entitlement_assign", { ...orgAssign(), extra: "x" }, MEMBER)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("org_entitlement_assign", orgAssign(), null)).rejects.toThrow();
+  });
+
+  it("keeps the history append-only and unreadable to people outside the organization", async () => {
+    await clearQuotas();
+    await expect(run("update private.org_plan_assignments set plan='org_free'", [], claims(APPROVER))).rejects.toThrow();
+    await expect(run("delete from private.org_plan_assignments", [], claims(APPROVER))).rejects.toThrow();
+    await expect(run("insert into private.org_plan_assignments(company_id,plan,actor_id,reason,idempotency_key) values($1,'org_team',$2,'x',gen_random_uuid())", [other, OTHER], claims(OTHER))).rejects.toThrow();
   });
 });

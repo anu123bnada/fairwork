@@ -258,3 +258,7 @@ BLOCKED (all owner decisions, none a defect): production configuration, AI polic
 
 **Gate (`npm run release:verify:full`, exit 0): PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6 — NOT READY: owner input required.** Browser journeys passed (1005 s) including the new accessibility checks (30) and notification preferences; unit/integration 512 s; real-PostgreSQL security 53 s. BLOCKED gates unchanged: production configuration, AI policy, credential key, download hosts, Android release, Windows signing.
 **Route matrix (`tests/e2e/route-matrix.spec.ts`): 74 passed.** 13 public routes and 16 signed-in `/app` screens at 390 px and 1366 px: renders, no page errors or hydration messages, no horizontal overflow; signed-out visitors see no private screen; admin and operator routes fail closed.
+
+### 28 Oct 2026 — organization plans and wider translation
+
+Real-stack harness (alone, `--manage-app`): **212 PASS, 0 FAIL, 0 SKIPPED** (exit 0), including the new organization-plan journey (basic allowance 5, refusal at the limit, edit and draft allowed, operator assignment with replay, representative sees the team plan, sixth publication succeeds). One earlier run failed once on a 5 s wait in the sharing journey and passed twice afterwards (F-28). `plan-entitlements-db` 10/10 on PGlite and on a disposable real PostgreSQL cluster. New unit suites: localize-text (4), i18n-dynamic-keys (10), localization-coverage (2), org-plans (8). Browser specs added for translated Settings, AI panel, Passport, sharing, credentials, opportunities, guidance, feed.

@@ -19,6 +19,7 @@ import { localCredentialJourney, localTrustChainJourney } from './local-credenti
 import { localVaultJourney } from './local-vault-journey.mjs';
 import { localDeveloperJourney } from './local-developer-journey.mjs';
 import { localRecruiterJourney } from './local-recruiter-journey.mjs';
+import { localOrgPlanJourney } from './local-orgplan-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
 
 checkLocalDocker();
@@ -358,6 +359,7 @@ try {
   await localVaultJourney({ worker, employer, outsider: approver, workId: ids.workId, request, record, origin });
   await localDeveloperJourney({ worker, employer, workId: ids.workId, request, record, origin });
   await localRecruiterJourney({ worker, employer, outsider: approver, companyId: company.id, companyName: organization.companyName, request, record });
+  await localOrgPlanJourney({ worker, employer, operator, companyId: company.id, request, record });
   stage = 'privacy request tracking';
   const privacyRequestId = await localPrivacyJourney({worker, employer, approver, operator, localSql, record, evidence, origin});
   if (app) {
