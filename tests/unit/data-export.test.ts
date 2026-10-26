@@ -61,4 +61,12 @@ describe("data export", () => {
     const result = await buildDataExport(fake({ "/api/v1/offers/analyses": () => { throw new Error("x"); } }).get, NOW);
     expect(result.sections.offers?.status).toBe("ok"); expect(result.sections.savedAnalyses).toEqual({ status: "unavailable", reason: "Saved analyses could not be read." });
   });
+
+  it("includes the person's recruiter checks, privacy requests and Passport sharing grants", async () => {
+    const { get, calls } = fake({ "/api/v1/recruiter": () => ({ items: [{ verificationId: id(7), recruiterName: "Synthetic Recruiter" }] }) });
+    const result = await buildDataExport(get, NOW);
+    for (const name of ["recruiterChecks", "privacyRequests", "passportSharing"]) expect(result.sections[name]?.status, name).toBe("ok");
+    expect(result.sections.recruiterChecks).toMatchObject({ count: 1 });
+    expect(calls).toEqual(expect.arrayContaining(["/api/v1/recruiter", "/api/v1/privacy-requests", "/api/v1/passport/sharing"]));
+  });
 });

@@ -28,6 +28,9 @@ export const sources: Source[] = [
   { name: "developerWebhooks", path: "/api/v1/developer/webhooks" },
   { name: "notifications", path: "/api/v1/notifications", paging: "notifications" },
   { name: "guidance", path: "/api/v1/guidance" },
+  { name: "recruiterChecks", path: "/api/v1/recruiter" },
+  { name: "privacyRequests", path: "/api/v1/privacy-requests", paging: "cursor" },
+  { name: "passportSharing", path: "/api/v1/passport/sharing", paging: "cursor" },
 ];
 
 const asRecord = (value: unknown): Record<string, unknown> => (value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {});

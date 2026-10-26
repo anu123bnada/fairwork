@@ -67,3 +67,21 @@ and is **not** queued across a server restart: a missed event can always be reco
 
 A persistent delivery queue with longer retry schedules, more event types, additional scopes, organization-owned keys,
 key expiry and rotation reminders, IP allow-lists, an OpenAPI document and a developer portal page, sandbox keys.
+
+## Why there is no persistent delivery queue yet (decision needed)
+
+A queue that retries over hours needs something that runs when nobody is using the application. ORYQEN deliberately has no service-role
+key and no always-on worker: every database call runs as a signed-in person under row-level security. Retrying on the next time the
+endpoint's owner happens to open the app would look like a queue but would not behave like one, so it was not built. Today a delivery is
+tried three times within a few seconds and the owner sees the outcome in the delivery log.
+
+Two honest options for the owner to choose between (neither is activated):
+
+1. **Scheduled worker** — a Vercel Cron route protected by a secret that calls a narrowly scoped database function (`webhook_due`) through a
+   dedicated low-privilege role, never the service-role key. Needs a cron schedule on the hosting plan and a secret.
+2. **Database-side** — Supabase `pg_cron` with `pg_net` posting from the database. Needs those extensions enabled and the signing secret
+   readable by the database job.
+
+Either needs a migration (an outbox table with attempts and next-attempt time), a backoff schedule up to 24 hours, and the same public-address
+check on every attempt. Until one is chosen, document to integrators that webhooks are best-effort and that the verification endpoint is the
+source of truth.
