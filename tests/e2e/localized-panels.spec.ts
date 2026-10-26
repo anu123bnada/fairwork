@@ -59,3 +59,21 @@ for (const locale of ["si", "ta", "de"] as const) {
     await page.screenshot({ path: testInfo.outputPath(`panels-${locale}.png`), fullPage: true });
   });
 }
+
+test("an expiring credential produces a translated reminder on the home screen, and nothing appears when none is near", async ({ page }) => {
+  await signedIn(page);
+  const soon = new Date(Date.now() + 5 * 86_400_000).toISOString(), far = new Date(Date.now() + 60 * 86_400_000).toISOString();
+  let items = [{ credentialId: id, status: "valid", expiresAt: soon }, { credentialId: "50000000-0000-4000-8000-000000000009", status: "valid", expiresAt: far }];
+  await page.route("**/api/v1/credentials", route => route.fulfill({ json: { data: { signingConfigured: true, verifyBase: "http://localhost/verify", items } } }));
+  await page.goto("/app/settings");
+  await page.getByLabel("Language").selectOption("de");
+  await page.goto("/app/home");
+  const reminders = page.getByRole("region", { name: translate("de", "reminders.title") });
+  await expect(reminders).toContainText(translate("de", "reminders.expiresMany", { days: 5, date: "" }).split("(")[0]!.trim());
+  await expect(reminders.getByRole("listitem")).toHaveCount(1);
+  await expect(reminders.getByRole("link", { name: translate("de", "reminders.open") })).toHaveAttribute("href", "/app/passport");
+  items = [items[1]!];
+  await page.reload();
+  await expect(page.getByRole("heading", { name: translate("de", "home.greeting", { name: "Synthetic" }) })).toBeVisible();
+  await expect(page.getByRole("region", { name: translate("de", "reminders.title") })).toHaveCount(0);
+});

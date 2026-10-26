@@ -32,6 +32,7 @@ import { EvidenceVault } from "./evidence-vault";
 import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { DeveloperAccess } from "./developer-access";
 import { PayCompare } from "./pay-compare";
+import { Reminders } from "./reminders";
 import { CompanyResearch } from "./company-research";
 import { SelfReportedSkills } from "./self-reported-skills";
 import { TrustChain } from "./trust-chain";
@@ -594,6 +595,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
         <span className="fw-chevron" aria-hidden="true">›</span>
       </Link>
       <div className="fw-hint-card"><strong>{t("home.hintStrong")}</strong><br />{t("home.hintBody")}</div>
+      <Reminders />
       <OpenSavedAgreement />
       <SavedOffers />
       <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>

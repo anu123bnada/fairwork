@@ -144,6 +144,10 @@ export const en = {
   "pay.aHigher": "Offer A is higher by {amount} per month.",
   "pay.bHigher": "Offer B is higher by {amount} per month.",
   "pay.disclaimer": "This compares stated pay only. It ignores tax, deductions, overtime, allowances, fees and benefits, and is not financial advice.",
+  "reminders.title": "Reminders",
+  "reminders.expiresOne": "A shareable credential ends in {days} day ({date}). Create a new one if you still need it.",
+  "reminders.expiresMany": "A shareable credential ends in {days} days ({date}). Create a new one if you still need it.",
+  "reminders.open": "Open my Passport",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -278,6 +282,10 @@ export const si: Partial<Messages> = {
   "pay.aHigher": "දීමනාව A මාසයකට {amount} කින් වැඩිය.",
   "pay.bHigher": "දීමනාව B මාසයකට {amount} කින් වැඩිය.",
   "pay.disclaimer": "මෙය සඳහන් කළ වැටුප පමණක් සංසන්දනය කරයි. බදු, අඩු කිරීම්, අතිකාල, දීමනා, ගාස්තු සහ ප්‍රතිලාභ නොසලකයි; මෙය මූල්‍ය උපදෙසක් නොවේ.",
+  "reminders.title": "මතක් කිරීම්",
+  "reminders.expiresOne": "බෙදාගත හැකි අක්තපත්‍රයක් දින {days} කින් ({date}) අවසන් වේ. තවමත් අවශ්‍ය නම් අලුත් එකක් සාදන්න.",
+  "reminders.expiresMany": "බෙදාගත හැකි අක්තපත්‍රයක් දින {days} කින් ({date}) අවසන් වේ. තවමත් අවශ්‍ය නම් අලුත් එකක් සාදන්න.",
+  "reminders.open": "මගේ පාස්පෝර්ටය විවෘත කරන්න",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -409,6 +417,10 @@ export const ta: Partial<Messages> = {
   "pay.aHigher": "சலுகை A மாதத்திற்கு {amount} அதிகம்.",
   "pay.bHigher": "சலுகை B மாதத்திற்கு {amount} அதிகம்.",
   "pay.disclaimer": "இது குறிப்பிட்ட ஊதியத்தை மட்டுமே ஒப்பிடுகிறது. வரி, பிடித்தங்கள், மிகைநேரம், படிகள், கட்டணங்கள், பலன்களை இது கருத்தில் கொள்ளாது; இது நிதி ஆலோசனை அல்ல.",
+  "reminders.title": "நினைவூட்டல்கள்",
+  "reminders.expiresOne": "பகிரக்கூடிய ஒரு சான்று {days} நாளில் ({date}) முடிவடைகிறது. இன்னும் தேவைப்பட்டால் புதியதை உருவாக்குங்கள்.",
+  "reminders.expiresMany": "பகிரக்கூடிய ஒரு சான்று {days} நாட்களில் ({date}) முடிவடைகிறது. இன்னும் தேவைப்பட்டால் புதியதை உருவாக்குங்கள்.",
+  "reminders.open": "என் கடவுச்சீட்டைத் திற",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -540,4 +552,8 @@ export const de: Partial<Messages> = {
   "pay.aHigher": "Angebot A liegt pro Monat um {amount} höher.",
   "pay.bHigher": "Angebot B liegt pro Monat um {amount} höher.",
   "pay.disclaimer": "Verglichen wird nur die angegebene Vergütung. Steuern, Abzüge, Überstunden, Zulagen, Gebühren und Leistungen bleiben unberücksichtigt; dies ist keine Finanzberatung.",
+  "reminders.title": "Erinnerungen",
+  "reminders.expiresOne": "Ein teilbarer Nachweis endet in {days} Tag ({date}). Erstellen Sie bei Bedarf einen neuen.",
+  "reminders.expiresMany": "Ein teilbarer Nachweis endet in {days} Tagen ({date}). Erstellen Sie bei Bedarf einen neuen.",
+  "reminders.open": "Meinen Pass öffnen",
 };
