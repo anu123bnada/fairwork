@@ -239,3 +239,9 @@ the new endpoint is mocked.
 * Real-stack harness (`test-local-real-workflows.mjs --manage-app`), run alone after F-25: **168 PASS, 0 FAIL**, including the new recruiter journey (domain claim without false control, idempotent create, no worker information in the representative queue, outsider sees nothing, confirm/dispute/withdraw, erase). Credential, vault and developer journeys SKIPPED by design (no signing key / document store configured locally). Evidence `test-results/local-real-1793009069177/`.
 * Vitest: 111 files, 732 passed, 17 skipped; `tsc` and `eslint` clean.
 * Browser: `recruiter-verification.spec.ts` 2/2, `localized-check.spec.ts` 3/3.
+
+### 28 Oct 2026 — full release gate on `ec242e8` (`npm run release:verify:full`, exit 0)
+
+**PASS 14 | FAIL 0 | SKIPPED 0 | BLOCKED 6. Verdict: NOT READY — owner input required.**
+PASS: typecheck, lint, unit-integration (309 s), dependency audit, brand assets, secrets scan, Electron policy, production build, browser journeys (868 s), real-PostgreSQL database security, Android toolchain, Android debug-signed preview APK (not a release), Windows unsigned preview installer (not a release), artifact integrity (9 hashed).
+BLOCKED (all owner decisions, none a defect): production configuration, AI policy/key, credential signing key, https download hosts, Android release approvals, Windows code-signing certificate. Report: `release-results/release-verify.md`.

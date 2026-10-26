@@ -23,6 +23,8 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
   (shared public-address-only fetch/DNS), worker panel in the Check screen, employer panel in the employer workspace.
   Fourteen migrations are now pending on hosted Supabase (`ORYQEN_HOSTED_DEPLOYMENT_APPROVAL.md`).
 
+- Full gate on `ec242e8`: PASS 14, FAIL 0, BLOCKED 6 (owner inputs). See `ORYQEN_TEST_REPORT.md`. Recruiter verification is committed.
+
 ## Done this session (commits `2ff7908` and the batch after it)
 
 - Gemini: the request contract was wrong (HTTP 400 on live API). Fixed: `responseMimeType` +
