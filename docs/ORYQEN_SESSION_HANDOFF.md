@@ -49,7 +49,7 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
   (recorded in the test report). Infrastructure audit in `ORYQEN_INFRASTRUCTURE_AUDIT.md` (read-only; `.env.local` -> Fairwork `cqjx...`, CLI -> oryqen-staging `jpvg...`, nothing hosted
   changed). Since the gate: migration 18 `20261028190000_offer_notes` (private offer notes + vault links to offers; PGlite, real PG and real-stack harness passed), employment
   timeline and Passport-link expiry reminders, abuse-report queue inside the admin console (Cases & moderation), interview/negotiation preparation (fixed rules, 4 languages),
-  side-by-side agreement version comparison. Eighteen local migrations are now pending on oryqen-staging (20 on Fairwork); none has been applied hosted.
+  side-by-side agreement version comparison. Eighteen local migrations are now pending on oryqen-staging (21 on Fairwork); none has been applied hosted.
   NEXT (no owner input): record admin exports in the audit trail (needs migration), account-deletion workflow + retention controls, recruiter correction path, Passport skills sharing and
   signed export, translate admin console and server messages, DOCX intake, saved company research. If Docker's engine hangs, restart Docker Desktop (kill and relaunch) before the harness.
   Run only targeted tests; one full gate at the final milestone.
