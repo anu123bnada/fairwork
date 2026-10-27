@@ -4,6 +4,7 @@ export const errorMessages = {
   AUTH_REQUIRED: "Sign in to continue.",
   MFA_REQUIRED: "Verify your authenticator code to continue.",
   ACTION_FORBIDDEN: "This action is not available.",
+  WRONG_ORIGIN: "This is not the official address of this ORYQEN environment, so sign-in and saving are blocked here. Open the official address and try again.",
   NOT_FOUND: "The requested record is not available.",
   VERSION_CONFLICT: "This record changed. Reload before trying again.",
   IDEMPOTENCY_CONFLICT: "Use a new request key for changed input.",

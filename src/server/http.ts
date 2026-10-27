@@ -5,7 +5,13 @@ import { getServerEnvironment } from "@/server/env";
 import {recordRuntimeEvent} from "@/server/telemetry";
 
 export function assertSameOrigin(request: Request) {
-  if (request.headers.get("origin") !== getServerEnvironment().origin || request.headers.get("sec-fetch-site") === "cross-site") {
+  const origin = request.headers.get("origin"), official = getServerEnvironment().origin;
+  if (origin !== official || request.headers.get("sec-fetch-site") === "cross-site") {
+    // Both answers are a refusal. A person on another hostname of this same deployment (a branch or deployment URL) is not an attacker, so say what is
+    // wrong instead of the generic "not available"; the request is still refused, and a genuinely foreign origin gets no explanation.
+    let own = "";
+    try { own = new URL(request.url).origin; } catch { /* no usable request URL */ }
+    if (origin && origin === own && origin !== official && request.headers.get("sec-fetch-site") !== "cross-site") throw new AppError("WRONG_ORIGIN", 403);
     throw new AppError("ACTION_FORBIDDEN", 403);
   }
 }
