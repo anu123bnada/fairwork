@@ -1,4 +1,5 @@
 "use client";
+import { OpportunityCompare } from "./opportunity-compare";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ApiRequestError, appRequest } from "@/features/authority/client";
 import { companyResultsSchema } from "@/features/authority/company-schema";
@@ -78,6 +79,7 @@ export function OpportunitiesScreen() {
     <button className="fw-secondary" disabled={busy} onClick={() => { setNotice(""); void load(); }}>{t("op.refresh")}</button>
     {data?.items.length === 0 && <p>{t("op.none")}</p>}
     {data && <p>{t("op.matchNote")}</p>}
+    {view === "saved" && data && <OpportunityCompare items={data.items} />}
     {data?.items.map(item => <article className="fw-list-card fw-opportunity-card" key={item.id}>
       <h3>{item.fields.title}</h3><p>{item.companyName ?? t("op.orgUnavailable")} · {item.fields.location} · {word("op.wm", item.fields.workMode)}</p>
       <p>{t("op.claims")}</p>
