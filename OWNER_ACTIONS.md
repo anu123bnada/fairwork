@@ -187,6 +187,19 @@ Staging project mapping: the Preview deployment for branch `release/oryqen-oct27
 | `ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY` | omit until you run the key ceremony; credentials and the signed Passport copy then report "unavailable" | later |
 Do not set `ORYQEN_VAULT_LOCAL_DIR`, `SUPABASE_SERVICE_ROLE_KEY` or any `NEXT_PUBLIC_` variable named like a secret. After the build, check the values without printing secrets: `node scripts/validate-production-config.mjs --env-file=<a file you create outside the repo>`.
 
+
+### F6b. Effective-configuration preflight (run this before the push; prints no values)
+Vercel applies a branch-specific Preview entry in preference to a shared Production + Preview entry of the same name. The reliable way to see what the branch will really get is to pull exactly that set and check it:
+```powershell
+cd C:\Users\vehiv\Desktop\fairwork
+npx vercel env pull .env.preview.staging --environment=preview --git-branch=release/oryqen-oct27     # .env* is git-ignored; delete the file afterwards
+node scripts/preflight-staging-env.mjs .env.preview.staging
+Remove-Item .env.preview.staging
+```
+It checks, by name only: the Supabase URL is staging `jpvgsmzomlmowarlfkdl` and not the legacy `cqjxsafeodslmyoqftdj`; the publishable key is not a secret key (and, for legacy JWT keys, belongs to staging); `APP_ORIGIN` is `https://oryqen-staging.vercel.app`; the Vault URL is the same staging project, the Vault key is a distinct server-only secret, no disk store is set; no `NEXT_PUBLIC_` variable looks like a secret and no `SUPABASE_SERVICE_ROLE_KEY` exists; AI is off; whether the credential signing key is configured. Expected result today: FAIL 0, one WARN (no signing key). If it prints any FAIL, do not push.
+Features that need the optional signing key (`ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY`, from `node scripts/generate-credential-key.mjs`, run by you): 7 (verifiable credentials) and 13 (developer verify API), plus the signed Passport copy. The other 12 features work without it.
+Supabase side (re-read 28 Oct after the migration): Site URL `https://oryqen-staging.vercel.app`; redirect list includes `https://oryqen-staging.vercel.app/**` and the branch preview host `https://oryqen-git-release-oryqen-oct27-vehiview-6817s-projects.vercel.app/**`; sign-up on, anonymous sign-in off, email confirmation on, TOTP on, Brevo SMTP host set, minimum password length 6 (raise to 12, section E).
+
 ### F7. Push (needs your explicit "approved to push")
 ```powershell
 git push origin feature/oryqen-sprint-oct25:release/oryqen-oct27     # fast-forward of a25663a, 97+ commits, no force
