@@ -37,6 +37,7 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - Gate on `c39c576`: PASS 14 / FAIL 0 / BLOCKED 6. Route matrix 74/74. Accessibility (axe) 30/30. Notification preferences added. Run `git checkout next-env.d.ts` after builds (Next rewrites it).
 
+- CHECKPOINT (28 Oct 2026, after `456d0ff`): **hosted staging database is now at 51 migrations** (owner-approved; see OWNER_ACTIONS section G). The deployed Vercel build is still the old `a25663a`; pushing `feature/oryqen-sprint-oct25` to `release/oryqen-oct27` (fast-forward) awaits owner approval and a check of the Vercel Preview variables (section F6). After the build run `node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app`. Real-stack harness 225/225; upgrade rehearsal passes. `.env.local` still names the Fairwork project for local work; staging is `jpvgsmzomlmowarlfkdl`.
 - CHECKPOINT (27 Oct 2026, after the DOCX / listing-comparison commits): added since the previous checkpoint: migration 19 `20261029100000_admin_export_log` (every admin export recorded in the audit
   trail before delivery; PGlite + real PG passed), retention statement in Settings, signed offline-verifiable Work Passport copy (`/api/v1/passport/signed`, needs the owner's signing key; real-stack
   harness verified it with the throwaway key), admin console shell/filters/tables translated, on-device .docx offer intake (no new dependency, zip-bomb guarded), saved-listing comparison.

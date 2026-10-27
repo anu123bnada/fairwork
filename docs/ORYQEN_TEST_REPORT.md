@@ -28,6 +28,10 @@ A full browser rerun alone then passed 384 of 385; the one failure was a differe
 This is recorded as F-32/F-33 (environment, resource contention). It is **not** a clean pass: no single end-to-end browser run has succeeded on this HEAD, so the gate has not been satisfied and the verdict stands.
 All other stages passed (typecheck, lint, 370 s of unit/integration, dependency audit, secrets scan, Electron policy, production build, real-PostgreSQL database security, Android/Windows preview builds, artifact hashes).
 
+## Hosted staging migration, 28 Oct 2026 (owner-approved)
+
+19 migrations applied to `oryqen-staging` (`jpvgsmzomlmowarlfkdl`) after a fresh backup; 51/51 matched; 90 private tables, 0 without forced RLS; only the two designed public functions are anonymous-callable; data unchanged; 204 of 204 `api`/`private` functions identical to the local database. Release branch not pushed; deployed build still `a25663a`. Details in `OWNER_ACTIONS.md` section G.
+
 ## Commands and results
 
 | Check | Command | Result |

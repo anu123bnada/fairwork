@@ -199,5 +199,15 @@ node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app --json
 ```
 Baseline today (old build `a25663a`): PASS 19, FAIL 5 (`/verify` 404, vault and credentials routes 404, recovery fix absent). The new build must show FAIL 0. Then the signed-in checks in section E and the 14-feature demo (`docs/DEMO_SCRIPT_14_FEATURES.md`) on staging with accounts you control; I need only the visible results, never passwords.
 
+## G. Executed: staging migrations applied (28 Oct 2026, owner-approved)
+You approved: apply the 19 pending migrations to `oryqen-staging` (`jpvgsmzomlmowarlfkdl`); do not push the release branch.
+- Preflight matched: linked project `oryqen-staging`; 32 applied, 19 local-only, 0 remote-only; git tree clean apart from the two known untracked files at `456d0ff`.
+- Fresh backup taken first: `backups/staging-20261028-0148` (`schema.sql` hash identical to the earlier backup, `data.sql`, `roles.sql`, `SHA256SUMS.txt`; 5 auth users and 1 profile in the dump). Git-ignored.
+- `supabase db push --linked --yes`: all 19 files applied in order, no error.
+- Post-migration verification (read-only), every expectation met exactly: migrations **51 / 51 matched, 0 local-only, 0 remote-only**; latest `20261029100000`; private tables **90** (was 64); tables without forced row-level security **0**; anonymous-callable functions exactly `api.credential_status(jsonb)` and `api.developer_key_check(jsonb)`; data unchanged (profiles 1, auth users 5, audit_logs 1, command_receipts 1, passport_field_registry 6, rate_limit_buckets 10); **all 204 `api` and `private` functions match the fully migrated local database exactly** (name, owner, security definer, search_path).
+- Not done, as instructed: the release branch was not pushed; no Vercel, DNS, secret or bucket change. The deployed site is still the old build `a25663a` running against the migrated database; the read-only smoke check shows the same 4 old-build failures as before and nothing new.
+- Rollback if needed: redeploy is unaffected (the new objects are unused by the old build). To undo the schema, restore into a new project from `backups/staging-20261028-0148`.
+**Next owner action:** approve the push (`git push origin feature/oryqen-sprint-oct25:release/oryqen-oct27`, fast-forward) after you have checked the Vercel Preview variables in section F6.
+
 ## C. What I will do after approvals
 Run the backup check, migrations (staging first), bucket-dependent tests against the hosted target, a preview deployment smoke test, and then report. Until then I continue local work only.
