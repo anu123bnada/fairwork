@@ -15,6 +15,12 @@ Nothing hosted was changed.
 
 Also found (not a defect in the app): hosted `auth.minimum_password_length = 6`. The app enforces 12 for self-service sign-up and reset, but an account created from the dashboard can have a 6-character password. Owner action in `OWNER_ACTIONS.md`.
 
+### Addendum (28 Oct): the second 'Check the supplied fields.'
+| # | Symptom | Root cause | Status |
+|---|---|---|---|
+| A5 | After a real reset email and matching passwords: 'Check the supplied fields.' | The provider refused the new password (same as the current one, too weak or breached, or the reset session ended) and the app mapped every refusal to the generic field message | Fixed in `fc732eb` (F-38). Not yet proven on hosted staging |
+| A6 | Right password, unconfirmed email: 'Sign in to continue.' | `email_not_confirmed` shared the wrong-password answer | Fixed (F-39) |
+
 ## Flows: expected and observed
 
 | Flow | Expected | Observed after the fix | Evidence |

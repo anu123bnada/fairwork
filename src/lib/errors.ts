@@ -2,6 +2,7 @@ export const errorMessages = {
   INVALID_JSON: "The request body is not valid JSON.",
   VALIDATION_FAILED: "Check the supplied fields.",
   AUTH_REQUIRED: "Sign in to continue.",
+  EMAIL_NOT_CONFIRMED: "Your email address is not confirmed yet. Open the confirmation email we sent you, or request another from the Create account page.",
   MFA_REQUIRED: "Verify your authenticator code to continue.",
   ACTION_FORBIDDEN: "This action is not available.",
   WRONG_ORIGIN: "This is not the official address of this ORYQEN environment, so sign-in and saving are blocked here. Open the official address and try again.",

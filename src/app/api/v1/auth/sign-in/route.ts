@@ -13,6 +13,9 @@ export async function POST(request: Request) {
     const { data, error } = await supabase.auth.signInWithPassword(credentials);
     if(error)await recordRuntimeEvent({id:crypto.randomUUID(),kind:"login_failure",operation:"auth.sign-in",code:error.status===429?"RATE_LIMITED":isAuthServiceUnavailable(error)?"SERVICE_UNAVAILABLE":"AUTH_REQUIRED"});
     if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
+    // The provider answers email_not_confirmed only when the password was correct, so saying so reveals nothing about other addresses and saves a real
+    // person from retrying a password that was never the problem.
+    if (error?.code === "email_not_confirmed") throw new AppError("EMAIL_NOT_CONFIRMED", 401);
     if (error) throw new AppError(error.status === 429 ? "RATE_LIMITED" : "AUTH_REQUIRED", error.status === 429 ? 429 : 401);
     let profileRequired: boolean;
     try {
