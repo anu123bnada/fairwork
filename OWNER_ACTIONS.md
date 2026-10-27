@@ -110,5 +110,94 @@ OWNER APPROVAL REQUIRED: only if you change it
 6. If you use a second browser or tab for any link, the first successful use consumes it; the other shows the expired message.
 Report any step that differs, with the page text, not the link.
 
+## F. Staging deployment runbook (exact commands; nothing below has been run against hosted systems except the read-only checks listed as DONE)
+
+Target: Supabase project **`oryqen-staging`**, ref **`jpvgsmzomlmowarlfkdl`** (ap-southeast-1). Do **not** use `Fairwork` (`cqjxsafeodslmyoqftdj`, which `.env.local` still names for local work).
+
+### F0. What I verified before asking (read-only, 28 Oct 2026)
+| Check | Result |
+|---|---|
+| Real-stack harness on the current commit | **225 PASS, 0 FAIL, 0 SKIPPED**, exit 0 |
+| Upgrade rehearsal: first 32 migrations + synthetic rows, then the 19 pending, on PGlite **and** a real PostgreSQL cluster | **5/5 pass on both**. No existing row changed or lost; all 26 new private tables have row-level security enabled and forced; no direct client grants; no PUBLIC-callable function; the only anonymous-callable functions are the two designed ones (`api.credential_status`, `api.developer_key_check`) |
+| `supabase db push --dry-run` against the linked project | Lists exactly the 19 pending migrations (`202610250001_offer_lifecycle` ... `20261029100000_admin_export_log`) |
+| Storage on staging | Bucket **`evidence-vault` already exists**: private (`public=false`), limit 5,242,880 bytes, MIME `application/pdf, image/png, image/jpeg, image/webp`, created 27 Oct 03:02 UTC, 0 objects, no policies on `storage.objects`. **Do not create another one.** |
+| Platform backups | `supabase backups list`: `walg_enabled: true`, `pitr_enabled: false`, **no backups listed**. There is no restorable platform backup for this project today |
+| Logical backup | **Made by me, read-only**: `backups\staging-20261028\{schema,data,roles}.sql` + `SHA256SUMS.txt` (git-ignored; contains personal data and password hashes, keep it private). Data file holds 5 auth users, 5 identities and all `private` rows |
+| Restore validation | Restored into a throwaway Postgres 17.11 container (same image family as staging): roles and **schema restored with no errors (64 private tables)**; `private` data restored with row counts identical to staging (profiles 1, audit_logs 1, command_receipts 1, passport_field_registry 6, rate_limit_buckets 10). **Not validated: the `auth` data.** A bare Postgres has no GoTrue `auth` schema, so the 5 users could not be loaded there. The container was removed |
+| Secrets in the push | Commit range `origin/release/oryqen-oct27..HEAD` has no `.env`, key, keystore or backup files; neither the Gemini key nor the Supabase publishable key value appears in any commit; the only key-shaped text is scanner patterns and clearly fake test fixtures |
+| Baseline for comparison | 32 migrations applied (latest `20261024053156`), 64 private tables, 0 without forced RLS, 0 anonymous-callable functions |
+
+**Not verified by me (needs you):** the Vercel project, its production branch and its Preview environment variables (no Vercel access from here); a Supabase **dashboard** backup (none is listed by the API); the hosted email template.
+
+### F1. Preflight (safe to run any time)
+```powershell
+cd C:\Users\vehiv\Desktop\fairwork
+git status --short                                  # only the two known untracked files may appear
+git log --oneline -1                                # record this hash
+Get-Content supabase\.temp\project-ref              # MUST print jpvgsmzomlmowarlfkdl
+npx supabase projects list                          # the row marked linked must be oryqen-staging
+npx supabase migration list --linked                # 32 versions on both sides, 19 local-only
+npx supabase db push --linked --dry-run             # must list exactly the 19 files
+npx supabase backups list --project-ref jpvgsmzomlmowarlfkdl
+```
+Stop if any line differs from the expectation in the comment.
+
+### F2. Fresh backup immediately before applying (read-only on hosted)
+```powershell
+$d = "backups\staging-$(Get-Date -Format yyyyMMdd-HHmm)"; New-Item -ItemType Directory $d | Out-Null
+npx supabase db dump --linked -f "$d\schema.sql"
+npx supabase db dump --linked --data-only --use-copy -f "$d\data.sql"
+npx supabase db dump --linked --role-only -f "$d\roles.sql"
+Get-FileHash "$d\*.sql" -Algorithm SHA256 | Format-Table Hash, Path
+```
+Also, if your plan allows it, take a dashboard backup (Supabase > Database > Backups). The API shows none.
+
+### F3. Apply (needs your explicit "approved, project jpvgsmzomlmowarlfkdl")
+```powershell
+npx supabase db push --linked          # prints the 19 files and asks for confirmation; answer Y
+```
+The CLI runs each file in order in its own transaction and stops at the first error. A failed file leaves the earlier ones applied and the failed one not applied; nothing is partially applied inside a file.
+
+### F4. Post-migration verification (read-only)
+```powershell
+npx supabase migration list --linked    # 51 on both sides
+npx supabase db query --linked -o json "select (select count(*) from supabase_migrations.schema_migrations) applied, (select max(version) from supabase_migrations.schema_migrations) latest, (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r') private_tables, (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r' and not (c.relrowsecurity and c.relforcerowsecurity)) without_forced_rls, (select coalesce(string_agg(p.oid::regprocedure::text, ', ' order by p.oid::regprocedure::text),'none') from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('api','private') and has_function_privilege('anon', p.oid, 'EXECUTE') and p.proowner<>(select oid from pg_roles where rolname='supabase_admin')) anon_callable, (select count(*) from private.profiles) profiles, (select count(*) from auth.users) auth_users"
+```
+Expected: `applied 51`, `latest 20261029100000`, `private_tables 90`, `without_forced_rls 0`, `anon_callable` = `api.credential_status(jsonb), api.developer_key_check(jsonb)`, `profiles 1`, `auth_users 5`. Anything else: stop and send me the output.
+
+### F5. Rollback and recovery
+- **The migrations are additive** (no drop, truncate or delete of existing data; proven by the rehearsal). The previous build (`a25663a`) never calls the new objects, so the safest rollback of *behaviour* is to redeploy the previous Vercel deployment; the new empty tables then simply stay unused.
+- **If a file fails:** nothing from that file is applied. Fix is mine to make; do not retry by hand. Send me the CLI output.
+- **To remove the new objects entirely or recover from a mistake:** create a new Supabase project, restore `roles.sql`, then `schema.sql`, then `data.sql` (with `set session_replication_role = replica;` first), as validated above for the `private` schema. Auth users are in `data.sql` but the restore of `auth` rows was **not** validated; on a new project you would load them into the project's own `auth` schema or ask each user to reset their password.
+- No hosted data is deleted by any step here.
+
+### F6. Vercel Preview environment (names are exact; values yours; mark secrets Sensitive)
+Staging project mapping: the Preview deployment for branch `release/oryqen-oct27` must point at **`oryqen-staging`** and its origin must be the host people use (`https://oryqen-staging.vercel.app`, which Supabase already lists as Site URL).
+| Variable | Value for staging | Required |
+|---|---|---|
+| `APP_ORIGIN` | `https://oryqen-staging.vercel.app` (no path; must equal the host in use, it is the same-origin check and the reset-link target) | yes |
+| `FAIRWORK_DATA_MODE` | `supabase` | yes |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://jpvgsmzomlmowarlfkdl.supabase.co` (**not** `cqjxsafeodslmyoqftdj`) | yes |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | staging publishable (anon) key; never a secret/service key | yes |
+| `AUTH_REGISTRATION_ENABLED` | `true` | for sign-up |
+| `ORYQEN_VAULT_STORAGE_URL` | `https://jpvgsmzomlmowarlfkdl.supabase.co` | for the Vault |
+| `ORYQEN_VAULT_STORAGE_SERVICE_KEY` | staging secret key (server only, Sensitive). This key can read every file in the project; limit who can see Vercel settings and rotate it after the trial | for the Vault |
+| `ORYQEN_VAULT_BUCKET` | omit (default `evidence-vault` exists) | no |
+| `ORYQEN_AI_ENABLED`, `ORYQEN_AI_POLICY_APPROVED` | `false` | keep off |
+| `ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY` | omit until you run the key ceremony; credentials and the signed Passport copy then report "unavailable" | later |
+Do not set `ORYQEN_VAULT_LOCAL_DIR`, `SUPABASE_SERVICE_ROLE_KEY` or any `NEXT_PUBLIC_` variable named like a secret. After the build, check the values without printing secrets: `node scripts/validate-production-config.mjs --env-file=<a file you create outside the repo>`.
+
+### F7. Push (needs your explicit "approved to push")
+```powershell
+git push origin feature/oryqen-sprint-oct25:release/oryqen-oct27     # fast-forward of a25663a, 97+ commits, no force
+```
+The remote branch is an ancestor of this branch, so no force is needed or allowed. Vercel will build the Preview automatically.
+
+### F8. After the build I run (no account needed)
+```powershell
+node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app --json
+```
+Baseline today (old build `a25663a`): PASS 19, FAIL 5 (`/verify` 404, vault and credentials routes 404, recovery fix absent). The new build must show FAIL 0. Then the signed-in checks in section E and the 14-feature demo (`docs/DEMO_SCRIPT_14_FEATURES.md`) on staging with accounts you control; I need only the visible results, never passwords.
+
 ## C. What I will do after approvals
 Run the backup check, migrations (staging first), bucket-dependent tests against the hosted target, a preview deployment smoke test, and then report. Until then I continue local work only.
