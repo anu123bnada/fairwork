@@ -58,6 +58,7 @@ import { GuidanceScreen } from "./guidance";
 import { OfferHistoryPanel } from "./offer-history";
 import { OfferScreenshot } from "./offer-screenshot";
 import { OfferPdf } from "./offer-pdf";
+import { OfferDocx } from "./offer-docx";
 import { RuleAnalysis } from "./rule-analysis";
 import { AiAnalysis } from "./ai-analysis";
 import { DraftOfferAssessment, OfferAssessment } from "./offer-assessment";
@@ -758,7 +759,7 @@ function AddOfferScreen() {
       {tab === "screenshot" ? (
         <OfferScreenshot onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
       ) : tab === "pdf" ? (
-        <OfferPdf onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
+        <><OfferPdf onReviewed={text=>{setSourceText(text);setTab("paste");}}/><OfferDocx onReviewed={text=>{setSourceText(text);setTab("paste");}}/></>
       ) : (
         <form noValidate onSubmit={(event) => void analyze(event)}>
           {error && <ErrorMessage error={error} />}

@@ -16,6 +16,7 @@ const families: Record<string, string[]> = {
   "re.d.": ["confirm", "dispute", "withdraw"],
   "rp.c.": ["fee_request", "impersonation", "fake_listing", "harassment", "data_misuse", "other"],
   "adm.n.": ["dashboard", "search", "users", "organizations", "requests", "offers", "agreements", "work", "shares", "cases", "privacy", "ai", "roles", "settings", "incidents", "evidence_access", "audit", "telemetry"],
+  "im.docx.e.": ["type", "size", "legacy", "unreadable", "too_large", "no_text"],
   "agc.c.": ["same", "changed", "added", "removed"],
   "tl.state.": ["draft", "submitted", "verified", "disputed", "rejected", "superseded", "withdrawn", "invalidated"],
   "rp.s.": ["received", "reviewing", "needs_information", "closed_actioned", "closed_no_action", "withdrawn"],
