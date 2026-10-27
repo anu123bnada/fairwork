@@ -12,6 +12,10 @@ BLOCKED (all owner/external, none a defect): production configuration (APP_ORIGI
 credential signing key, https download hosts for the Windows/APK links, Android release preflight (app ID, keystore, device), Windows code-signing certificate.
 The Android APK is debug-signed and the Windows installer is unsigned: neither is a production release.
 
+## Full release gate, 27 Oct 2026, third run (exit 1, then the two failed stages rerun)
+
+PASS 12 / FAIL 2 / SKIPPED 0 / BLOCKED 6. **browser-journeys PASSED (385/385, 1060 s)**, with typecheck, lint, 299 s of unit/integration, dependency audit, brand assets, secrets scan, Electron policy, production build, real-PostgreSQL database security and artifact hashes. FAIL: `windows-build` (`getaddrinfo ENOTFOUND github.com`: network down at that moment) and `android-build` (cause not captured). Immediate rerun of only those two stages (`node scripts/release-verify.mjs --full --only=android-build,windows-build`): **both PASS** (debug-signed APK 4,121,524 bytes; unsigned installer). Recorded as F-34. No single gate invocation has exit 0 on this HEAD, but every non-blocked stage has now passed on it; the verdict is still **NOT READY: owner input required** because of the 6 owner/external blockers (production config, AI policy, signing key, https download hosts, Android release inputs, Windows certificate). The APK is debug-signed and the installer unsigned.
+
 ## Full release gate, 27 Oct 2026, second run (HEAD `954646d`, exit 1)
 
 PASS 13 / FAIL 1 / SKIPPED 0 / BLOCKED 6; verdict **NOT READY: defects found**. Only `browser-journeys` failed: 5 of 385 tests (380 passed, 19.9 min). The four affected files passed 17/17 alone.
