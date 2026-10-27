@@ -254,5 +254,17 @@ You approved: apply the 19 pending migrations to `oryqen-staging` (`jpvgsmzomlmo
 - Rollback if needed: redeploy is unaffected (the new objects are unused by the old build). To undo the schema, restore into a new project from `backups/staging-20261028-0148`.
 **Next owner action:** approve the push (`git push origin feature/oryqen-sprint-oct25:release/oryqen-oct27`, fast-forward) after you have checked the Vercel Preview variables in section F6.
 
+## H. Push done and hosted checks (28 Oct 2026)
+- **Pushed** (your approval): `154405b` to `origin/release/oryqen-oct27`, fast-forward `a25663a..154405b`; `main` untouched (`7b97b74`). Vercel built it in 44 s; deployment `oryqen-49ispgvlv-vehiview-6817s-projects.vercel.app` is Ready and the alias `oryqen-staging.vercel.app` serves it.
+- **Hosted smoke test** (`node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app`): **PASS 24, FAIL 0, WARN 5**. Before the push the same script gave 4 FAIL on the old build. The 5 WARN are `/app/home`, `/app/passport`, `/app/work-record`, `/app/employer` and `/admin` answering 200: they are client shells that enforce sign-in in the browser (the local route matrix proves they show nothing signed out); API routes deny anonymous callers (401/422) and a cross-origin POST is refused (403). `/verify` now exists; the password-recovery fix is present in the deployed build.
+- **Credential signing key: NOT installed.** `/.well-known/oryqen-keys.json` answers 404, and `vercel env ls` shows **no `ORYQEN_CREDENTIAL_*` variable in Preview or Production** (names only). Features 7 and 13 and the signed Passport copy are therefore unavailable on staging. In Vercel add `ORYQEN_CREDENTIAL_KEY_ID` and `ORYQEN_CREDENTIAL_SIGNING_KEY` (Sensitive) with environment **Preview** and git branch **release/oryqen-oct27**, then **Redeploy** the latest Preview (a variable change only reaches a new deployment). Proof: the key-set URL answers 200.
+- **Vault key:** two Preview entries exist for `ORYQEN_VAULT_STORAGE_SERVICE_KEY` (one for all Preview branches, one for `release/oryqen-oct27`), both listed as created 19 h ago. The branch-scoped one wins. I cannot tell whether it holds the newly validated key or the revoked one. If uploads fail with a storage error, re-save the validated key into the branch-scoped entry and redeploy.
+- **Authenticated journeys on hosted** need your account, so run this yourself (password typed at a hidden prompt, never printed or stored; it writes one synthetic PDF that it deletes again, one private job preference, and, only if the signing key is set, one developer key that it revokes):
+```powershell
+cd C:\Users\vehiv\Desktop\fairwork
+node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app --email <your staging test account email>
+```
+It covers features 1, 3, 5, 7, 10, 12, 13 and 14 for one ordinary account (sign-in, authenticator step if enrolled, profile, plan, "AI not configured", Vault upload/download/delete, job preferences, notifications, signing status, developer key, sign-out) and prints NOT RUN for 2, 4, 6, 8, 9 and 11, which need a second account or an operator capability. Rehearsed against the local stack: PASS 11, FAIL 0, NOT RUN 6 (it found and I fixed two bugs in the script itself).
+
 ## C. What I will do after approvals
 Run the backup check, migrations (staging first), bucket-dependent tests against the hosted target, a preview deployment smoke test, and then report. Until then I continue local work only.
