@@ -247,3 +247,22 @@ it.skipIf(!process.env.FAIRWORK_LOCAL_POSTGRES_PORT)("a representative waiting o
   await a.exec("commit");expect(String(await pending)).toContain("NOT_FOUND");
  }finally{await a.exec("rollback").catch(()=>undefined);if(pending)await pending;await b.exec("rollback").catch(()=>undefined);await a.close();await b.close();}
 });
+
+it("records an export in the immutable audit trail without its contents, idempotently, and refuses non-administrators, stale MFA and malformed requests",async()=>{
+ const body={exportId:randomUUID(),resource:"audit",count:3,complete:true,checksum:"a".repeat(64),filterNames:["resource","from"]};
+ expect(await rpc("admin_export_log",body,auditor)).toEqual({exportId:body.exportId,recorded:true,replayed:false});
+ expect(await rpc("admin_export_log",body,auditor)).toEqual({exportId:body.exportId,recorded:true,replayed:true});
+ const rows=(await db.query<{actor_id:string;action:string;reason:string;changes:Record<string,unknown>}>("select actor_id,action,reason,changes from private.admin_audit where action='export' and changes->>'exportId'=$1",[body.exportId])).rows;
+ expect(rows).toHaveLength(1);
+ expect(rows[0]).toMatchObject({actor_id:auditor,action:"export",reason:"Exported audit records",changes:{resource:"audit",count:3,complete:true,checksum:"a".repeat(64),filterNames:["resource","from"]}});
+ expect(Object.keys(rows[0]!.changes).sort()).toEqual(["checksum","complete","count","exportId","filterNames","resource"]);
+ await expect(db.query("update private.admin_audit set reason='Changed after the fact' where action='export'")).rejects.toThrow();
+ await expect(rpc("admin_export_log",{...body,exportId:randomUUID()},worker)).rejects.toThrow(/ACTION_FORBIDDEN|AUTH_REQUIRED/);
+ await expect(rpc("admin_export_log",{...body,exportId:randomUUID()},auditor,"aal1")).rejects.toThrow();
+ await expect(rpc("admin_export_log",{...body,exportId:randomUUID()},auditor,"aal2",1200)).rejects.toThrow("MFA_REQUIRED");
+ for(const bad of [{...body,exportId:randomUUID(),extra:1},{...body,exportId:randomUUID(),checksum:"xyz"},{...body,exportId:randomUUID(),resource:"payroll"},{...body,exportId:randomUUID(),count:-1},{...body,exportId:randomUUID(),count:1.5},{...body,exportId:randomUUID(),filterNames:["a b"]},{...body,exportId:randomUUID(),filterNames:Array(9).fill("x")},{...body,exportId:"not-a-uuid"},{...body,exportId:randomUUID(),complete:"yes"}])
+  await expect(rpc("admin_export_log",bad,auditor)).rejects.toThrow("VALIDATION_FAILED");
+ const audit=await rpc("admin_read",{...read("audit"),search:"export"},auditor);
+ const entry=(audit.items as {label:string;detail:{changes?:Record<string,unknown>}}[]).find(item=>item.label==="export");
+ expect(entry?.detail.changes).toMatchObject({resource:"audit",count:3,checksum:"a".repeat(64)});
+});

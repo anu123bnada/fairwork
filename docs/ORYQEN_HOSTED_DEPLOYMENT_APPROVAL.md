@@ -3,7 +3,7 @@
 Nothing in this document has been executed against any hosted system. Local evidence only.
 No push, deployment or hosted-database change has been made. Approval is requested, not assumed.
 
-## 1. The eighteen pending migrations (17 on oryqen-staging before this one; see ORYQEN_INFRASTRUCTURE_AUDIT.md)
+## 1. The nineteen pending migrations (17 on oryqen-staging before migration 18; see ORYQEN_INFRASTRUCTURE_AUDIT.md)
 
 Apply in this order. Each runs in one transaction and starts with a guard that requires the
 `postgres` identity. All seven were applied cleanly, in order, to the **real local Supabase
@@ -32,6 +32,7 @@ in the roster migration), so real-Postgres application is the meaningful check.
 | 16 | `20261028170000_organization_plans` | New append-only table `org_plan_assignments` (forced RLS; representatives read their own organization's rows; operators with the authority capability and a second factor insert, never for an organization in which they hold authority); RPCs `org_entitlement_read` and `org_entitlement_assign`; a helper owned by the policy role that counts an organization's live listings; a column-limited read grant and one policy for the policy role on `opportunity_listings` (needs temporary `CREATE` on schema `private`, as in earlier migrations) | Adds one read grant and one select policy on `private.opportunity_listings` for the policy role | None (new empty table; organizations without an assignment read as the basic plan). Code that calls the new RPCs falls back to the basic plan if they do not exist yet |
 | 17 | `20261028180000_abuse_reports` | New append-only tables `abuse_reports` and `abuse_report_events` (forced RLS; reporters read their own, reviewers with `review_operator` and a second factor read all); RPCs `report_create/list/withdraw/queue/review`, authenticated-only. Reports are never shown to the person or organization they name and the reviewer queue never contains the reporter's identity | No | None (new empty tables) |
 | 18 | `20261028190000_offer_notes` | New tables `offer_notes` and `vault_offer_attachments` (owner-only forced RLS; links cascade when a document is deleted), a policy helper `is_offer_worker`, RPCs `offer_note_add/list/delete` and `vault_attach_offer/detach_offer/offer_attachments`, authenticated-only. Notes and links are never shown to the employer, a representative or a reviewer | No | None (new empty tables) |
+| 19 | `20261029100000_admin_export_log` | New RPC `admin_export_log` (administrators with a fresh second factor; writes one immutable `admin_audit` entry per export containing counts and a checksum, never records) and one insert policy limited to `action='export'` so read-only auditors can leave their export entry | No | None (adds a function and a policy) |
 
 (You asked about four migrations. Seventeen are pending: the original four, plus the compatibility fix (5), saved
 analysis (6), team roster (7) and the credential register (8). Apply them together, in order.)

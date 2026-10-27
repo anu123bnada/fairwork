@@ -50,9 +50,10 @@ export function AdminCenter({resource,initial,initialQuery,runtime:initialRuntim
     const {runtime:_runtime,...body}=await appRequest(`/api/v1/admin?${params}`);void _runtime;
     const page=adminResponse.parse(body);return {items:page.items,nextCursor:page.nextCursor};
    }});
+   await appRequest("/api/v1/admin/export-log",{exportId:crypto.randomUUID(),resource,count:result.count,complete:result.complete,checksum:result.checksumSha256,filterNames:Object.keys(filters)});
    const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:"application/json"})),link=document.createElement("a");
    link.href=url;link.download=`oryqen-admin-${resource}-${result.exportedAt.slice(0,10)}.json`;document.body.append(link);link.click();link.remove();window.setTimeout(()=>URL.revokeObjectURL(url),10_000);
-   setMessage(`Exported ${result.count} record${result.count===1?"":"s"}${result.complete?"":" (partial: narrow the filters to export the rest)"}. Checksum ${result.checksumSha256.slice(0,16)}…`);
+   setMessage(`Exported and recorded in the audit trail: ${result.count} record${result.count===1?"":"s"}${result.complete?"":" (partial: narrow the filters to export the rest)"}. Checksum ${result.checksumSha256.slice(0,16)}…`);
   }catch(e){setError(e instanceof Error?e.message:"The export could not be created.");}
   finally{setBusy(false);}
  }

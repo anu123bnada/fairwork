@@ -21,6 +21,8 @@ export const adminOverview=z.strictObject({
 });
 export const telemetrySummary=z.strictObject({coverageStartedAt:z.iso.datetime({offset:true}).nullable(),lastEventAt:z.iso.datetime({offset:true}).nullable(),aiAttempts:z.number().int().nonnegative(),aiSucceeded:z.number().int().nonnegative(),aiFailed:z.number().int().nonnegative(),loginFailures:z.number().int().nonnegative(),authorizationDenials:z.number().int().nonnegative(),providerCost:z.null(),availability:z.literal("observed_requests_only"),scope:z.literal("selected_utc_window")});
 export const adminResponse=z.strictObject({role:adminRole,items:z.array(adminRow).max(20),nextCursor:z.uuid().nullable(),metrics:z.record(z.string(),z.number().nullable()).nullable(),trend:z.array(z.strictObject({date:z.iso.date(),offers:z.number(),registrations:z.number()})).nullable(),incidentCategories:z.array(z.enum(["security","support","moderation"])).min(1).max(3).optional(),overview:adminOverview.optional(),telemetry:telemetrySummary.optional(),dataMode:z.literal("synthetic")});
+export const adminExportLog=z.strictObject({exportId:z.uuid(),resource:adminResource,count:z.number().int().min(0).max(999999),complete:z.boolean(),checksum:z.string().regex(/^[0-9a-f]{64}$/),filterNames:z.array(z.string().regex(/^[A-Za-z]{1,30}$/)).max(8)});
+export const adminExportReceipt=z.strictObject({exportId:z.uuid(),recorded:z.literal(true),replayed:z.boolean()});
 export const adminReceipt=z.strictObject({targetId:z.uuid(),revision:z.number().int().positive(),auditId:z.uuid(),operation:z.string()});
 export type AdminData=z.infer<typeof adminResponse>;
 export type AdminRow=z.infer<typeof adminRow>;
