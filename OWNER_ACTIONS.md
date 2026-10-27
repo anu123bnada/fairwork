@@ -200,6 +200,38 @@ It checks, by name only: the Supabase URL is staging `jpvgsmzomlmowarlfkdl` and 
 Features that need the optional signing key (`ORYQEN_CREDENTIAL_KEY_ID`, `ORYQEN_CREDENTIAL_SIGNING_KEY`, from `node scripts/generate-credential-key.mjs`, run by you): 7 (verifiable credentials) and 13 (developer verify API), plus the signed Passport copy. The other 12 features work without it.
 Supabase side (re-read 28 Oct after the migration): Site URL `https://oryqen-staging.vercel.app`; redirect list includes `https://oryqen-staging.vercel.app/**` and the branch preview host `https://oryqen-git-release-oryqen-oct27-vehiview-6817s-projects.vercel.app/**`; sign-up on, anonymous sign-in off, email confirmation on, TOTP on, Brevo SMTP host set, minimum password length 6 (raise to 12, section E).
 
+
+### F6c. Validate a Sensitive value that Vercel will not return (Vault key), and install the signing key
+**Why the last preflight showed `Storage answered 400`:** Vercel does not return Sensitive values on a pull; it writes the text `[SENSITIVE]` in their place. In your file that was `ORYQEN_VAULT_STORAGE_SERVICE_KEY`. The preflight was sending that placeholder to Supabase as if it were the key, and Storage rejects any non-key with 400. That was a script defect, not evidence that the stored key is wrong. The script now reports such values as `UNVERIFIABLE_SENSITIVE`, makes no request with them, and keeps `INVALID_CREDENTIAL` for a real key that Supabase rejects. Everything else it checked was already correct: staging URL, `APP_ORIGIN`, bucket name, AI off, and the publishable key accepted by project `jpvgsmzomlmowarlfkdl` (Auth settings answered 200).
+
+**Validate the real Vault key without showing it.** Get the key from Supabase: project `oryqen-staging` > Project Settings > API Keys > the **secret** key (not the publishable one). Copy it, then in PowerShell:
+```powershell
+cd C:\Users\vehiv\Desktop\fairwork
+$env:ORYQEN_VAULT_STORAGE_URL = 'https://jpvgsmzomlmowarlfkdl.supabase.co'
+$secure = Read-Host 'Paste the Vault secret key (input is hidden)' -AsSecureString
+$env:ORYQEN_VAULT_STORAGE_SERVICE_KEY = [System.Net.NetworkCredential]::new('', $secure).Password
+node scripts/validate-vault-key.mjs
+```
+Expected: `PASS project`, `PASS key shape`, `PASS bucket` (evidence-vault, private, 5242880 byte limit, 4 allowed types), `PASS object listing`, an `INFO fingerprint` line and `VALID`. The key exists only in that PowerShell process: it is not written to a file, not printed and not in history (a hidden prompt is not recorded). The script sends two read-only requests to the staging Storage API (bucket metadata, first page of the object list) and uploads or deletes nothing. Then clear everything:
+```powershell
+Remove-Item Env:ORYQEN_VAULT_STORAGE_SERVICE_KEY, Env:ORYQEN_VAULT_STORAGE_URL
+Remove-Item .env.preview.staging
+Set-Clipboard -Value $null
+```
+Delete the pulled file now: besides the placeholder it holds `VERCEL_OIDC_TOKEN`, a Vercel credential.
+If it prints `INVALID_CREDENTIAL`, the key you pasted is wrong for this project: copy the secret key again. `UNVERIFIABLE_SENSITIVE` means you pasted Vercel's placeholder.
+**Limit of this proof:** it proves the key you pasted works against staging. It cannot read what Vercel stored. To close that gap, save that same key into the Vercel variable (Sensitive; Preview, branch `release/oryqen-oct27`), and treat the first real document upload on staging after the deploy as the final proof.
+
+**Signing key (the credentials features: 7, 13 and the signed Passport copy).** This is separate from the Vault key and is not set yet, so on staging those features will answer "unavailable". I will not generate it: the private key must never pass through me. A staging-only key is enough for the trial; production gets its own key later and must never reuse it.
+```powershell
+node scripts/generate-credential-key.mjs --kid oryqen-staging-2026-1 --out "D:\secure\oryqen-staging-credential-key.json"
+```
+Choose any folder **outside** this repository (the tool refuses a path inside it and refuses to overwrite). It prints only the public key and the variable names. Copy the single-line private key to the clipboard without displaying it:
+```powershell
+(Get-Content "D:\secure\oryqen-staging-credential-key.json" -Raw | ConvertFrom-Json).private | ConvertTo-Json -Compress | Set-Clipboard
+```
+Paste it into Vercel as `ORYQEN_CREDENTIAL_SIGNING_KEY` (Sensitive; Preview, branch `release/oryqen-oct27`) and set `ORYQEN_CREDENTIAL_KEY_ID` to `oryqen-staging-2026-1` (not sensitive). Then `Set-Clipboard -Value $null` and keep the JSON file in your password manager or on an encrypted drive (it cannot be recovered). After the deploy, `https://oryqen-staging.vercel.app/.well-known/oryqen-keys.json` must answer 200 with only public material: that is the proof the server accepted a valid key.
+
 ### F7. Push (needs your explicit "approved to push")
 ```powershell
 git push origin feature/oryqen-sprint-oct25:release/oryqen-oct27     # fast-forward of a25663a, 97+ commits, no force

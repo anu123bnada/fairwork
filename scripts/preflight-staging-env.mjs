@@ -5,7 +5,7 @@
 //   vercel env pull .env.preview.staging --environment=preview --git-branch=release/oryqen-oct27     (run by you, in a folder you control; .env* is git-ignored)
 //   node scripts/preflight-staging-env.mjs .env.preview.staging [--online] [--ref=jpvgsmzomlmowarlfkdl] [--origin=https://oryqen-staging.vercel.app]
 // --online adds read-only calls to the staging project itself (Auth settings with the publishable key; the evidence-vault bucket's metadata with the Vault key) to prove
-// the keys belong to that project. Vercel hides values marked Sensitive when you pull; those show as WARN "hidden" and must be confirmed in the dashboard.
+// the keys belong to that project. Vercel hides values marked Sensitive when you pull; those show as UNVERIFIABLE_SENSITIVE (never as PASS, and never as a bad key) and are validated locally.
 import { readFileSync, existsSync, readFileSync as read } from 'node:fs';
 
 const file = process.argv[2];
@@ -23,7 +23,11 @@ for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
 const results = [];
 const add = (id, status, detail) => { results.push({ id, status, detail }); console.log(`${status.padEnd(7)} ${id}: ${detail}`); };
 const has = name => Boolean(env[name]?.trim());
-const hidden = name => Object.hasOwn(env, name) && !env[name]?.trim(); // declared but empty: Vercel does not return Sensitive values on a pull
+// Vercel does not return a Sensitive value on a pull: the entry is empty, or the literal text "[SENSITIVE]". Either way the real value is NOT in the file.
+const PLACEHOLDER = /^\[?(sensitive|redacted|hidden|encrypted)\]?$/i;
+const hidden = name => Object.hasOwn(env, name) && (!env[name]?.trim() || hiddenAtPull.has(name));
+const hiddenAtPull = new Set(Object.keys(env).filter(name => PLACEHOLDER.test(env[name].trim())));
+for (const name of hiddenAtPull) env[name] = ''; // never treat a placeholder as a key
 const hostRef = value => { try { const host = new URL(value).hostname; const match = /^([a-z0-9]{20})\.supabase\.co$/.exec(host); return match ? match[1] : null; } catch { return null; } };
 const jwtClaims = value => { try { return JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString('utf8')); } catch { return null; } };
 
@@ -34,8 +38,8 @@ add('NEXT_PUBLIC_SUPABASE_URL', urlRef === expectedRef ? 'PASS' : urlRef === leg
   urlRef === expectedRef ? `points at the staging project ${expectedRef}` : urlRef === legacyRef ? `points at the legacy "Fairwork" project ${legacyRef}, not staging` : urlRef ? `points at project ${urlRef}, expected ${expectedRef}` : 'missing or not a https://<ref>.supabase.co URL');
 const publishable = env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? '';
 const publishableClaims = publishable.startsWith('eyJ') ? jwtClaims(publishable) : null;
-add('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'WARN' : publishable && !/^sb_secret_/.test(publishable) && publishableClaims?.role !== 'service_role' && (!publishableClaims?.ref || publishableClaims.ref === expectedRef) ? 'PASS' : 'FAIL',
-  hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'declared but its value is hidden by Vercel; confirm in the dashboard' : !publishable ? 'missing' : /^sb_secret_/.test(publishable) || publishableClaims?.role === 'service_role' ? 'this is a secret/service key; it must be the publishable key' : publishableClaims?.ref && publishableClaims.ref !== expectedRef ? `key belongs to project ${publishableClaims.ref}, not ${expectedRef}` : publishableClaims ? 'legacy anon key for the staging project' : 'present, publishable form (its project cannot be read from the key; the URL above decides)');
+add('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY', hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'UNVERIFIABLE_SENSITIVE' : publishable && !/^sb_secret_/.test(publishable) && publishableClaims?.role !== 'service_role' && (!publishableClaims?.ref || publishableClaims.ref === expectedRef) ? 'PASS' : 'FAIL',
+  hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'declared as Sensitive, so Vercel did not return its value: not a bad key; confirm it in the dashboard' : !publishable ? 'missing' : /^sb_secret_/.test(publishable) || publishableClaims?.role === 'service_role' ? 'this is a secret/service key; it must be the publishable key' : publishableClaims?.ref && publishableClaims.ref !== expectedRef ? `key belongs to project ${publishableClaims.ref}, not ${expectedRef}` : publishableClaims ? 'legacy anon key for the staging project' : 'present, publishable form (its project cannot be read from the key; the URL above decides)');
 
 // 4. Origin: it is the same-origin check and the reset-link target.
 const origin = env.APP_ORIGIN ?? '';
@@ -49,8 +53,8 @@ add('AUTH_REGISTRATION_ENABLED', ['true', 'false'].includes(env.AUTH_REGISTRATIO
 const vaultUrl = env.ORYQEN_VAULT_STORAGE_URL ?? '', vaultKey = env.ORYQEN_VAULT_STORAGE_SERVICE_KEY ?? '';
 add('ORYQEN_VAULT_STORAGE_URL', hostRef(vaultUrl) === expectedRef ? 'PASS' : 'FAIL', hostRef(vaultUrl) === expectedRef ? 'same staging project' : hostRef(vaultUrl) === legacyRef ? 'points at the legacy "Fairwork" project' : 'missing or not the staging project URL');
 const vaultClaims = vaultKey.startsWith('eyJ') ? jwtClaims(vaultKey) : null;
-add('ORYQEN_VAULT_STORAGE_SERVICE_KEY', hidden('ORYQEN_VAULT_STORAGE_SERVICE_KEY') ? 'WARN' : vaultKey && vaultKey !== publishable && (!vaultClaims?.ref || vaultClaims.ref === expectedRef) ? 'PASS' : 'FAIL',
-  hidden('ORYQEN_VAULT_STORAGE_SERVICE_KEY') ? 'declared (Sensitive) but hidden by Vercel on a pull; confirm it exists in the dashboard' : !vaultKey ? 'missing (the Vault cannot store files)' : vaultKey === publishable ? 'identical to the publishable key; it must be the server-only secret' : vaultClaims?.ref && vaultClaims.ref !== expectedRef ? `key belongs to project ${vaultClaims.ref}, not ${expectedRef}` : 'present and distinct from the publishable key');
+add('ORYQEN_VAULT_STORAGE_SERVICE_KEY', hidden('ORYQEN_VAULT_STORAGE_SERVICE_KEY') ? 'UNVERIFIABLE_SENSITIVE' : vaultKey && vaultKey !== publishable && (!vaultClaims?.ref || vaultClaims.ref === expectedRef) ? 'PASS' : 'FAIL',
+  hidden('ORYQEN_VAULT_STORAGE_SERVICE_KEY') ? 'declared as Sensitive, so Vercel did not return its value: this is NOT a bad key. Validate the real key locally with scripts/validate-vault-key.mjs (see OWNER_ACTIONS F6c)' : !vaultKey ? 'missing (the Vault cannot store files)' : vaultKey === publishable ? 'identical to the publishable key; it must be the server-only secret' : vaultClaims?.ref && vaultClaims.ref !== expectedRef ? `key belongs to project ${vaultClaims.ref}, not ${expectedRef}` : 'present and distinct from the publishable key');
 add('ORYQEN_VAULT_BUCKET', !has('ORYQEN_VAULT_BUCKET') || env.ORYQEN_VAULT_BUCKET === 'evidence-vault' ? 'PASS' : 'WARN', !has('ORYQEN_VAULT_BUCKET') ? 'unset: the default bucket evidence-vault is used (it exists on staging)' : env.ORYQEN_VAULT_BUCKET === 'evidence-vault' ? 'evidence-vault' : 'a different bucket name; it must exist and be private');
 add('ORYQEN_VAULT_LOCAL_DIR', has('ORYQEN_VAULT_LOCAL_DIR') ? 'FAIL' : 'PASS', has('ORYQEN_VAULT_LOCAL_DIR') ? 'development-only disk store must not be set on a hosted build' : 'unset');
 
@@ -67,8 +71,8 @@ if (aiOn && !aiApproved) add('AI flags consistent', 'FAIL', 'ORYQEN_AI_ENABLED=t
 // 5. Optional pieces that gate specific features.
 let jwk = null; try { jwk = JSON.parse(env.ORYQEN_CREDENTIAL_SIGNING_KEY ?? ''); } catch { /* reported below */ }
 const keyOk = /^[A-Za-z0-9._-]{1,64}$/.test(env.ORYQEN_CREDENTIAL_KEY_ID ?? '') && jwk?.kty === 'OKP' && jwk?.crv === 'Ed25519' && typeof jwk?.d === 'string';
-add('credential signing key', keyOk ? 'PASS' : has('ORYQEN_CREDENTIAL_SIGNING_KEY') || has('ORYQEN_CREDENTIAL_KEY_ID') ? 'FAIL' : 'WARN',
-  keyOk ? 'configured: feature 7 (verifiable credentials), the signed Passport copy and feature 13 (developer verify API) can work' : has('ORYQEN_CREDENTIAL_SIGNING_KEY') || has('ORYQEN_CREDENTIAL_KEY_ID') ? 'present but malformed' : 'not set: features 7 and 13 and the signed Passport copy will report "unavailable" on staging; the other 12 do not need it');
+add('credential signing key', hidden('ORYQEN_CREDENTIAL_SIGNING_KEY') && has('ORYQEN_CREDENTIAL_KEY_ID') ? 'UNVERIFIABLE_SENSITIVE' : keyOk ? 'PASS' : has('ORYQEN_CREDENTIAL_SIGNING_KEY') || has('ORYQEN_CREDENTIAL_KEY_ID') ? 'FAIL' : 'WARN',
+  hidden('ORYQEN_CREDENTIAL_SIGNING_KEY') && has('ORYQEN_CREDENTIAL_KEY_ID') ? 'declared as Sensitive, so its value is hidden. After the deploy, https://oryqen-staging.vercel.app/.well-known/oryqen-keys.json answering 200 proves the server accepted a valid key' : keyOk ? 'configured: feature 7 (verifiable credentials), the signed Passport copy and feature 13 (developer verify API) can work' : has('ORYQEN_CREDENTIAL_SIGNING_KEY') || has('ORYQEN_CREDENTIAL_KEY_ID') ? 'present but malformed' : 'not set: features 7 and 13 and the signed Passport copy will report "unavailable" on staging; the other 12 do not need it');
 add('ORYQEN_TELEMETRY_DB_URL', has('ORYQEN_TELEMETRY_DB_URL') ? 'WARN' : 'PASS', has('ORYQEN_TELEMETRY_DB_URL') ? 'set: it must write to the staging database only' : 'unset (runtime events are not stored)');
 
 // Optional online proof, read-only, against the staging project only. Status codes are printed, never keys or response bodies.
@@ -77,20 +81,26 @@ if (process.argv.includes('--online')) {
   const ask = async (path, headers) => { try { return await fetch(base + path, { headers, signal: AbortSignal.timeout(20000) }); } catch (error) { return { status: 0, error: String(error.cause?.code ?? error.message) }; } };
   if (publishable) {
     const response = await ask('/auth/v1/settings', { apikey: publishable });
-    add('online: publishable key is accepted by the staging project', response.status === 200 ? 'PASS' : 'FAIL', response.status === 200 ? `Auth settings answered 200 for ${expectedRef}` : `Auth settings answered ${response.status}${response.error ? ` ${response.error}` : ''}: the key does not belong to ${expectedRef}`);
+    add('online: publishable key is accepted by the staging project', response.status === 200 ? 'PASS' : [400, 401, 403].includes(response.status) ? 'INVALID_CREDENTIAL' : 'FAIL', response.status === 200 ? `Auth settings answered 200 for ${expectedRef}` : `Auth settings answered ${response.status}${response.error ? ` ${response.error}` : ''}: the key does not belong to ${expectedRef}`);
     if (response.status === 200) {
       const settings = await response.json().catch(() => ({}));
       add('online: sign-up and email confirmation', settings.disable_signup === false && settings.mailer_autoconfirm === false ? 'PASS' : 'WARN', `sign-up ${settings.disable_signup === false ? 'open' : 'closed or unknown'}; email auto-confirm ${settings.mailer_autoconfirm === false ? 'off (confirmation required)' : 'on or unknown'}`);
     }
-  } else add('online: publishable key', 'WARN', 'not in the file; skipped');
+  } else add('online: publishable key', hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'UNVERIFIABLE_SENSITIVE' : 'FAIL', hidden('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') ? 'hidden by Vercel; no request made' : 'missing from the file');
   if (vaultKey) {
     const response = await ask('/storage/v1/bucket/' + encodeURIComponent(env.ORYQEN_VAULT_BUCKET || 'evidence-vault'), { apikey: vaultKey, Authorization: `Bearer ${vaultKey}` });
     let bucket = null; if (response.status === 200) bucket = await response.json().catch(() => null);
-    add('online: Vault key reaches the private evidence-vault bucket on staging', response.status === 200 && bucket?.public === false ? 'PASS' : 'FAIL', response.status === 200 ? (bucket?.public === false ? `bucket exists, private, ${bucket.file_size_limit ?? 'no'} byte limit` : 'the bucket is PUBLIC or unreadable; it must be private') : `Storage answered ${response.status}${response.error ? ` ${response.error}` : ''}: the key does not belong to ${expectedRef} or the bucket is missing`);
-  } else add('online: Vault key', 'WARN', 'not in the file (hidden or missing); skipped');
+    const rejected = [400, 401, 403].includes(response.status);
+    add('online: Vault key reaches the private evidence-vault bucket on staging', response.status === 200 && bucket?.public === false ? 'PASS' : rejected ? 'INVALID_CREDENTIAL' : response.status === 0 ? 'WARN' : 'FAIL',
+      response.status === 200 ? (bucket?.public === false ? `bucket exists, private, ${bucket.file_size_limit ?? 'no'} byte limit` : 'the bucket is PUBLIC; it must be private') : rejected ? `Storage rejected the key (${response.status}): it is not a valid service key for ${expectedRef}` : response.status === 404 ? 'the bucket does not exist on this project' : `Storage answered ${response.status}${response.error ? ` ${response.error}` : ''}`);
+  } else if (hidden('ORYQEN_VAULT_STORAGE_SERVICE_KEY')) add('online: Vault key', 'UNVERIFIABLE_SENSITIVE', 'Vercel returned only a placeholder, so no request was made. Validate the real key locally: scripts/validate-vault-key.mjs');
+  else add('online: Vault key', 'FAIL', 'missing from the file');
 }
 
-const tally = { PASS: 0, FAIL: 0, WARN: 0 }; for (const r of results) tally[r.status]++;
-console.log(`\nPASS ${tally.PASS} | FAIL ${tally.FAIL} | WARN ${tally.WARN}   (project ${expectedRef}, origin ${expectedOrigin}; no value was printed)`);
-console.log(tally.FAIL ? 'NOT READY TO PUSH: fix the FAIL lines in Vercel.' : 'READY TO PUSH as far as this file shows (the file is only as accurate as the pull; re-pull if anything changed).');
-process.exitCode = tally.FAIL ? 1 : 0;
+const tally = { PASS: 0, FAIL: 0, INVALID_CREDENTIAL: 0, UNVERIFIABLE_SENSITIVE: 0, WARN: 0 }; for (const r of results) tally[r.status]++;
+const failing = tally.FAIL + tally.INVALID_CREDENTIAL;
+console.log(`\nPASS ${tally.PASS} | FAIL ${tally.FAIL} | INVALID_CREDENTIAL ${tally.INVALID_CREDENTIAL} | UNVERIFIABLE_SENSITIVE ${tally.UNVERIFIABLE_SENSITIVE} | WARN ${tally.WARN}   (project ${expectedRef}, origin ${expectedOrigin}; no value was printed)`);
+if (failing) console.log('NOT READY TO PUSH: fix the FAIL / INVALID_CREDENTIAL lines.');
+else if (tally.UNVERIFIABLE_SENSITIVE) console.log('NOT YET VERIFIED: every readable setting passes, but Vercel hid at least one Sensitive value. Validate each hidden secret locally (OWNER_ACTIONS F6c) before pushing.');
+else console.log('READY TO PUSH as far as this file shows (the file is only as accurate as the pull; re-pull if anything changed).');
+process.exitCode = failing ? 1 : tally.UNVERIFIABLE_SENSITIVE ? 3 : 0;
