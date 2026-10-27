@@ -74,5 +74,41 @@ ALSO: Android release keystore + application ID, Windows code-signing certificat
 ROLLBACK: rotate the key id; old public keys stay published for verification
 OWNER APPROVAL REQUIRED: YES
 
+## E. Authentication on staging (found by the auth audit, `docs/ORYQEN_AUTH_AUDIT.md`)
+The app now accepts Supabase's default recovery and invitation emails and forwards a link that lands on the site root, so **no template change is required** for password reset or invitations to work once the fixed build is deployed to the staging Vercel project. These are the checks and optional hardening:
+
+ACTION: Confirm the settings the audit read
+TARGET PROJECT: Supabase `oryqen-staging` (`jpvgsmzomlmowarlfkdl`)
+EXACT UI LOCATION: Authentication > URL Configuration
+EXPECTED VALUE: Site URL `https://oryqen-staging.vercel.app` (already set); Redirect URLs include `https://oryqen-staging.vercel.app/**` (already set). For production later add `https://<production origin>/auth/recover`, `/auth/confirm` and set Site URL to the production origin
+SECURITY IMPACT: a redirect that is not on the list falls back to the Site URL
+ROLLBACK: restore the previous list
+OWNER APPROVAL REQUIRED: only if you change it
+
+ACTION: Raise the minimum password length (recommended)
+EXACT UI LOCATION: Authentication > Sign In / Providers > Email > Minimum password length
+EXPECTED VALUE: 12 (currently 6; the app already requires 12 for its own sign-up and reset, but dashboard-created users can have 6)
+ROLLBACK: set it back
+OWNER APPROVAL REQUIRED: YES
+
+ACTION: Sender domain for Brevo (recommended before real users)
+EXACT UI LOCATION: Brevo > Senders, Domains & Dedicated IPs; Supabase > Authentication > SMTP Settings
+EXPECTED VALUE: an address on a domain you own with SPF and DKIM verified in Brevo (the current sender is a free webmail address, which many mailbox providers treat as spoofed when sent through a relay)
+OWNER APPROVAL REQUIRED: YES
+
+ACTION: Optional templates (not needed for the fix)
+EXACT UI LOCATION: Authentication > Email Templates > Reset Password
+EXPECTED VALUE: either keep the default, or `<a href="{{ .RedirectTo }}#token_hash={{ .TokenHash }}&type=recovery">Reset your password</a>`. Leave the Invite template on its default (an invitation link is completed by the forwarder and the recovery page)
+OWNER APPROVAL REQUIRED: only if you change it
+
+### Manual staging checks (after the fixed build is deployed to `oryqen-staging.vercel.app`)
+1. Open https://oryqen-staging.vercel.app/forgot-password, request a reset for an account you control, open the **newest** email. Expect the "Confirm recovery link" page (not "Check the supplied fields."). Click it, choose a password of 12+ characters, expect "Your password was changed", sign in with it.
+2. Open the same email link again. Expect "This link has expired" with a "Request a new reset email" button and no password field.
+3. In Supabase Authentication > Users, invite a test address. Open the invitation email. Expect to land on the recovery page with "You were invited to ORYQEN", click the button, choose a password, sign in, create the profile.
+4. Register a new account at /register, open the confirmation email, expect the "Confirm my email" page, then profile creation.
+5. Open /auth/recover directly. Expect "Open the link in your email".
+6. If you use a second browser or tab for any link, the first successful use consumes it; the other shows the expired message.
+Report any step that differs, with the page text, not the link.
+
 ## C. What I will do after approvals
 Run the backup check, migrations (staging first), bucket-dependent tests against the hosted target, a preview deployment smoke test, and then report. Until then I continue local work only.
