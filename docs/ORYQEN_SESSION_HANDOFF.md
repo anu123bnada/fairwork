@@ -37,6 +37,14 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 - Gate on `c39c576`: PASS 14 / FAIL 0 / BLOCKED 6. Route matrix 74/74. Accessibility (axe) 30/30. Notification preferences added. Run `git checkout next-env.d.ts` after builds (Next rewrites it).
 
+- CHECKPOINT (27 Oct 2026, after the DOCX / listing-comparison commits): added since the previous checkpoint: migration 19 `20261029100000_admin_export_log` (every admin export recorded in the audit
+  trail before delivery; PGlite + real PG passed), retention statement in Settings, signed offline-verifiable Work Passport copy (`/api/v1/passport/signed`, needs the owner's signing key; real-stack
+  harness verified it with the throwaway key), admin console shell/filters/tables translated, on-device .docx offer intake (no new dependency, zip-bomb guarded), saved-listing comparison.
+  Counts unchanged: 1 complete (module 18) / 20 partial / 1 blocked (19) / 0 production-verified. 19 local migrations pending hosted; none applied.
+  Docker note: the `supabase_*_fairwork` containers (Supabase CLI stack) crash-loop on a corrupt postgresql.conf and are unrelated to the harness, which uses `*_oryqen-local-dev`; they were not touched.
+  Still open (no owner input): skills sharing in Passport grants, recruiter correction path (needs a product decision on disclosing report existence), saved company research and recommendation
+  history, Vault corrections/verification status, agreement clause editing, account-deletion executor (reviewed privacy case), server-side message translation. Blocked: webhook worker decision,
+  licensed salary data, AI policy approval, signing keys, hosted checks. A full release gate is due after these commits (run it alone; nothing else beside it).
 - CHECKPOINT (27 Oct 2026, HEAD after `b062ee1`): full gate on `cb365ff`: exit 0, PASS 14 / FAIL 0 / SKIPPED 0 / BLOCKED 6 (all owner/external), verdict NOT READY: owner input required
   (recorded in the test report). Infrastructure audit in `ORYQEN_INFRASTRUCTURE_AUDIT.md` (read-only; `.env.local` -> Fairwork `cqjx...`, CLI -> oryqen-staging `jpvg...`, nothing hosted
   changed). Since the gate: migration 18 `20261028190000_offer_notes` (private offer notes + vault links to offers; PGlite, real PG and real-stack harness passed), employment
