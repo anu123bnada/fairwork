@@ -12,6 +12,13 @@ BLOCKED (all owner/external, none a defect): production configuration (APP_ORIGI
 credential signing key, https download hosts for the Windows/APK links, Android release preflight (app ID, keystore, device), Windows code-signing certificate.
 The Android APK is debug-signed and the Windows installer is unsigned: neither is a production release.
 
+## Full release gate, 27 Oct 2026, second run (HEAD `954646d`, exit 1)
+
+PASS 13 / FAIL 1 / SKIPPED 0 / BLOCKED 6; verdict **NOT READY: defects found**. Only `browser-journeys` failed: 5 of 385 tests (380 passed, 19.9 min). The four affected files passed 17/17 alone.
+A full browser rerun alone then passed 384 of 385; the one failure was a different test (a 90 s timeout with a Playwright protocol error), which passes alone in 38.8 s. About 1.6 GB of 16 GB RAM was free.
+This is recorded as F-32/F-33 (environment, resource contention). It is **not** a clean pass: no single end-to-end browser run has succeeded on this HEAD, so the gate has not been satisfied and the verdict stands.
+All other stages passed (typecheck, lint, 370 s of unit/integration, dependency audit, secrets scan, Electron policy, production build, real-PostgreSQL database security, Android/Windows preview builds, artifact hashes).
+
 ## Commands and results
 
 | Check | Command | Result |
