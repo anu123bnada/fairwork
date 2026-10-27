@@ -7,7 +7,6 @@ import path from "node:path";
 // edited if it named that screen); when a new English screen appears the build fails until it is translated or consciously listed.
 const walk = (dir: string): string[] => readdirSync(dir).flatMap(name => { const file = path.join(dir, name); return statSync(file).isDirectory() ? walk(file) : [file]; });
 const ENGLISH_ON_PURPOSE: Record<string, string> = {
-  "src/components/admin/admin-center.tsx": "administration console (operators), listed in the language note",
   "src/components/admin/operations-overview.tsx": "administration console (operators)",
   "src/components/fairwork/company-profiles.tsx": "organization and company screens, listed in the note",
   "src/components/fairwork/credential-verifier.tsx": "public verifier page",
