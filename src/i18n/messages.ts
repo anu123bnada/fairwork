@@ -1436,6 +1436,15 @@ export const en = {
   "agc.c.changed": "Changed",
   "agc.c.added": "Added",
   "agc.c.removed": "Removed",
+  "rt.title": "How long your data is kept",
+  "rt.intro": "What you can erase yourself, what is erased automatically, and what is kept as a permanent record so history cannot be rewritten. Deleting your whole account is a request that a privacy reviewer handles; it is not instant.",
+  "rt.vault": "Evidence Vault documents and their links: kept until you delete them; deleting removes the stored file.",
+  "rt.notes": "Your private offer notes: kept until you delete each note.",
+  "rt.guidance": "Copilot conversations: kept until you delete a conversation.",
+  "rt.recruiter": "Recruiter checks: erased automatically 90 days after they are made.",
+  "rt.shares": "Passport links you shared: stop working when you revoke them or when they expire; the record that you shared them is kept.",
+  "rt.records": "Agreements, work records, case decisions, credentials and the audit trail: kept as permanent records. They are append-only so nobody can rewrite history. They are erased only through a reviewed privacy request.",
+  "rt.request": "To delete your account or erase permanent records, create a deletion request in Privacy requests below.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -2862,6 +2871,15 @@ export const si: Partial<Messages> = {
   "agc.c.changed": "වෙනස් කළා",
   "agc.c.added": "එකතු කළා",
   "agc.c.removed": "ඉවත් කළා",
+  "rt.title": "ඔබේ දත්ත තබා ගන්නා කාලය",
+  "rt.intro": "ඔබට ඔබම මකා දැමිය හැකි දේ, ස්වයංක්‍රීයව මකන දේ, සහ ඉතිහාසය වෙනස් කළ නොහැකි වන පරිදි ස්ථිර වාර්තාවක් ලෙස තබා ගන්නා දේ. සම්පූර්ණ ගිණුම මකා දැමීම පෞද්ගලිකත්ව සමාලෝචකයෙකු විසින් හසුරුවන ඉල්ලීමකි; එය ක්ෂණික නොවේ.",
+  "rt.vault": "සාක්ෂි සුරක්ෂිත ගබඩාවේ ලේඛන සහ ඒවායේ සබැඳි: ඔබ මකන තුරු තබා ගනී; මැකීමෙන් ගබඩා කළ ගොනුව ඉවත් වේ.",
+  "rt.notes": "ඔබේ පෞද්ගලික දීමනා සටහන්: ඔබ එක් එක් සටහන මකන තුරු තබා ගනී.",
+  "rt.guidance": "උපදේශක සංවාද: ඔබ සංවාදයක් මකන තුරු තබා ගනී.",
+  "rt.recruiter": "බඳවා ගන්නන් පරීක්ෂා: සාදා දින 90කට පසු ස්වයංක්‍රීයව මකා දමයි.",
+  "rt.shares": "ඔබ බෙදාගත් ගමන් බලපත්‍ර සබැඳි: ඔබ අවලංගු කළ විට හෝ කල් ඉකුත් වූ විට ක්‍රියා නොකරයි; ඔබ බෙදාගත් බවට වාර්තාව තබා ගනී.",
+  "rt.records": "ගිවිසුම්, වැඩ වාර්තා, නඩු තීරණ, අක්තපත්‍ර සහ විගණන සටහන: ස්ථිර වාර්තා ලෙස තබා ගනී. ඒවා එකතු කිරීම පමණක් කළ හැකි බැවින් කිසිවෙකුට ඉතිහාසය නැවත ලිවිය නොහැක. ඒවා මකන්නේ සමාලෝචිත පෞද්ගලිකත්ව ඉල්ලීමක් හරහා පමණි.",
+  "rt.request": "ඔබේ ගිණුම මකා දැමීමට හෝ ස්ථිර වාර්තා මැකීමට, පහත පෞද්ගලිකත්ව ඉල්ලීම් යටතේ මකා දැමීමේ ඉල්ලීමක් සාදන්න.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4285,6 +4303,15 @@ export const ta: Partial<Messages> = {
   "agc.c.changed": "மாற்றப்பட்டது",
   "agc.c.added": "சேர்க்கப்பட்டது",
   "agc.c.removed": "நீக்கப்பட்டது",
+  "rt.title": "உங்கள் தரவு எவ்வளவு காலம் வைக்கப்படுகிறது",
+  "rt.intro": "நீங்களே அழிக்கக்கூடியவை, தானாக அழிக்கப்படுபவை, வரலாற்றை மாற்ற முடியாதபடி நிரந்தரப் பதிவாக வைக்கப்படுபவை. முழுக் கணக்கையும் நீக்குவது தனியுரிமை மதிப்பாய்வாளர் கையாளும் கோரிக்கை; அது உடனடியாக நடக்காது.",
+  "rt.vault": "சான்று பெட்டக ஆவணங்களும் அவற்றின் இணைப்புகளும்: நீங்கள் நீக்கும் வரை வைக்கப்படும்; நீக்கினால் சேமித்த கோப்பு அகற்றப்படும்.",
+  "rt.notes": "உங்கள் தனிப்பட்ட சலுகைக் குறிப்புகள்: ஒவ்வொரு குறிப்பையும் நீங்கள் நீக்கும் வரை வைக்கப்படும்.",
+  "rt.guidance": "உதவியாளர் உரையாடல்கள்: நீங்கள் உரையாடலை நீக்கும் வரை வைக்கப்படும்.",
+  "rt.recruiter": "ஆள்சேர்ப்பவர் சரிபார்ப்புகள்: உருவாக்கிய 90 நாட்களுக்குப் பிறகு தானாக அழிக்கப்படும்.",
+  "rt.shares": "நீங்கள் பகிர்ந்த கடவுச்சீட்டு இணைப்புகள்: நீங்கள் திரும்பப் பெறும்போது அல்லது காலாவதியாகும்போது செயல்படாது; பகிர்ந்தது என்ற பதிவு வைக்கப்படும்.",
+  "rt.records": "ஒப்பந்தங்கள், பணிப் பதிவுகள், வழக்கு முடிவுகள், சான்றுகள், தணிக்கைப் பதிவு: நிரந்தரப் பதிவுகளாக வைக்கப்படும். அவை சேர்க்க மட்டுமே முடியும், எனவே யாரும் வரலாற்றை மாற்றி எழுத முடியாது. மதிப்பாய்வு செய்யப்பட்ட தனியுரிமைக் கோரிக்கை மூலம் மட்டுமே அழிக்கப்படும்.",
+  "rt.request": "உங்கள் கணக்கை நீக்க அல்லது நிரந்தரப் பதிவுகளை அழிக்க, கீழே உள்ள தனியுரிமைக் கோரிக்கைகளில் நீக்கல் கோரிக்கையை உருவாக்குங்கள்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -5708,4 +5735,13 @@ export const de: Partial<Messages> = {
   "agc.c.changed": "Geändert",
   "agc.c.added": "Hinzugefügt",
   "agc.c.removed": "Entfernt",
+  "rt.title": "Wie lange Ihre Daten gespeichert werden",
+  "rt.intro": "Was Sie selbst löschen können, was automatisch gelöscht wird und was als dauerhafter Nachweis bleibt, damit die Historie nicht umgeschrieben werden kann. Das Löschen des ganzen Kontos ist eine Anfrage, die eine Datenschutzprüfung bearbeitet; es geschieht nicht sofort.",
+  "rt.vault": "Dokumente im Beweistresor und ihre Verknüpfungen: bleiben, bis Sie sie löschen; beim Löschen wird die gespeicherte Datei entfernt.",
+  "rt.notes": "Ihre privaten Angebotsnotizen: bleiben, bis Sie jede Notiz löschen.",
+  "rt.guidance": "Copilot-Unterhaltungen: bleiben, bis Sie eine Unterhaltung löschen.",
+  "rt.recruiter": "Recruiter-Prüfungen: werden 90 Tage nach der Erstellung automatisch gelöscht.",
+  "rt.shares": "Von Ihnen geteilte Pass-Links: funktionieren nicht mehr, wenn Sie sie widerrufen oder sie ablaufen; der Nachweis der Freigabe bleibt.",
+  "rt.records": "Vereinbarungen, Arbeitsnachweise, Fallentscheidungen, Nachweise und das Prüfprotokoll: bleiben als dauerhafte Aufzeichnungen. Sie sind nur anfügbar, damit niemand die Historie umschreiben kann. Gelöscht wird nur über eine geprüfte Datenschutzanfrage.",
+  "rt.request": "Um Ihr Konto zu löschen oder dauerhafte Aufzeichnungen zu entfernen, erstellen Sie unten unter Datenschutzanfragen eine Löschanfrage.",
 };

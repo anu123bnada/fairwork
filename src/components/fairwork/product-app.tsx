@@ -33,6 +33,7 @@ import { PlanAssignment, PlanPanel } from "./plan-panel";
 import { OrgPlanAssignment } from "./org-plan-panel";
 import { MyReports } from "./report-problem";
 import { OfferNotes } from "./offer-notes";
+import { RetentionPanel } from "./retention-panel";
 import { OfferPreparation } from "./offer-preparation";
 import { EmploymentTimeline } from "./employment-timeline";
 import { buildOfferSummary } from "@/features/offer/summary";
@@ -1277,6 +1278,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <PlanPanel />
       <p className="fw-disclaimer">{t("set.inAppNote")}</p>
       <details className="fw-list-card"><summary>{t("export.title")}</summary><DataExportPanel /></details>
+      <details className="fw-list-card"><summary>{t("rt.title")}</summary><RetentionPanel /></details>
       <details className="fw-list-card"><summary>{t("set.privacy")}</summary><PrivacyRequests /></details>
       <details className="fw-list-card"><summary>{t("rp.mine")}</summary><MyReports /></details>
       <details className="fw-list-card"><summary>{t("set.developer")}</summary><DeveloperAccess /></details>
