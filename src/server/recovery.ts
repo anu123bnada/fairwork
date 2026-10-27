@@ -16,6 +16,17 @@ function providerFailure(error: { status?: number } | null, invalid = false) {
   if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
   throw new AppError(invalid ? "AUTH_REQUIRED" : "VALIDATION_FAILED", invalid ? 401 : 422);
 }
+// The identity provider can refuse a new password for reasons the person can fix. Map only its stable error CODES (never its message) to a plain answer,
+// so "Check the supplied fields." is not shown for a perfectly well-formed form (the hosted report: a real reset email and matching passwords).
+const RESET_SESSION_CODES = new Set(["session_not_found", "session_expired", "bad_jwt", "reauthentication_needed", "reauthentication_not_valid", "refresh_token_not_found", "refresh_token_already_used", "user_not_found"]);
+export function passwordFailure(error: { status?: number; code?: string } | null) {
+  if (!error) return;
+  if (error.code === "same_password") throw new AppError("SAME_PASSWORD", 422);
+  if (error.code === "weak_password") throw new AppError("WEAK_PASSWORD", 422);
+  if (error.code && RESET_SESSION_CODES.has(error.code)) throw new AppError("RESET_EXPIRED", 401);
+  if (error.code === "insufficient_aal") throw new AppError("MFA_REQUIRED", 403);
+  providerFailure(error);
+}
 export async function requestRecovery(email: string, continuation = "") {
   const { origin } = getServerEnvironment();
   if (!process.env.APP_ORIGIN || (process.env.NODE_ENV === "production" && !origin.startsWith("https://"))) throw new AppError("SERVICE_UNAVAILABLE", 503);
@@ -59,7 +70,7 @@ export async function updatePassword(password: string) {
   if (assurance.error || !assurance.data) throw new AppError("SERVICE_UNAVAILABLE", 503);
   if (assurance.data.nextLevel === "aal2" && assurance.data.currentLevel !== "aal2") throw new AppError("MFA_REQUIRED", 403);
   const updated = await client.auth.updateUser({ password });
-  providerFailure(updated.error);
+  passwordFailure(updated.error);
   await recordRuntimeEvent({id:crypto.randomUUID(),kind:"password_changed",operation:"auth.password",subjectId:data.user.id});
   // Revoke refresh sessions, including this one, after a password change.
   // Already-issued access tokens expire according to the provider JWT lifetime.

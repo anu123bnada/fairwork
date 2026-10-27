@@ -47,6 +47,10 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
     } catch (caught) {
       // A consumed, expired or forged link is not retryable; say so plainly instead of the generic field message.
       if (step === "confirm" && caught instanceof ApiRequestError && ["AUTH_REQUIRED", "VALIDATION_FAILED"].includes(caught.code)) { link.clear(); setError(t("au.rec.linkUsedError")); }
+      else if (step === "password" && caught instanceof ApiRequestError && caught.code === "SAME_PASSWORD") setError(t("au.rec.samePassword"));
+      else if (step === "password" && caught instanceof ApiRequestError && caught.code === "WEAK_PASSWORD") setError(t("au.rec.weakPassword"));
+      // The reset session ended (timed out, or was revoked) before the new password was saved: only a new email can continue, so say so and offer one.
+      else if (step === "password" && caught instanceof ApiRequestError && ["RESET_EXPIRED", "AUTH_REQUIRED"].includes(caught.code)) { link.clear(); setError(""); setStep("confirm"); }
       else setError(caught instanceof Error ? caught.message : t("au.rec.failed"));
     }
     finally { setBusy(false); }

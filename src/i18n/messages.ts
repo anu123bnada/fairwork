@@ -1535,6 +1535,8 @@ export const en = {
   "au.rec.requestNew": "Request a new reset email",
   "au.rec.linkUsedError": "This reset link is invalid, has expired, or was already used. Request a new one.",
   "au.rec.inviteNote": "You were invited to ORYQEN. Continue to choose your password. Opening this page alone does not use your invitation.",
+  "au.rec.samePassword": "Choose a password that is different from your current one. Your link is still valid.",
+  "au.rec.weakPassword": "That password was refused as too easy to guess or too commonly used. Choose a longer, less common password. Your link is still valid.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -3060,6 +3062,8 @@ export const si: Partial<Messages> = {
   "au.rec.requestNew": "නව යළි සැකසීමේ විද්‍යුත් තැපෑලක් ඉල්ලන්න",
   "au.rec.linkUsedError": "මෙම යළි සැකසීමේ සබැඳිය වලංගු නොවේ, කල් ඉකුත් වී ඇත, නැතහොත් දැනටමත් භාවිත කර ඇත. අලුත් එකක් ඉල්ලන්න.",
   "au.rec.inviteNote": "ඔබට ORYQEN වෙත ආරාධනා කර ඇත. ඔබේ මුරපදය තේරීමට ඉදිරියට යන්න. මෙම පිටුව විවෘත කිරීමෙන් පමණක් ඔබේ ආරාධනාව භාවිත නොවේ.",
+  "au.rec.samePassword": "ඔබගේ වත්මන් මුරපදයට වඩා වෙනස් මුරපදයක් තෝරන්න. ඔබේ සබැඳිය තවමත් වලංගුයි.",
+  "au.rec.weakPassword": "එම මුරපදය අනුමාන කිරීමට පහසු හෝ ඉතා සාමාන්‍ය බැවින් ප්‍රතික්ෂේප විය. දිගු, අඩු සාමාන්‍ය මුරපදයක් තෝරන්න. ඔබේ සබැඳිය තවමත් වලංගුයි.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4582,6 +4586,8 @@ export const ta: Partial<Messages> = {
   "au.rec.requestNew": "புதிய மீட்டமைப்பு மின்னஞ்சலைக் கோரு",
   "au.rec.linkUsedError": "இந்த மீட்டமைப்பு இணைப்பு செல்லாதது, காலாவதியானது அல்லது ஏற்கனவே பயன்படுத்தப்பட்டது. புதியதைக் கோரவும்.",
   "au.rec.inviteNote": "நீங்கள் ORYQEN க்கு அழைக்கப்பட்டுள்ளீர்கள். உங்கள் கடவுச்சொல்லைத் தேர்ந்தெடுக்கத் தொடரவும். இந்தப் பக்கத்தைத் திறப்பதால் மட்டும் உங்கள் அழைப்பு பயன்படுத்தப்படாது.",
+  "au.rec.samePassword": "உங்கள் தற்போதைய கடவுச்சொல்லிலிருந்து வேறுபட்ட கடவுச்சொல்லைத் தேர்ந்தெடுக்கவும். உங்கள் இணைப்பு இன்னும் செல்லுபடியாகும்.",
+  "au.rec.weakPassword": "அந்தக் கடவுச்சொல் ஊகிக்க எளிதானது அல்லது மிகவும் பொதுவானது என்பதால் நிராகரிக்கப்பட்டது. நீளமான, குறைவாகப் பொதுவான கடவுச்சொல்லைத் தேர்ந்தெடுக்கவும். உங்கள் இணைப்பு இன்னும் செல்லுபடியாகும்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -6104,4 +6110,6 @@ export const de: Partial<Messages> = {
   "au.rec.requestNew": "Neue E-Mail zum Zurücksetzen anfordern",
   "au.rec.linkUsedError": "Dieser Link zum Zurücksetzen ist ungültig, abgelaufen oder wurde bereits verwendet. Fordern Sie einen neuen an.",
   "au.rec.inviteNote": "Sie wurden zu ORYQEN eingeladen. Fahren Sie fort, um Ihr Passwort zu wählen. Das bloße Öffnen dieser Seite verbraucht Ihre Einladung nicht.",
+  "au.rec.samePassword": "Wählen Sie ein anderes Passwort als Ihr aktuelles. Ihr Link ist weiterhin gültig.",
+  "au.rec.weakPassword": "Dieses Passwort wurde als zu leicht erratbar oder zu gebräuchlich abgelehnt. Wählen Sie ein längeres, weniger gebräuchliches Passwort. Ihr Link ist weiterhin gültig.",
 };

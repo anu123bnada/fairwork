@@ -41,6 +41,7 @@ export async function registerAccount(email: string, password: string, continuat
   } });
   if (error?.status === 429) throw new AppError("RATE_LIMITED", 429);
   if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  if (error?.code === "weak_password") throw new AppError("WEAK_PASSWORD", 422);
   if (error && error.code !== "user_already_exists" && error.code !== "email_exists") throw new AppError("VALIDATION_FAILED", 422);
   if (data?.session) throw new AppError("SERVICE_UNAVAILABLE", 503);
   // Same response for an existing account and a new, unconfirmed account.
