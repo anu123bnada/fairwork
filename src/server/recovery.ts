@@ -5,7 +5,9 @@ import { requirePublicEnvironment } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import { getServerEnvironment } from "./env";
-import { createServerSupabase } from "./supabase";
+import { createServerSupabase, createStagedServerSupabase } from "./supabase";
+import type { z } from "zod";
+import type { recoveryTokenSchema } from "@/features/identity/recovery-schema";
 import { authPath } from "@/features/identity/auth-navigation";
 
 function providerFailure(error: { status?: number } | null, invalid = false) {
@@ -25,11 +27,27 @@ export async function requestRecovery(email: string, continuation = "") {
   if (isAuthServiceUnavailable(error)) throw new AppError("SERVICE_UNAVAILABLE", 503);
   return { requested: true };
 }
-export async function confirmRecovery(tokenHash: string) {
-  const client = await createServerSupabase(true);
-  const { data, error } = await client.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" });
+export async function confirmRecovery(input: z.infer<typeof recoveryTokenSchema>) {
+  if ("tokenHash" in input) {
+    const client = await createServerSupabase(true);
+    const { data, error } = await client.auth.verifyOtp({ token_hash: input.tokenHash, type: "recovery" });
+    providerFailure(error, true);
+    if (!data.user?.email_confirmed_at || data.user.is_anonymous) throw new AppError("AUTH_REQUIRED", 401);
+    return { confirmed: true };
+  }
+  // The tokens a default Supabase recovery or invitation email puts in the link fragment. The browser's copy is untrusted: Supabase's Auth server must
+  // accept the access token, then the refresh token is exchanged (and so rotated) and must belong to the same confirmed account. Cookies are only
+  // committed after every check passes, so a bad link leaves no session behind.
+  const { client, commitCookies } = await createStagedServerSupabase();
+  const checked = await client.auth.getUser(input.accessToken);
+  providerFailure(checked.error, true);
+  const expected = checked.data.user;
+  const issuedForThisLink = input.link === "invite" ? Boolean(expected?.invited_at) : Boolean(expected?.recovery_sent_at);
+  if (!expected?.id || !expected.email_confirmed_at || expected.is_anonymous || !issuedForThisLink) throw new AppError("AUTH_REQUIRED", 401);
+  const { data, error } = await client.auth.refreshSession({ refresh_token: input.refreshToken });
   providerFailure(error, true);
-  if (!data.user?.email_confirmed_at || data.user.is_anonymous) throw new AppError("AUTH_REQUIRED", 401);
+  if (!data.session || data.user?.id !== expected.id || data.session.user?.id !== expected.id) throw new AppError("AUTH_REQUIRED", 401);
+  commitCookies();
   return { confirmed: true };
 }
 export async function updatePassword(password: string) {

@@ -8,6 +8,7 @@ import "@fontsource/dm-sans/800.css";
 import "@fontsource/space-grotesk/500.css";
 import "@fontsource/space-grotesk/700.css";
 import CinematicCore from "@/components/oryqen/cinematic-core";
+import { AuthLinkForwarder } from "@/components/fairwork/auth-link-forwarder";
 import { BrandLogo } from "@/components/brand/brand";
 import { androidRelease, windowsRelease, releaseUrls, type Release } from "@/features/releases/releases";
 import { motion, useReducedMotion } from "framer-motion";
@@ -572,6 +573,7 @@ export default function Home() {
     );
   return (
     <main id="top" className="oryqen-landing">
+      <AuthLinkForwarder />
       <ScrollMeter />
       <CommandPalette />
       <div className="site-shell">
