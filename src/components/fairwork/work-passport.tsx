@@ -34,6 +34,16 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
   catch(caught){setPassport(null);setError(caught instanceof Error?caught:new Error(t("pp.loadError")));}
   finally{setBusy(false);}
  }
+ async function downloadSigned(){
+  if(busy)return;setBusy(true);setError(null);
+  try{
+   const signed=await appRequest("/api/v1/passport/signed",{}) as {jws:string;payload:unknown;keyId:string;issuer:string};
+   const url=URL.createObjectURL(new Blob([JSON.stringify({format:"oryqen-signed-passport-file.v1",keyId:signed.keyId,issuer:signed.issuer,jws:signed.jws,payload:signed.payload},null,2)],{type:"application/json"}));
+   const link=document.createElement("a");link.href=url;link.download="oryqen-signed-passport.json";link.click();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }catch(caught){setError(caught instanceof ApiRequestError&&caught.status===503?new Error(t("pp.signedUnavailable")):caught instanceof Error?caught:new Error(t("pp.downloadError")));}
+  finally{setBusy(false);}
+ }
  async function download(){
   if(busy)return;setBusy(true);setError(null);
   try{
@@ -65,7 +75,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    <h3 className="fw-section-label">{t("pp.skills")}</h3><div className="fw-demo-previous-role"><span>{t("pp.skillsNote")}</span></div>
   </>}
   <button className="fw-secondary" disabled={busy} onClick={()=>void reload()}>{t("pp.reload")}</button>
-  {passport?.passportId&&!error&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
+  {passport?.passportId&&!error&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" disabled={busy} onClick={()=>void downloadSigned()}>{t("pp.signedButton")}</button><p>{t("pp.signedNote")}</p><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
   <div className="fw-demo-passport-action"><p className="fw-disclaimer">{t("pp.preview")}</p><Link className="fw-primary" href="/app/share">{t("pp.share")}</Link></div>
  </div>;
 }

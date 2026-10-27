@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { decodeJwt, decodeProtectedHeader } from 'jose';
+import { decodeJwt, decodeProtectedHeader, compactVerify, importJWK } from 'jose';
 import { expect } from '@playwright/test';
 
 // Real local stack: real Auth sessions, real PostgreSQL, the app's real signing key (a throwaway test key
@@ -32,6 +32,11 @@ export async function localCredentialJourney({ worker, employer, outsider, workI
 
   const keys = await (await fetch(`${origin}/.well-known/oryqen-keys.json`)).json();
   must(keys.keys.length >= 1 && !JSON.stringify(keys).includes('"d"') && keys.keys.some(key => key.kid === decodeProtectedHeader(issued.token).kid), 'Published key set contains public material only');
+  const signed = await request(worker, '/api/v1/passport/signed', {});
+  const signedKey = keys.keys.find(key => key.kid === signed.keyId);
+  const signedBody = JSON.parse(new TextDecoder().decode((await compactVerify(signed.jws, await importJWK(signedKey, 'EdDSA'), { algorithms: ['EdDSA'] })).payload));
+  must(decodeProtectedHeader(signed.jws).typ === 'oryqen-passport+jws' && signedBody.format === 'oryqen-signed-passport.v1' && signedBody.issuer === keys.issuer && signedBody.records.length >= 1
+    && !JSON.stringify(signedBody).includes(worker.id), 'The signed Passport copy verifies offline against the published key, lists the verified record and carries no account identifier');
   const statusOf = async id => (await (await fetch(`${origin}/api/v1/credentials/status?id=${id}`)).json()).data;
   must((await statusOf(payload.jti)).status === 'valid', 'An anonymous caller sees the credential as valid, with no identity in the answer');
   must(Object.keys(await statusOf(payload.jti)).sort().join() === 'checkedAt,reason,status', 'The public status answer contains only status, reason and time');

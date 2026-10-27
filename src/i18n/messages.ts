@@ -1445,6 +1445,9 @@ export const en = {
   "rt.shares": "Passport links you shared: stop working when you revoke them or when they expire; the record that you shared them is kept.",
   "rt.records": "Agreements, work records, case decisions, credentials and the audit trail: kept as permanent records. They are append-only so nobody can rewrite history. They are erased only through a reviewed privacy request.",
   "rt.request": "To delete your account or erase permanent records, create a deletion request in Privacy requests below.",
+  "pp.signedButton": "Download a signed copy",
+  "pp.signedNote": "A copy signed by ORYQEN so anyone can check offline that ORYQEN issued exactly this document. It does not show whether a record was later withdrawn or corrected.",
+  "pp.signedUnavailable": "Signed copies are not available yet: ORYQEN's signing key has not been set up on this server.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -2880,6 +2883,9 @@ export const si: Partial<Messages> = {
   "rt.shares": "ඔබ බෙදාගත් ගමන් බලපත්‍ර සබැඳි: ඔබ අවලංගු කළ විට හෝ කල් ඉකුත් වූ විට ක්‍රියා නොකරයි; ඔබ බෙදාගත් බවට වාර්තාව තබා ගනී.",
   "rt.records": "ගිවිසුම්, වැඩ වාර්තා, නඩු තීරණ, අක්තපත්‍ර සහ විගණන සටහන: ස්ථිර වාර්තා ලෙස තබා ගනී. ඒවා එකතු කිරීම පමණක් කළ හැකි බැවින් කිසිවෙකුට ඉතිහාසය නැවත ලිවිය නොහැක. ඒවා මකන්නේ සමාලෝචිත පෞද්ගලිකත්ව ඉල්ලීමක් හරහා පමණි.",
   "rt.request": "ඔබේ ගිණුම මකා දැමීමට හෝ ස්ථිර වාර්තා මැකීමට, පහත පෞද්ගලිකත්ව ඉල්ලීම් යටතේ මකා දැමීමේ ඉල්ලීමක් සාදන්න.",
+  "pp.signedButton": "අත්සන් කළ පිටපතක් බාගන්න",
+  "pp.signedNote": "ORYQEN විසින් අත්සන් කළ පිටපතකි; මෙම ලේඛනය හරියටම ORYQEN විසින් නිකුත් කළ බව ඕනෑම කෙනෙකුට අන්තර්ජාලයෙන් තොරව පරීක්ෂා කළ හැක. වාර්තාවක් පසුව ඉවත් කළාද නැතිනම් නිවැරදි කළාද යන්න එයින් නොපෙනේ.",
+  "pp.signedUnavailable": "අත්සන් කළ පිටපත් තවමත් නොමැත: මෙම සේවාදායකයේ ORYQEN අත්සන් යතුර තවම සකසා නැත.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4312,6 +4318,9 @@ export const ta: Partial<Messages> = {
   "rt.shares": "நீங்கள் பகிர்ந்த கடவுச்சீட்டு இணைப்புகள்: நீங்கள் திரும்பப் பெறும்போது அல்லது காலாவதியாகும்போது செயல்படாது; பகிர்ந்தது என்ற பதிவு வைக்கப்படும்.",
   "rt.records": "ஒப்பந்தங்கள், பணிப் பதிவுகள், வழக்கு முடிவுகள், சான்றுகள், தணிக்கைப் பதிவு: நிரந்தரப் பதிவுகளாக வைக்கப்படும். அவை சேர்க்க மட்டுமே முடியும், எனவே யாரும் வரலாற்றை மாற்றி எழுத முடியாது. மதிப்பாய்வு செய்யப்பட்ட தனியுரிமைக் கோரிக்கை மூலம் மட்டுமே அழிக்கப்படும்.",
   "rt.request": "உங்கள் கணக்கை நீக்க அல்லது நிரந்தரப் பதிவுகளை அழிக்க, கீழே உள்ள தனியுரிமைக் கோரிக்கைகளில் நீக்கல் கோரிக்கையை உருவாக்குங்கள்.",
+  "pp.signedButton": "கையொப்பமிட்ட நகலைப் பதிவிறக்கு",
+  "pp.signedNote": "ORYQEN கையொப்பமிட்ட நகல்; இந்த ஆவணத்தை ORYQEN சரியாக வழங்கியது என்பதை யாரும் இணையமின்றிச் சரிபார்க்கலாம். ஒரு பதிவு பின்னர் திரும்பப் பெறப்பட்டதா அல்லது திருத்தப்பட்டதா என்பதை இது காட்டாது.",
+  "pp.signedUnavailable": "கையொப்பமிட்ட நகல்கள் இன்னும் கிடைக்காது: இந்தச் சேவையகத்தில் ORYQEN இன் கையொப்ப விசை இன்னும் அமைக்கப்படவில்லை.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -5744,4 +5753,7 @@ export const de: Partial<Messages> = {
   "rt.shares": "Von Ihnen geteilte Pass-Links: funktionieren nicht mehr, wenn Sie sie widerrufen oder sie ablaufen; der Nachweis der Freigabe bleibt.",
   "rt.records": "Vereinbarungen, Arbeitsnachweise, Fallentscheidungen, Nachweise und das Prüfprotokoll: bleiben als dauerhafte Aufzeichnungen. Sie sind nur anfügbar, damit niemand die Historie umschreiben kann. Gelöscht wird nur über eine geprüfte Datenschutzanfrage.",
   "rt.request": "Um Ihr Konto zu löschen oder dauerhafte Aufzeichnungen zu entfernen, erstellen Sie unten unter Datenschutzanfragen eine Löschanfrage.",
+  "pp.signedButton": "Signierte Kopie herunterladen",
+  "pp.signedNote": "Eine von ORYQEN signierte Kopie, damit jeder offline prüfen kann, dass ORYQEN genau dieses Dokument ausgestellt hat. Sie zeigt nicht, ob ein Eintrag später zurückgezogen oder korrigiert wurde.",
+  "pp.signedUnavailable": "Signierte Kopien sind noch nicht verfügbar: Der Signaturschlüssel von ORYQEN ist auf diesem Server noch nicht eingerichtet.",
 };
