@@ -12,6 +12,7 @@ import {CaseReviewScreen} from "@/components/fairwork/case-review";
 import { buildAdminExport } from "@/features/admin/export";
 import styles from "./admin.module.css";
 import {OperationsOverview} from "./operations-overview";
+import {AuditIntegrity} from "./audit-integrity";
 import {ReportQueue} from "@/components/fairwork/report-queue";
 import {useI18n} from "@/i18n/use-i18n";
 import type {MessageKey} from "@/i18n";
@@ -86,6 +87,7 @@ export function AdminCenter({resource,initial,initialQuery,runtime:initialRuntim
     <section className={styles.panel}><h2>{resource==="dashboard"?t("adm.auditTitle"):nm(resource)}</h2><p>{t("adm.metadataOnly")}</p>{!data.items.length?<p>{t("adm.noMatch")}</p>:<><div className={styles.tableScroll}><table><thead><tr><th scope="col">{t("adm.colRecord")}</th><th scope="col">{t("adm.status")}</th><th scope="col">{t("adm.colRevision")}</th><th scope="col">{t("adm.colRecorded")}</th></tr></thead><tbody>{data.items.map(row=><tr key={row.id}><td><button className={styles.record} onClick={()=>{setSelected(row);setOperation(null);}}>{row.label}<small>{row.id}</small></button></td><td><span className={styles.badge}>{words(row.status)}</span></td><td>{row.revision}</td><td>{row.recordedAt.slice(0,16).replace("T"," ")}</td></tr>)}</tbody></table></div><div className={styles.actions}><button disabled={busy} onClick={()=>void exportRecords()}>{t("adm.export")}</button></div></>}<div className={styles.actions}><button disabled={busy} onClick={()=>void refresh()}>{t("adm.firstPage")}</button><button disabled={busy||!data.nextCursor} onClick={()=>void refresh(data.nextCursor)}>{t("adm.nextPage")}</button></div></section>
     {["requests","cases","privacy","organizations"].includes(resource)&&<section className={styles.panel}><h2>Scoped review workspace</h2><p>Evidence and decisions require a separate, unexpired domain capability and the existing independence checks. An administrative role grants metadata visibility only.</p><button onClick={()=>setDomain(!domain)}>{domain?"Close":"Open"} authorized workflow</button>{domain&&(resource==="requests"?<OrganizationRequests operator/>:resource==="privacy"?<PrivacyRequests operator/>:resource==="cases"?<><CaseReviewScreen basePath="/admin/cases"/><section aria-label="Abuse reports"><h3>User reports (reviewer)</h3><ReportQueue/></section></>:<Link href="/operator/authority">Open independent membership decisions</Link>)}</section>}
     {["ai","settings"].includes(resource)&&<section className={styles.panel}><h2>Runtime and safeguards</h2><dl className={styles.details}>{Object.entries(runtime).map(([key,val])=><div key={key}><dt>{words(key)}</dt><dd>{val===null?"Unavailable":typeof val==="object"?JSON.stringify(val):String(val)}</dd></div>)}</dl><p>Consent authorizations do not prove provider requests completed. Availability is not probed; costs and failures are not inferred. Configuration cannot enable provider processing or bypass consent.</p></section>}
+    {resource==="audit"&&<AuditIntegrity/>}
     <section className={styles.panel}><MfaVerify onVerified={()=>void refresh()}/></section>
    </>}
   </main>

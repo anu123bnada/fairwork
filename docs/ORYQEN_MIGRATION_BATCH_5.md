@@ -1,11 +1,12 @@
 # Staging migration batch 5 — for owner approval (29 Oct 2026)
 
-Status: **PREPARED, NOT APPLIED.** Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource. Two migrations, applied in this order.
+Status: **PREPARED, NOT APPLIED.** Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource. Three migrations, applied in this order.
 
 | # | File | SHA-256 | Purpose |
 |---|---|---|---|
 | 24 | `20261029150000_dispute_categories.sql` | `4b968bd0531cc4110de2a16c379e3ed595b4fac76545f9ffc325eb13c25ceac4` | Module 9: the owner-approved dispute categories (incorrect pay, incorrect working hours, incorrect duties, incorrect dates, contract terms, missing payment, unfair termination, other) beside the original four |
 | 25 | `20261029151000_case_evidence_refs.sql` | `532f3992c74d9c69e32bd2377e6f0243c0a3977f45514a1653392fc9c275b368` | Module 9: evidence references on a dispute (snapshot of the opener's own vault document; never the file) |
+| 26 | `20261029160000_audit_chain.sql` | `e8fc3fc3dfb4b7b1689b58a8251d50f8790eaaa5a285a9ad8693423f106832a0` | Module 10: cross-record audit hash chain with tamper detection and an administrator verification |
 
 ## Migration 24 — what it changes
 - Drops and re-adds the `reason_code` check constraint on `private.work_cases` with twelve codes (the old four plus eight). Existing cases keep their codes; staging has none.
@@ -26,8 +27,16 @@ No `DROP TABLE`/`TRUNCATE`/data change. The only `drop constraint` is the work_c
 - Browser: 11 of 11 case specs (category list and chosen category sent; attach flow and checksum shown). All 644 unit and rehearsal tests, lint, typecheck.
 - **Not tested:** the accepted-reviewer read path of `case_evidence_list` (needs reviewer capability fixtures; its gate is the existing `private.case_visible`), and anything on a real signed-in staging account.
 
+## Migration 26 — audit hash chain (module 10)
+- New append-only, forced-RLS table `private.audit_chain` (`seq`, `source`, `source_id`, `record_hash`, `prev_hash`, `chain_hash`). `chain_hash = sha256(prev_hash : source : source id : sha256(row as jsonb text))`; genesis previous hash is 64 zeros. Existing rows in `private.audit_logs` and `private.admin_audit` are chained first (oldest first), then two `AFTER INSERT` triggers chain every new row under an advisory lock so the order is global.
+- `api.audit_chain_verify` (administrator with fresh MFA; owner `fw_admin_exec`) calls `private.audit_chain_verify`, which recomputes every link and every source row's hash and counts source rows missing from the chain. It returns `ok`, counts, the first problem's sequence number and the head hash (to be recorded outside the database).
+- Widening to review: two `select` policies for the owner role `fw_schema_owner` on `private.audit_logs` and `private.admin_audit` (this role is NOLOGIN and owns only the definer functions that need to read the rows); one policy on the new table for the same role. Ordinary roles, including `authenticated`, still cannot read the chain.
+- Honest limit: this detects tampering after the fact and across both audit tables; a database superuser can rewrite a row and the whole chain, which is what the exported head hash is for.
+- Tests: admin database tests 27 of 27 on a disposable real PostgreSQL and 24 + 3 skipped on PGlite: chain length equals the sum of both audit tables; non-admin, aal1 and extra-field requests refused; an edited audit row, a row inserted with triggers off, and an edited chain link are each detected (and the check is ok again once undone); chain and audit tables cannot be rewritten through the normal path. Admin browser tests 14 of 14. The full unit and integration suite: 903 passed, 17 skipped; lint clean.
+- Rollback: `drop trigger audit_chain_audit_logs on private.audit_logs; drop trigger audit_chain_admin_audit on private.admin_audit; drop function api.audit_chain_verify(jsonb), private.audit_chain_verify(), private.audit_chain_append(), private.audit_chain_hash(text,uuid,text,text); drop table private.audit_chain; drop policy audit_logs_chain_owner_read on private.audit_logs; drop policy admin_audit_chain_owner_read on private.admin_audit;` and delete migration row `20261029160000`. No audit row is changed or lost.
+
 ## Procedure after approval
-`node scripts/backup-staging-logical.mjs`, `node scripts/restore-check-logical-backup.mjs`, live-count comparison, checksum + project ref + dry-run (must list exactly these two files), `supabase db push --linked --yes`, then verify: migration list 57/57; the constraint lists twelve codes; the patched function exists once with unchanged owner, `secdef`, `search_path`, grants; refs table RLS enabled and forced, trigger present; the two functions' owner and execute rights; the new `fw_review_exec` policies and column grants are exactly as listed; existing counts unchanged.
+`node scripts/backup-staging-logical.mjs`, `node scripts/restore-check-logical-backup.mjs`, live-count comparison, checksum + project ref + dry-run (must list exactly these three files), `supabase db push --linked --yes`, then verify: migration list 58/58; the constraint lists twelve codes; the patched function exists once with unchanged owner, `secdef`, `search_path`, grants; refs table RLS enabled and forced, trigger present; the two functions' owner and execute rights; the new `fw_review_exec` policies and column grants are exactly as listed; existing counts unchanged.
 
 ## Rollback
 ```sql
@@ -43,6 +52,7 @@ alter table private.work_cases drop constraint work_cases_reason_code_check;
 alter table private.work_cases add constraint work_cases_reason_code_check check(reason_code in ('work_inaccurate','evidence_integrity','verification_conflict','suspected_fraud'));
 -- re-apply the original validation list in api.work_case_command_before_followups from 202610150001 line 185 with create or replace
 delete from supabase_migrations.schema_migrations where version in ('20261029150000','20261029151000');
+-- and, for migration 26, the rollback listed above
 commit;
 ```
 

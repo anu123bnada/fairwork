@@ -74,3 +74,14 @@ test("participant can submit a linked appeal with an idempotency header and see 
  await page.route("**/api/v1/case-followups*",async route=>{if(route.request().method()==="POST"){expect(route.request().postDataJSON()).toMatchObject({caseId:parent,operation:"appeal",expectedRevision:4,message:"New synthetic appeal grounds"});expect(route.request().headers()["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);posted=true;await route.fulfill({json:{data:{caseId:parent,eventId:child,linkedCaseId:child}}});}else await route.fulfill({json:{data:{canRespond:false,canAppeal:!posted,nextCursor:null,items:posted?[{id:child,actorId:parent,kind:"appeal",message:"New synthetic appeal grounds",linkedCaseId:child,createdAt:"2026-10-20T00:00:00Z"}]:[]}}});});
  await page.goto("/?followups=1");await page.getByLabel("Appeal grounds").fill("New synthetic appeal grounds");await page.getByRole("button",{name:"Submit appeal and reopen review"}).click();await expect(page.getByRole("link",{name:"Open linked appeal case"})).toHaveAttribute("href",`/app/cases?caseId=${child}`);await expect(page.getByText(/different independent reviewer must be assigned/)).toBeVisible();
 });
+test("the audit view verifies the hash chain and says so plainly when it is not intact",async({page})=>{
+ const head="ab".repeat(32);let intact=true;let calls=0;
+ await page.route("**/api/v1/admin/audit-chain",route=>{calls++;return route.fulfill({json:{data:intact?{checked:42,ok:true,brokenLinks:0,alteredOrDeletedRecords:0,recordsNotInChain:0,firstProblemSeq:null,head}:{checked:42,ok:false,brokenLinks:1,alteredOrDeletedRecords:2,recordsNotInChain:3,firstProblemSeq:17,head}}});});
+ await page.goto("/?resource=audit");
+ const region=page.getByRole("region",{name:"Audit integrity"});
+ await expect(region).toBeVisible();expect(calls).toBe(0);
+ await region.getByRole("button",{name:"Verify audit chain"}).click();
+ await expect(region.getByRole("status")).toContainText("Intact: 42 records checked");await expect(region).toContainText(head);
+ intact=false;await region.getByRole("button",{name:"Verify audit chain"}).click();
+ await expect(region.getByRole("status")).toContainText("Not intact");await expect(region).toContainText("Broken links: 1");await expect(region).toContainText("Records edited or deleted: 2");await expect(region).toContainText("Records missing from the chain: 3");await expect(region).toContainText("First problem at link 17");
+});

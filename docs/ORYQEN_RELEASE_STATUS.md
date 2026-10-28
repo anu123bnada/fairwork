@@ -8,12 +8,12 @@ This document is factual. "Hosted verified" means a real signed-in account passe
 | Staging branch | `release/oryqen-oct27` at `393ce1c`; local `feature/oryqen-sprint-oct25` is ahead with unpushed batch 5 work |
 | Last CI | run 33 on `393ce1c`: success (run 32 passed after the lint and flaky-test fixes) |
 | Staging Supabase | `jpvgsmzomlmowarlfkdl`, **55 of 55** migrations applied |
-| Pending approval | **Batch 5**: migrations 24 and 25, `docs/ORYQEN_MIGRATION_BATCH_5.md` |
+| Pending approval | **Batch 5**: migrations 24, 25 and 26 (dispute categories, case evidence references, audit hash chain), `docs/ORYQEN_MIGRATION_BATCH_5.md` |
 | Hosted smoke / rendering | 24 pass, 0 fail, 5 warn / all rendered checks pass (28 Oct, after batch 4) |
 | Production, `main`, Fairwork | untouched |
 
 ## Migrations
-Applied to staging, each after a fresh Docker-free backup and restore rehearsal with post-checks (see the batch docs): the 19 pending at the start, then 20 research history, 21 vault evidence status, 22 vault revocation enforcement, 23 agreement expiry. Prepared, not applied: 24 dispute categories, 25 case evidence references.
+Applied to staging, each after a fresh Docker-free backup and restore rehearsal with post-checks (see the batch docs): the 19 pending at the start, then 20 research history, 21 vault evidence status, 22 vault revocation enforcement, 23 agreement expiry. Prepared, not applied: 24 dispute categories, 25 case evidence references, 26 audit hash chain.
 
 ## 22 modules (per `docs/ORYQEN_22_MODULE_ACCEPTANCE.md`)
 Columns: I implemented, L locally tested, D deployed to staging, H hosted authenticated verified.
@@ -29,7 +29,7 @@ Columns: I implemented, L locally tested, D deployed to staging, H hosted authen
 | 07 | Work Passport | partial | yes | yes | no | Signed PDF and skills in a shared Passport missing |
 | 08 | Organization and Recruiter Portal | partial | yes | yes | no | Roles recruiter, hiring manager and viewer are NOT built |
 | 09 | Dispute and Appeals Center | partial | yes (categories and evidence references: migrations 24 and 25, local only) | no (batch 5 pending) | no | Reviewer-only confidential file access and organization response workflow missing |
-| 10 | Trust Ledger and Audit | partial | yes | yes (export logging) | no | Cross-record hash chain is NOT built |
+| 10 | Trust Ledger and Audit | partial | yes (hash chain with tamper detection: migration 26, local only) | yes (export logging); chain not yet | no | Hash chain waits for batch 5 approval; export of a person's own event history missing |
 | 11 | AI Career Copilot | partial | yes (rules-based) | yes | no | Model-backed copilot waits for AI approval |
 | 12 | Security and Privacy | partial | yes | yes | no | Passkeys, account-deletion executor, security-event log view missing |
 | 13 | Administration | partial | yes | yes | no | Account restriction and restoration already exist in the admin console (owner or administrator role, MFA, reason, optimistic revision check, cannot target administrators or oneself, written to the administrative audit); organization suspension also exists. Missing: operational monitoring and the console's forms, dialogs and detail panels are still English |
@@ -63,6 +63,6 @@ The gateway, consent, redaction, budgets and breaker exist and are unit-tested; 
 
 ## Known limitations and open risks
 - No hosted authenticated verification of any feature.
-- Recruiter roles and the audit hash chain are not implemented. (Account restriction and restoration are implemented; an earlier note that moderation was missing was wrong, corrected here.) Legal pages are not written (`docs/ORYQEN_LEGAL_DECISIONS.md`).
+- Recruiter roles are not implemented. (Account restriction and restoration are implemented; an earlier note that moderation was missing was wrong, corrected here.) Legal pages are not written (`docs/ORYQEN_LEGAL_DECISIONS.md`).
 - Layout verified with a mocked login only. Windows and Android are unsigned or debug builds.
 - Docker Desktop was unstable earlier. Staging backups use the Docker-free scripts `scripts/backup-staging-logical.mjs` and `scripts/restore-check-logical-backup.mjs`. The restore rehearsal covers `private` data; `auth` data is backed up and counted but not restored in the rehearsal.

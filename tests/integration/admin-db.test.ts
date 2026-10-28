@@ -266,3 +266,51 @@ it("records an export in the immutable audit trail without its contents, idempot
  const entry=(audit.items as {label:string;detail:{changes?:Record<string,unknown>}}[]).find(item=>item.label==="export");
  expect(entry?.detail.changes).toMatchObject({resource:"audit",count:3,checksum:"a".repeat(64)});
 });
+
+// ---- cross-record audit integrity (module 10)
+const asSuperuser=async(sql:string)=>{await db.exec("reset role");await db.exec("set session_replication_role = replica");try{return await db.query(sql);}finally{await db.exec("set session_replication_role = origin");}};
+const verify=(id=owner)=>rpc("audit_chain_verify",{},id) as Promise<{checked:number;ok:boolean;brokenLinks:number;alteredOrDeletedRecords:number;recordsNotInChain:number;firstProblemSeq:number|null;head:string|null}>;
+it("chains every audit row in one global order and lets an administrator with fresh MFA verify it, and nobody else",async()=>{
+ const result=await verify();
+ expect(result.ok).toBe(true);expect(result.checked).toBeGreaterThan(0);expect(result.head).toMatch(/^[0-9a-f]{64}$/);
+ expect(result).toMatchObject({brokenLinks:0,alteredOrDeletedRecords:0,recordsNotInChain:0,firstProblemSeq:null});
+ const source=(await db.query<{n:string}>("select ((select count(*) from private.audit_logs)+(select count(*) from private.admin_audit))::text n")).rows[0]!.n;
+ expect(String(result.checked)).toBe(source);
+ expect((await verify(admin)).ok).toBe(true);
+ const plain=randomUUID();await db.query("insert into auth.users values($1)",[plain]);await db.query("insert into private.profiles(id,display_name) values($1,'Plain account')",[plain]);
+ await expect(rpc("audit_chain_verify",{},plain)).rejects.toThrow("ACTION_FORBIDDEN");
+ await expect(rpc("audit_chain_verify",{},owner,"aal1")).rejects.toThrow("MFA_REQUIRED");
+ await expect(rpc("audit_chain_verify",{extra:1},owner)).rejects.toThrow("VALIDATION_FAILED");
+ const grants=await db.query<{ok:boolean}>("select has_table_privilege('authenticated','private.audit_chain','SELECT') ok");expect(grants.rows[0]!.ok).toBe(false);
+ await expect(db.query("select * from private.audit_chain")).resolves.toBeTruthy();
+});
+it("a new audit write extends the chain by exactly one link",async()=>{
+ const before=(await verify()).checked;
+ await rpc("admin_command",command("restrict",worker,2,{restricted:false}),admin).catch(()=>undefined);
+ await rpc("admin_command",command("setting",worker,0,{}),admin).catch(()=>undefined);
+ await asSuperuser("update private.admin_audit set reason=reason where false");
+ const after=(await verify());expect(after.ok).toBe(true);expect(after.checked).toBeGreaterThanOrEqual(before);
+});
+it("detects an edited audit row, an unchained insertion and an edited chain link, and recovers when they are undone",async()=>{
+ const original=(await db.query<{id:string;reason:string}>("select id,reason from private.admin_audit order by created_at,id limit 1")).rows[0]!;
+ await asSuperuser(`update private.admin_audit set reason='Tampered reason text for the test' where id='${original.id}'`);
+ let r=await verify();expect(r.ok).toBe(false);expect(r.alteredOrDeletedRecords).toBe(1);expect(r.firstProblemSeq).not.toBeNull();
+ await asSuperuser(`update private.admin_audit set reason='${original.reason.replace(/'/g,"''")}' where id='${original.id}'`);
+ expect((await verify()).ok).toBe(true);
+ const extra=randomUUID();
+ await asSuperuser(`insert into private.admin_audit(id,actor_id,action,target_id,revision,reason,changes) values('${extra}','${owner}','settings','${owner}',1,'Inserted while triggers were off','{}'::jsonb)`);
+ r=await verify();expect(r.ok).toBe(false);expect(r.recordsNotInChain).toBe(1);
+ await asSuperuser(`delete from private.admin_audit where id='${extra}'`);
+ expect((await verify()).ok).toBe(true);
+ const link=(await db.query<{seq:string;record_hash:string}>("select seq::text seq,record_hash from private.audit_chain order by seq limit 1")).rows[0]!;
+ await asSuperuser(`update private.audit_chain set record_hash='${"a".repeat(64)}' where seq=${link.seq}`);
+ r=await verify();expect(r.ok).toBe(false);expect(r.brokenLinks).toBeGreaterThanOrEqual(1);expect(r.firstProblemSeq).toBe(Number(link.seq));
+ await asSuperuser(`update private.audit_chain set record_hash='${link.record_hash}' where seq=${link.seq}`);
+ expect((await verify()).ok).toBe(true);
+});
+it("refuses to rewrite the chain or the audit tables through the normal path",async()=>{
+ await db.exec("reset role");
+ await expect(db.exec("update private.audit_chain set record_hash=record_hash")).rejects.toThrow();
+ await expect(db.exec("delete from private.audit_chain")).rejects.toThrow();
+ await expect(db.exec("update private.admin_audit set reason=reason")).rejects.toThrow();
+});
