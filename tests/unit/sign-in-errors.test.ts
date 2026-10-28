@@ -15,12 +15,26 @@ it("tells a person with the right password but an unconfirmed email to confirm i
   const response = await signIn(request(CREDENTIALS)); const body = await response.json();
   expect(response.status).toBe(401); expect(body.error.code).toBe("EMAIL_NOT_CONFIRMED"); expect(body.error.message).toBe(errorMessages.EMAIL_NOT_CONFIRMED);
 });
-it("gives the same plain answer for wrong passwords and unknown addresses, so nothing about other accounts is revealed", async () => {
-  for (const code of ["invalid_credentials", "user_not_found", undefined]) {
+it("says the email and password do not match, identically for a wrong password and an unknown address", async () => {
+  for (const code of ["invalid_credentials"]) {
+    mocks.signInWithPassword.mockResolvedValue({ data: null, error: { status: 400, code, message: "Invalid login credentials" } });
+    const response = await signIn(request(CREDENTIALS)); const body = await response.json();
+    expect([response.status, body.error.code, body.error.message]).toEqual([401, "INVALID_CREDENTIALS", errorMessages.INVALID_CREDENTIALS]);
+  }
+  for (const code of ["user_not_found", undefined]) {
     mocks.signInWithPassword.mockResolvedValue({ data: null, error: { status: 400, code, message: "Invalid login credentials" } });
     const response = await signIn(request(CREDENTIALS)); const body = await response.json();
     expect([response.status, body.error.code]).toEqual([401, "AUTH_REQUIRED"]);
   }
+});
+it("is reachable with no session at all: the handler itself calls the provider, and the session proxy does not guard the sign-in routes", async () => {
+  const { config } = await import("@/proxy");
+  for (const path of ["/api/v1/auth/sign-in", "/api/v1/auth/register", "/api/v1/auth/recover", "/api/v1/auth/confirm"]) expect(config.matcher.some(m => new RegExp(`^${m.replace(/:path\*/, ".*")}$`).test(path)), path).toBe(false);
+  mocks.signInWithPassword.mockResolvedValue({ data: { user: { id: "00000000-0000-4000-8000-000000000001" } }, error: null });
+  mocks.rpc.mockResolvedValue({ data: { access: "active" }, error: null });
+  const response = await signIn(request(CREDENTIALS));
+  expect(mocks.signInWithPassword).toHaveBeenCalledWith(CREDENTIALS);
+  expect([response.status, (await response.json()).data]).toEqual([200, { signedIn: true }]);
 });
 it("reports a rate limit as 429 and an unreachable provider as 503", async () => {
   mocks.signInWithPassword.mockResolvedValue({ data: null, error: { status: 429, code: "over_request_rate_limit" } });

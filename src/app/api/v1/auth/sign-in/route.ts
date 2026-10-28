@@ -16,6 +16,9 @@ export async function POST(request: Request) {
     // The provider answers email_not_confirmed only when the password was correct, so saying so reveals nothing about other addresses and saves a real
     // person from retrying a password that was never the problem.
     if (error?.code === "email_not_confirmed") throw new AppError("EMAIL_NOT_CONFIRMED", 401);
+    // The provider gives the same invalid_credentials answer for a wrong password and for an unknown address, so naming it reveals nothing; the old
+    // "Sign in to continue." read as if the form had not been submitted at all.
+    if (error?.code === "invalid_credentials") throw new AppError("INVALID_CREDENTIALS", 401);
     if (error) throw new AppError(error.status === 429 ? "RATE_LIMITED" : "AUTH_REQUIRED", error.status === 429 ? 429 : 401);
     let profileRequired: boolean;
     try {

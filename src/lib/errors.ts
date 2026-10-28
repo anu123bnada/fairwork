@@ -2,6 +2,7 @@ export const errorMessages = {
   INVALID_JSON: "The request body is not valid JSON.",
   VALIDATION_FAILED: "Check the supplied fields.",
   AUTH_REQUIRED: "Sign in to continue.",
+  INVALID_CREDENTIALS: "That email and password do not match. Check them, or use Forgot password to set a new one.",
   EMAIL_NOT_CONFIRMED: "Your email address is not confirmed yet. Open the confirmation email we sent you, or request another from the Create account page.",
   MFA_REQUIRED: "Verify your authenticator code to continue.",
   ACTION_FORBIDDEN: "This action is not available.",
