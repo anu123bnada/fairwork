@@ -2776,3 +2776,48 @@ body:has(.fw-product) {
   .fw-product details:not([open]) > :not(summary) { display: none !important; }
   body { background: #fff !important; }
 }
+
+/* ---- Premium dashboard and navigation (29 Oct). Layout and finish only: every component keeps its own behaviour, labels and regions. ---- */
+.fw-dash { display: flex; flex-direction: column; gap: 14px; }
+.fw-dash-hero, .fw-dash-rail, .fw-dash-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.fw-dash-links { display: grid; gap: 10px; }
+.fw-nav-brand, .fw-nav-more { display: none; }
+
+@media (min-width: 768px) {
+  html .fw-product .fw-bottom-nav { grid-auto-rows: minmax(0, auto); overflow-y: auto; gap: 6px; padding: 24px 14px; }
+  html .fw-product .fw-nav-link { min-height: 52px; }
+  .fw-product .fw-nav-brand { display: flex; align-items: center; gap: 8px; padding: 4px 10px 16px; font-weight: 800; letter-spacing: .12em; font-size: 13px; color: #0b1b33; }
+  .fw-product .fw-nav-brand svg { color: #2454ff; }
+  .fw-product .fw-nav-more { display: grid; gap: 2px; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(22, 45, 85, .1); }
+  .fw-product .fw-nav-more-title { padding: 0 12px 6px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #66728a; }
+  .fw-product .fw-nav-sub { display: block; padding: 9px 12px; border-radius: 12px; font-size: 13px; line-height: 1.3; text-decoration: none; color: #3d4b69; transition: background-color .15s ease, color .15s ease; }
+  .fw-product .fw-nav-sub:hover { background: rgba(36, 84, 255, .07); color: #1e4fff; }
+  .fw-product .fw-nav-sub.active { background: #e8eeff; color: #1e4fff; font-weight: 700; }
+  .fw-product .fw-nav-sub:focus-visible, .fw-product .fw-nav-link:focus-visible { outline: 2px solid #2454ff; outline-offset: 2px; }
+  .fw-product .fw-home-body { max-width: 1240px; }
+  .fw-dash-hero { padding: 22px; border-radius: 24px; background: linear-gradient(135deg, #eaf1ff 0%, #efe9ff 55%, #e6f8ff 100%); border: 1px solid rgba(36, 84, 255, .12); }
+  .fw-dash-hero .fw-home-greeting h2 { font-size: clamp(26px, 3vw, 34px); letter-spacing: -.02em; line-height: 1.12; }
+  .fw-dash-hero .fw-home-offer { box-shadow: 0 14px 40px rgba(36, 84, 255, .12); }
+  .fw-dash .fw-card, .fw-dash .fw-list-card, .fw-dash .fw-profile-card { transition: box-shadow .2s ease, transform .2s ease; }
+  .fw-dash .fw-profile-card:hover { box-shadow: 0 12px 30px rgba(36, 84, 255, .14); transform: translateY(-1px); }
+  .fw-dash-links { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1100px) {
+  .fw-dash { display: grid; grid-template-columns: minmax(0, 1fr) 372px; grid-template-areas: "hero rail" "main rail"; gap: 20px 28px; align-items: start; }
+  .fw-dash-hero { grid-area: hero; }
+  .fw-dash-main { grid-area: main; }
+  .fw-dash-rail { grid-area: rail; position: sticky; top: 20px; max-height: calc(100dvh - 40px); overflow-y: auto; padding-right: 2px; }
+  .fw-dash-links { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { .fw-dash .fw-card, .fw-dash .fw-list-card, .fw-dash .fw-profile-card { transition: none; } .fw-dash .fw-profile-card:hover { transform: none; } }
+
+/* The offer journey as one visible path. Colours inherit from the page (so they keep its contrast in every colour scheme); only the markers carry accent colour. */
+.fw-flow { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 6px; margin: 0 0 16px; padding: 0; font-size: 13px; color: inherit; }
+.fw-flow li { display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 6px; border-radius: 999px; border: 1px solid rgba(127, 140, 170, .35); color: inherit; }
+.fw-flow-dot { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid currentColor; font-weight: 800; font-size: 11px; }
+.fw-flow li.is-current { border-color: #2454ff; box-shadow: 0 0 0 2px rgba(36, 84, 255, .18); font-weight: 700; }
+.fw-flow li.is-current .fw-flow-dot { background: #2454ff; border-color: #2454ff; color: #fff; }
+.fw-flow li.is-done .fw-flow-dot { background: #0e7a52; border-color: #0e7a52; color: #fff; }
+.fw-flow a { display: inline-flex; align-items: center; min-height: 28px; color: inherit; text-decoration: none; }
+.fw-flow a:hover { text-decoration: underline; }
+.fw-advanced > summary { font-weight: 700; }

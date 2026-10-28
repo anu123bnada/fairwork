@@ -4,7 +4,7 @@ import { TeamRoster } from "./team-roster";
 import { CompanyResearch } from "./company-research";
 import Link from "next/link";
 import { useI18n } from "@/i18n/use-i18n";
-import { appRequest } from "@/features/authority/client";
+import { appRequest, ApiRequestError } from "@/features/authority/client";
 import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { offerDecision, offerLifecycleResult } from "@/features/offer/lifecycle-schema";
 import { OrganizationRequests } from "./organization-requests";
@@ -30,14 +30,14 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
     try {
       const page = offerListSchema.parse(await appRequest(`/api/v1/offers?context=${context}&view=${view}${cursor ? `&cursor=${cursor}` : ""}`));
       setList(previous => ({ ...page, items: cursor ? [...(previous?.items ?? []), ...page.items] : page.items }));
-    } catch (caught) { setList(null); setError(caught instanceof Error ? caught.message : "Saved offers could not be loaded."); }
+    } catch (caught) { setList(null); setError(caught instanceof ApiRequestError ? caught.message : "Saved offers could not be loaded."); }
     finally { setBusy(false); }
   }, [context, view]);
   useEffect(() => {
     let active = true;
     appRequest(`/api/v1/offers?context=${context}&view=${view}`).then(raw => {
       if (active) setList(offerListSchema.parse(raw));
-    }).catch(caught => { if (active) setError(caught instanceof Error ? caught.message : "Saved offers could not be loaded."); })
+    }).catch(caught => { if (active) setError(caught instanceof ApiRequestError ? caught.message : "Saved offers could not be loaded."); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [context, view]);
@@ -58,7 +58,7 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
       if (!key) { key = crypto.randomUUID(); pendingKeys.current.set(fingerprint, key); }
       offerLifecycleResult.parse(await appRequest("/api/v1/offers/lifecycle", { ...input, idempotencyKey: key }));
       await load();
-    } catch (caught) { setError(`${caught instanceof Error ? caught.message : "The change could not be saved."} Refresh to check the saved state, or retry the same action.`); }
+    } catch (caught) { setError(`${caught instanceof ApiRequestError ? caught.message : "The change could not be saved."} Refresh to check the saved state, or retry the same action.`); }
     finally { saving.current = false; setBusy(false); }
   }
   return <section className="fw-list-card" aria-label={t("offers.region")}>

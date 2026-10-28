@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { AppBrandHeader, BrandLogo, ExistingBrand } from "@/components/brand/brand";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -401,14 +401,21 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
+      <span className="fw-nav-brand" aria-hidden="true"><Icon name="shield" size={20} />ORYQEN</span>
       {items.map(([route, label, icon]) => (
         <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
           <Icon name={icon} size={22} />
           <span>{label}</span>
         </Link>
       ))}
+      {!demoPreview && <div className="fw-nav-more">
+        <span className="fw-nav-more-title">{t("nav.more")}</span>
+        {more.map(([route, label]) => <Link key={route} className={`fw-nav-sub${current === route ? " active" : ""}`} href={routeFor(route)} aria-current={current === route ? "page" : undefined}>{label}</Link>)}
+      </div>}
     </nav>
   );
 }
@@ -479,6 +486,20 @@ export function FairworkScreen({ screen, demoPreview = false }: { screen: string
   );
 }
 
+
+// The offer journey as one visible path. It only labels screens that already exist and links to those the person has reached; nothing here is a new feature.
+const FLOW = [["add-offer", "flow.add"], ["check", "flow.review"], ["questions", "flow.questions"], ["agreement", "flow.save"]] as const;
+function FlowSteps({ screen }: { screen: string }) {
+  const { t } = useI18n();
+  const index = Math.max(0, FLOW.findIndex(([route]) => route === (screen === "analyzing" ? "add-offer" : screen)));
+  return <ol className="fw-flow" aria-label={t("flow.aria")}>
+    {FLOW.map(([route, key], position) => <li key={route} className={position === index ? "is-current" : position < index ? "is-done" : ""} aria-current={position === index ? "step" : undefined}>
+      <span className="fw-flow-dot" aria-hidden="true">{position < index ? "✓" : position + 1}</span>
+      {position < index ? <Link href={routeFor(route)}>{t(key)}</Link> : <span>{t(key)}</span>}
+    </li>)}
+  </ol>;
+}
+
 function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: boolean }) {
   const { profile } = useProduct();
   const bodyClass = screen === "home" ? "fw-product-body fw-home-body" : "fw-product-body";
@@ -487,6 +508,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen !== "home" && screen !== "intro-welcome" && screen !== "settings" && screen !== "employer" && screen !== "share" && screen !== "notifications" ? <ProductHeader screen={screen} demoPreviewLink={!demoPreview && screen === "passport"} /> : null}
       {["work-record", "passport"].includes(screen) && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" && demoPreview && <DemoPreviewControl screen={screen} enabled />}
+      {["add-offer", "analyzing", "check", "questions", "agreement"].includes(screen) && !demoPreview ? <FlowSteps screen={screen} /> : null}
       {screen === "home" ? <HomeScreen profile={profile} demoPreview={demoPreview} /> : null}
       {screen === "opportunities" && profile ? <OpportunitiesScreen /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
@@ -575,52 +597,63 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
     );
   }
   return (
-    <>
-      <div className="fw-home-topline">
-        <span className="fw-eyebrow">{t("home.eyebrow")}</span>
-        <div className="fw-home-actions">
-          <Link className="fw-alert-dot" href={routeFor("notifications")} aria-label={t("home.notifications")}><Icon name="bell" size={20} /></Link>
-          <Link className="fw-avatar fw-home-avatar" href={routeFor("settings")} aria-label={t("home.openSettings")}>{name.slice(0, 1).toUpperCase()}</Link>
+    <div className="fw-dash">
+      <header className="fw-dash-hero">
+        <div className="fw-home-topline">
+          <span className="fw-eyebrow">{t("home.eyebrow")}</span>
+          <div className="fw-home-actions">
+            <Link className="fw-alert-dot" href={routeFor("notifications")} aria-label={t("home.notifications")}><Icon name="bell" size={20} /></Link>
+            <Link className="fw-avatar fw-home-avatar" href={routeFor("settings")} aria-label={t("home.openSettings")}>{name.slice(0, 1).toUpperCase()}</Link>
+          </div>
         </div>
+        <div className="fw-home-greeting">
+          <span className="fw-home-location">{t("home.workspace")}</span>
+          {!REAL_BACKEND && <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>}
+          <h2>{t("home.greeting", { name: name.split(" ")[0]! })}</h2>
+        </div>
+        <Link className="fw-offer-alert" href={routeFor(offer ? "check" : "add-offer")}><span className="fw-alert-indicator" />{statusText}</Link>
+        <section className="fw-card fw-offer-card fw-home-offer">
+          <div className="fw-home-offer-heading">
+            <span className="fw-company-mark" aria-hidden="true">{offer ? "✓" : "F"}</span>
+            <span><strong>{offer ? terms.role || t("home.submittedOffer") : t("home.understand")}</strong><br /><span className="fw-offer-employer">{offer ? t("home.revision", { version: offer.version }) : t("home.addPrompt")}</span></span>
+          </div>
+          {offer ? <div className="fw-home-pay">
+            <strong>{terms.currency ? `${terms.currency} ` : ""}{terms.salary ?? t("home.payNotStated")}</strong>
+            <span>{terms.hoursPerWeek ? t("home.hoursPerWeek", { hours: terms.hoursPerWeek }) : t("home.hoursNotStated")}</span>
+          </div> : null}
+          <div className="fw-home-empty-terms">
+            <span><Icon name="check" size={14} />{offer ? (unresolvedFields.has("salary") ? t("home.payNeedsClarification") : t("home.payStated")) : t("home.addTerms")}</span>
+            <span><Icon name="clock" size={14} />{offer ? (offer.unresolved.length ? t("home.questionsToAsk") : t("home.termsToReview")) : t("home.clarifyMissing")}</span>
+          </div>
+          <Link className="fw-full-dark-link" href={routeFor(offer ? "check" : "add-offer")}>{offer ? t("home.reviewOffer") : t("home.addOffer")} <Icon name="arrow" size={18} /></Link>
+        </section>
+      </header>
+      <div className="fw-dash-rail">
+        <Link className="fw-profile-card" href={routeFor("passport")} style={{ color: "inherit", textDecoration: "none" }}>
+          <span className="fw-progress-ring"><Icon name="badge" size={22} /></span>
+          <span><strong>{t("home.passportTitle")}</strong><br /><span className="fw-offer-employer">{t("home.passportBody")}</span></span>
+          <span className="fw-chevron" aria-hidden="true">›</span>
+        </Link>
+        <Reminders />
+        <details className="fw-list-card" open><summary>{t("home.recent")}</summary><NotificationFeed /></details>
+        <div className="fw-dash-links">
+          <Link className="fw-secondary" href="/app/opportunities">{t("home.discover")}</Link>
+          <Link className="fw-secondary" href="/app/guidance">{t("home.guidance")}</Link>
+        </div>
+        <div className="fw-hint-card"><strong>{t("home.hintStrong")}</strong><br />{t("home.hintBody")}</div>
       </div>
-      <div className="fw-home-greeting">
-        <span className="fw-home-location">{t("home.workspace")}</span>
-        {!REAL_BACKEND && <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>}
-        <h2>{t("home.greeting", { name: name.split(" ")[0]! })}</h2>
+      <div className="fw-dash-main">
+        <SavedOffers />
+        <DashboardRecords />
+        <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>
+        <CompanyResearch />
+        <details className="fw-list-card fw-advanced"><summary>{t("home.advanced")}</summary>
+          <p className="fw-notice">{t("home.advancedNote")}</p>
+          <OpenSavedAgreement />
+          <CompanyProfiles />
+        </details>
       </div>
-      <Link className="fw-offer-alert" href={routeFor(offer ? "check" : "add-offer")}><span className="fw-alert-indicator" />{statusText}</Link>
-      <section className="fw-card fw-offer-card fw-home-offer">
-        <div className="fw-home-offer-heading">
-          <span className="fw-company-mark" aria-hidden="true">{offer ? "✓" : "F"}</span>
-          <span><strong>{offer ? terms.role || t("home.submittedOffer") : t("home.understand")}</strong><br /><span className="fw-offer-employer">{offer ? t("home.revision", { version: offer.version }) : t("home.addPrompt")}</span></span>
-        </div>
-        {offer ? <div className="fw-home-pay">
-          <strong>{terms.currency ? `${terms.currency} ` : ""}{terms.salary ?? t("home.payNotStated")}</strong>
-          <span>{terms.hoursPerWeek ? t("home.hoursPerWeek", { hours: terms.hoursPerWeek }) : t("home.hoursNotStated")}</span>
-        </div> : null}
-        <div className="fw-home-empty-terms">
-          <span><Icon name="check" size={14} />{offer ? (unresolvedFields.has("salary") ? t("home.payNeedsClarification") : t("home.payStated")) : t("home.addTerms")}</span>
-          <span><Icon name="clock" size={14} />{offer ? (offer.unresolved.length ? t("home.questionsToAsk") : t("home.termsToReview")) : t("home.clarifyMissing")}</span>
-        </div>
-        <Link className="fw-full-dark-link" href={routeFor(offer ? "check" : "add-offer")}>{offer ? t("home.reviewOffer") : t("home.addOffer")} <Icon name="arrow" size={18} /></Link>
-      </section>
-      <Link className="fw-profile-card" href={routeFor("passport")} style={{ color: "inherit", textDecoration: "none" }}>
-        <span className="fw-progress-ring"><Icon name="badge" size={22} /></span>
-        <span><strong>{t("home.passportTitle")}</strong><br /><span className="fw-offer-employer">{t("home.passportBody")}</span></span>
-        <span className="fw-chevron" aria-hidden="true">›</span>
-      </Link>
-      <div className="fw-hint-card"><strong>{t("home.hintStrong")}</strong><br />{t("home.hintBody")}</div>
-      <Reminders />
-      <OpenSavedAgreement />
-      <SavedOffers />
-      <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>
-      <DashboardRecords />
-      <details className="fw-list-card"><summary>{t("home.recent")}</summary><NotificationFeed /></details>
-      <Link className="fw-secondary" href="/app/opportunities">{t("home.discover")}</Link>
-      <Link className="fw-secondary" href="/app/guidance">{t("home.guidance")}</Link>
-      <CompanyProfiles />
-      <CompanyResearch />
-    </>
+    </div>
   );
 }
 
