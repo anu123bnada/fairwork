@@ -26,12 +26,12 @@ await check('sign-in page survives a hard reload with the form visible', async (
   await page.reload({ waitUntil: 'networkidle' }); await notUnavailable();
   must(await page.getByLabel('Email address').isVisible() && await page.getByRole('button', { name: 'Continue securely' }).isVisible(), 'the form is missing after reload');
 });
-await check('wrong synthetic credentials give the plain "Sign in to continue." (401), not a blocked-action or error page', async () => {
+await check('wrong synthetic credentials give the plain "do not match" message (401), not a blocked-action or error page', async () => {
   await page.getByLabel('Email address').fill('nobody-synthetic@example.test'); await page.getByLabel('Password', { exact: true }).fill('synthetic-wrong-password-1');
   await page.getByRole('button', { name: 'Continue securely' }).click();
   const alert = page.locator('[role=alert]').filter({ hasText: /\S/ }); await alert.first().waitFor({ timeout: 15000 });
   const shown = (await alert.allInnerTexts()).join(' ');
-  must(/Sign in to continue/.test(shown), `the message was "${shown.slice(0, 120)}"`);
+  must(/email and password do not match/.test(shown), `the message was "${shown.slice(0, 120)}"`);
 });
 for (const [name, path, expect] of [['Create account', '/register', /Create/i], ['Forgot your password?', '/forgot-password', /Recover|Reset|password/i]]) {
   await check(`"${name}" link opens its page`, async () => {

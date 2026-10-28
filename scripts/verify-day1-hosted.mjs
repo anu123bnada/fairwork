@@ -209,7 +209,7 @@ try {
     record(requestOrigin ? "Cross-origin mutation rejected" : "Missing-Origin mutation rejected", response.status === 403 && data?.error?.code === "ACTION_FORBIDDEN");
   }
   const invalid = await app(page, "/api/v1/auth/sign-in", "POST", { email: `not-provisioned-${crypto.randomUUID()}@example.invalid`, password: crypto.randomUUID() });
-  record("Invalid credentials return only safe generic error", invalid.status === 401 && invalid.data?.error?.code === "AUTH_REQUIRED" && invalid.data.error.message === "Sign in to continue." && Object.keys(invalid.data).sort().join() === "error,meta" && Object.keys(invalid.data.error).sort().join() === "code,message" && invalid.cache === "private, no-store");
+  record("Invalid credentials return only safe generic error", invalid.status === 401 && invalid.data?.error?.code === "INVALID_CREDENTIALS" && invalid.data.error.message === "That email and password do not match. Check them, or use Forgot password to set a new one." && Object.keys(invalid.data).sort().join() === "error,meta" && Object.keys(invalid.data.error).sort().join() === "code,message" && invalid.cache === "private, no-store");
   await anonymous.close();
   if (publicOnly) {
     for (const name of ["Provisioned sign-in and browser session", "Profile create/read/update", "User A/B isolation", "Authenticated RPC surface", "Auth metadata escalation resistance", "Sign-out and refresh revocation", "Natural expiry and automatic application refresh"]) record(name, null, "Requires owner-local interactive verification");
@@ -224,7 +224,7 @@ try {
       const actor = { label, context, page: userPage, signedIn: false };
       actors.push(actor);
       const wrongPassword = await app(userPage, "/api/v1/auth/sign-in", "POST", { email, password: crypto.randomUUID() });
-      requireCheck(`User ${label}: wrong password has same generic error as unknown account`, wrongPassword.status === 401 && wrongPassword.data?.error?.code === "AUTH_REQUIRED" && wrongPassword.data.error.message === "Sign in to continue.");
+      requireCheck(`User ${label}: wrong password has same generic error as unknown account`, wrongPassword.status === 401 && wrongPassword.data?.error?.code === "INVALID_CREDENTIALS" && wrongPassword.data.error.message === "That email and password do not match. Check them, or use Forgot password to set a new one.");
       const login = await app(userPage, "/api/v1/auth/sign-in", "POST", { email, password });
       email = ""; password = "";
       requireCheck(`User ${label}: provisioned email/password sign-in`, login.status === 200 && login.data?.data?.signedIn === true && Object.keys(login.data.data).join() === "signedIn");
