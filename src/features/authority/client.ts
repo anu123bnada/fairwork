@@ -1,11 +1,16 @@
 import { errorMessages, type ErrorCode } from "@/lib/errors";
+import { translate, type MessageKey } from "@/i18n";
+import { readStoredLocale } from "@/i18n/use-i18n";
+
+// Server messages are plain English; in the browser the same text is shown in the person's language by error code, falling back to English.
+const messageFor = (code: ErrorCode) => { const key = `err.${code}` as MessageKey; const shown = translate(readStoredLocale(), key); return shown && shown !== key ? shown : errorMessages[code]; };
 
 export class ApiRequestError extends Error {
   constructor(
     public readonly code: ErrorCode,
     public readonly status: number,
   ) {
-    super(errorMessages[code]);
+    super(messageFor(code));
     this.name = "ApiRequestError";
   }
 }

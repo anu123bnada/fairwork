@@ -20,3 +20,6 @@
 | **Uninstall** (`/S`) | exit 0; no "ORYQEN Preview" uninstall entry in the registry afterwards (an existing "ORYQEN" entry published by Google\Chrome is a Chrome app, not this installer, and was left alone); the temporary install folder was removed |
 | Real sign-in with an account, session persistence across restart, file download | **NOT TESTED** (needs your staging account) |
 | Clean second machine / VM | **NOT TESTED** |
+
+## Re-test 28 Oct 2026 (evening), against the current staging deployment
+Checksum re-verified (`sha256sum -c`: OK). Silent per-user install exit 0; installed copy launched, 5 of 5 checks pass (window title shows the staging host; staging sign-in form; wrong synthetic credentials show the current "email and password do not match" message from the real staging auth service; external link not opened inside the window; register and forgot-password pages open); silent uninstall exit 0, app files and registry entry gone. Real sign-in with an account, session persistence across restart and file download remain NOT TESTED. Script: `scripts/test-windows-app.mjs`.

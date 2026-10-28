@@ -21,3 +21,6 @@
 | In-app checks through the app's WebView (DevTools connection) | 3 of 3 pass: it shows `https://oryqen-staging.vercel.app/sign-in`; a wrong synthetic password got the plain "Sign in to continue." answer from the real staging auth service; the create-account page opened inside the app |
 | Uninstall | `adb uninstall` Success; emulator shut down afterwards |
 | Real sign-in with an account, session persistence after app restart, file upload and download, authentication redirects from an email link, a physical device | **NOT TESTED** |
+
+## Re-test 28 Oct 2026 (evening), against the current staging deployment
+Checksum re-verified (OK). Installed on the Android 17 emulator (`Medium_Phone_API_37.0`), launched; in-app checks 3 of 3 pass (staging sign-in page inside the WebView; wrong synthetic credentials show the current "email and password do not match" message; create-account page opens); uninstalled; emulator stopped. Still debug-signed, unpublished, no physical device, no real sign-in or session persistence test. Script: `scripts/test-android-app.mjs`.

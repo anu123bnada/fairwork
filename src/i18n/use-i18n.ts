@@ -12,6 +12,8 @@ function read(): LocaleCode {
   try { const stored = window.localStorage.getItem(STORAGE_KEY); if (isLocale(stored)) return stored; } catch { /* storage unavailable */ }
   return memory ?? DEFAULT_LOCALE;
 }
+// The person's chosen language, for code that is not a component (for example error messages built in the browser).
+export const readStoredLocale = (): LocaleCode => (typeof window === "undefined" ? DEFAULT_LOCALE : read());
 export function setStoredLocale(locale: LocaleCode) {
   memory = locale;
   try { window.localStorage.setItem(STORAGE_KEY, locale); } catch { /* keep the in-memory choice */ }
