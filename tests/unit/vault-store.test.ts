@@ -23,7 +23,10 @@ describe("local vault store", () => {
       const [body, signature] = token.split(".");
       const forged = Buffer.from(JSON.stringify({ k: `${doc}/${owner}`, f: "x.pdf", m: "application/pdf", e: Date.now() + 60_000 })).toString("base64url");
       expect(await store.read(`${forged}.${signature}`)).toBeNull();
-      expect(await store.read(`${body}.${signature!.slice(0, -2)}AA`)).toBeNull();
+      // Flip a real bit of the signature. (Replacing trailing base64url characters is not a reliable tamper: the last character carries padding bits that decode identically, so
+      // about one token in a thousand would still verify.)
+      const flipped = Buffer.from(signature!, "base64url"); flipped[0]! ^= 1;
+      expect(await store.read(`${body}.${flipped.toString("base64url")}`)).toBeNull();
       expect(await store.read("garbage")).toBeNull();
       expect(await localStore(dir, origin, "another-secret").read(token)).toBeNull();
       await store.remove(key); expect(await store.read(token)).toBeNull();
