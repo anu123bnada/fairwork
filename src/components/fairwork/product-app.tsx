@@ -376,6 +376,8 @@ function previewRouteFor(screen: string, demoPreview: boolean) {
   return `${routeFor(screen)}${demoPreview ? "?preview=demo" : ""}`;
 }
 
+// Sample-data previews are a design aid. A build connected to a real backend does not advertise them to signed-in people; the labelled preview URL still works.
+const REAL_BACKEND = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: string; title?: string; demoPreviewLink?: boolean }) {
   const back = backTarget[screen];
   return (
@@ -384,7 +386,7 @@ function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: str
       {title === "" ? <span aria-hidden="true" /> : <h1>{title ?? screenTitle[screen] ?? "ORYQEN"}</h1>}
       {screen === "home" ? (
         <Link className="fw-header-icon" href={routeFor("notifications")} aria-label="Notifications"><Icon name="bell" size={20} /></Link>
-      ) : demoPreviewLink ? (
+      ) : demoPreviewLink && !REAL_BACKEND ? (
         <Link className="fw-demo-header-link" href={`${routeFor(screen)}?preview=demo`}>Demo</Link>
       ) : <span className="fw-header-placeholder" />}
     </header>
@@ -507,6 +509,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
 }
 
 function DemoPreviewControl({ screen, enabled }: { screen: string; enabled: boolean }) {
+  if (REAL_BACKEND && !enabled) return null;
   return (
     <div className={`fw-demo-control${enabled ? " is-active" : ""}`}>
       {enabled ? (
@@ -582,7 +585,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       </div>
       <div className="fw-home-greeting">
         <span className="fw-home-location">{t("home.workspace")}</span>
-        <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>
+        {!REAL_BACKEND && <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>}
         <h2>{t("home.greeting", { name: name.split(" ")[0]! })}</h2>
       </div>
       <Link className="fw-offer-alert" href={routeFor(offer ? "check" : "add-offer")}><span className="fw-alert-indicator" />{statusText}</Link>
