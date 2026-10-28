@@ -13,17 +13,19 @@ type Notes = ReturnType<typeof offerNoteList.parse>["items"];
 export function OfferNotes({ offerId }: { offerId: string }) {
   const { t } = useI18n();
   const [notes, setNotes] = useState<Notes | null>(null), [linked, setLinked] = useState<Linked | null>(null), [documents, setDocuments] = useState<Document>([]);
-  const [text, setText] = useState(""), [choice, setChoice] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const [text, setText] = useState(""), [choice, setChoice] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState(""), [opened, setOpened] = useState(false);
   const attempt = useRef<{ body: string; noteId: string; key: string } | null>(null);
   const fetchAll = useCallback(async () => {
     const [noteData, attached, vault] = await Promise.all([appRequest(`/api/v1/offers/notes?offerId=${offerId}`), appRequest(`/api/v1/vault/offers?offerId=${offerId}`), appRequest("/api/v1/vault")]);
     return { notes: offerNoteList.parse(noteData).items, linked: vaultOfferAttachments.parse(attached).items, documents: vaultListResponse.parse(vault).items };
   }, [offerId]);
+  // Three reads per offer screen are only worth making for someone who opens the panel; every read counts against the per-minute allowance.
   useEffect(() => {
+    if (!opened) return;
     let active = true;
     fetchAll().then(next => { if (active) { setNotes(next.notes); setLinked(next.linked); setDocuments(next.documents); } }).catch(() => { if (active) setError(t("on.error")); });
     return () => { active = false; };
-  }, [fetchAll, t]);
+  }, [fetchAll, t, opened]);
   async function run(action: () => Promise<unknown>) {
     setBusy(true); setError("");
     try { await action(); const next = await fetchAll(); setNotes(next.notes); setLinked(next.linked); setDocuments(next.documents); } catch { setError(t("on.error")); } finally { setBusy(false); }
@@ -36,8 +38,8 @@ export function OfferNotes({ offerId }: { offerId: string }) {
     void run(async () => { await appRequest("/api/v1/offers/notes", { noteId: current.noteId, offerId, body, idempotencyKey: current.key }); attempt.current = null; setText(""); });
   }
   const available = documents.filter(document => !linked?.some(item => item.documentId === document.documentId));
-  return <section className="fw-list-card" aria-label={t("on.title")}>
-    <h4>{t("on.title")}</h4>
+  return <details className="fw-list-card" onToggle={event => { if ((event.currentTarget as HTMLDetailsElement).open) setOpened(true); }}>
+    <summary>{t("on.title")}</summary>
     <p>{t("on.intro")}</p>
     {error && <p role="alert">{error}</p>}
     <label className="fw-field">{t("on.noteLabel")}<textarea maxLength={offerNoteLimits.maxLength} rows={3} value={text} onChange={event => setText(event.target.value)} /></label>
@@ -59,5 +61,5 @@ export function OfferNotes({ offerId }: { offerId: string }) {
       </select></label>
       <button type="button" className="fw-secondary" disabled={busy || !choice} onClick={() => void run(async () => { await appRequest("/api/v1/vault/offers", { documentId: choice, offerId }); setChoice(""); })}>{t("on.attach")}</button>
     </>}
-  </section>;
+  </details>;
 }
