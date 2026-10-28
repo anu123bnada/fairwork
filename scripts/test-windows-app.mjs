@@ -1,5 +1,5 @@
 import { _electron as electron } from '@playwright/test';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 // Launches the built Windows app (unpacked or installed) and checks what a person would see: it starts, it is on the staging origin, it shows the sign-in form,
