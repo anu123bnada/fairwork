@@ -96,6 +96,10 @@ html[data-brand="oryqen"] .fw-list-row { border-color: var(--oq-border); }
   html[data-brand="oryqen"] .fw-onboarding-hero { max-width: 480px; margin-inline: auto; }
   html[data-brand="oryqen"] .fw-entry-content { max-width: 440px; margin: auto; }
 }
+@media (min-width: 768px) {
+  /* The side navigation replaces the bottom tabs: the primary action sits near the page edge, centred on the content column (translateX(-50%) comes from the rule above). */
+  html[data-brand="oryqen"] .fw-product :is(.fw-fixed-action,.fw-demo-passport-action) { left: calc(164px + (100% - 164px) / 2); bottom: calc(24px + env(safe-area-inset-bottom)); width: min(600px, calc(100% - 164px - 80px)); }
+}
 @media (prefers-reduced-motion: reduce) {
   html[data-brand="oryqen"] *, html[data-brand="oryqen"] *::before, html[data-brand="oryqen"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }

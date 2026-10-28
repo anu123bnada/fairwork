@@ -77,3 +77,9 @@ html:has(.oryqen-landing){scroll-behavior:smooth} .scroll-meter{position:fixed;t
 .oryqen-landing .release-card .download-btn{width:100%;justify-content:center;margin-top:auto}
 .oryqen-landing .release-card .download-btn:disabled{background:#d7e3ef;color:#33485c;border:1px dashed #7d93a8;cursor:not-allowed;box-shadow:none}
 @media(max-width:760px){.oryqen-landing .release-cards{grid-template-columns:1fr}}
+/* WCAG 2.2 target size: every link and button on the landing page is at least 24 CSS px tall and wide (inline links inside a sentence are exempt but get the same hit area). */
+.oryqen-landing .nav-links a,.oryqen-landing .nav-signin,.oryqen-landing .lab-controls button,.oryqen-landing .footer a,.oryqen-landing .magnetic-link{display:inline-flex;align-items:center;min-height:32px;min-width:32px}
+.oryqen-landing .lab-controls button,.oryqen-landing .footer-bottom a{padding-inline:6px}
+.oryqen-landing p a,.oryqen-landing li a,.oryqen-landing .faq-grid a{display:inline-block;min-height:24px;line-height:24px}
+.oryqen-landing .cinema-caption a,.oryqen-landing .footer-top a{display:inline-flex;align-items:center;gap:6px;min-height:32px}
+.oryqen-landing :is(.account-note,.auth-note) a{display:inline-block;min-height:24px;line-height:24px}

@@ -1567,6 +1567,7 @@ body:has(.fw-product) {
   margin: 0 0 8px;
 }
 
+.fw-employer-top a { display: inline-flex; align-items: center; min-height: 44px; }
 .fw-employer-top .fw-pill {
   margin: 0 auto;
   transform: translateX(-20px);
@@ -2753,6 +2754,8 @@ body:has(.fw-product) {
   .fw-product .fw-nav-link { flex-direction: row; justify-content: flex-start; gap: 12px; font-size: 13px; padding: 12px; border-radius: 16px; }
   .fw-product .fw-nav-link.active { background: var(--fw-blue-soft); }
   .fw-product .fw-nav-link.active::before { display: none; }
+  /* The side navigation replaces the bottom tabs: sit the primary action near the page edge, centred on the content column, not the whole window. */
+  .fw-product :is(.fw-fixed-action, .fw-demo-passport-action) { bottom: calc(24px + env(safe-area-inset-bottom)); left: calc(164px + (100% - 164px) / 2 - 175px); }
   .fw-product:not(:has(.fw-bottom-nav)) { padding-left: 0; }
   .fw-product .fw-field { max-width: 100%; }
   .fw-product .fw-opportunities { max-width: 960px; margin-inline: auto; }
