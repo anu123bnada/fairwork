@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { AppError, mapDatabaseError } from "@/lib/errors";
 import { checkVaultFile, vaultAttached, vaultAttachments, vaultOfferAttached, vaultOfferAttachments, vaultDeleted, vaultFetched, vaultListResponse, vaultRegistered, vaultUploadFields } from "@/features/vault/schema";
 import { offerNoteAdded, offerNoteDeleted, offerNoteList } from "@/features/offer/notes";
+import { correctionAdded, evidenceStatusList, revoked } from "@/features/vault/evidence";
 import type { z } from "zod";
 import type { BlobStore } from "./store";
 
@@ -68,3 +69,9 @@ export const listOfferAttachments = (offerId: string, deps: VaultDeps) => call(d
 export const addOfferNote = (input: { noteId: string; offerId: string; body: string; idempotencyKey: string }, deps: VaultDeps) => call(deps, "offer_note_add", input, offerNoteAdded);
 export const listOfferNotes = (offerId: string, deps: VaultDeps) => call(deps, "offer_note_list", { offerId }, offerNoteList);
 export const deleteOfferNote = (noteId: string, deps: VaultDeps) => call(deps, "offer_note_delete", { noteId }, offerNoteDeleted);
+
+export const evidenceStatus = (deps: VaultDeps) => call(deps, "vault_evidence_status", {}, evidenceStatusList);
+export const revokeDocument = (input: { documentId: string; reason: string }, deps: VaultDeps) => call(deps, "vault_revoke", input, revoked);
+export const reinstateDocument = (documentId: string, deps: VaultDeps) => call(deps, "vault_reinstate", { documentId }, revoked);
+export const addCorrection = (input: { correctionId: string; documentId: string; note: string; idempotencyKey: string }, deps: VaultDeps) => call(deps, "vault_correction_add", input, correctionAdded);
+export const resolveCorrection = (correctionId: string, deps: VaultDeps) => call(deps, "vault_correction_resolve", { correctionId }, correctionAdded.pick({ correctionId: true }).extend({ replayed: correctionAdded.shape.replayed }));

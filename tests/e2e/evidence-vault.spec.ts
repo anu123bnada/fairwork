@@ -68,3 +68,42 @@ test("the vault holds on a phone-sized screen", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Evidence Vault" })).toContainText("A very long document title");
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
 });
+
+test("a worker records a correction note, marks a document revoked and reinstates it, with a safe retry", async ({ page }) => {
+  await signedIn(page);
+  const docId = id(10);
+  let status: Record<string, unknown>[] = []; let failNote = true; const noteKeys: string[] = [];
+  await page.route("**/api/v1/vault", route => route.fulfill({ json: { data: { items: [row(10, "Existing letter")], limit: 50, used: 1, storageConfigured: true } } }));
+  await page.route("**/api/v1/vault/status", route => route.fulfill({ json: { data: { items: status } } }));
+  await page.route("**/api/v1/vault/corrections", route => {
+    const body = route.request().postDataJSON(); noteKeys.push(body.idempotencyKey);
+    if (failNote) { failNote = false; return route.abort("failed"); }
+    status = [{ documentId: docId, revoked: false, reason: null, revokedAt: null, corrections: [{ correctionId: body.correctionId, note: body.note, createdAt: "2026-10-28T10:00:00Z", resolvedAt: null }] }];
+    return route.fulfill({ json: { data: { correctionId: body.correctionId, replayed: false } } });
+  });
+  await page.route("**/api/v1/vault/corrections/resolve", route => {
+    const body = route.request().postDataJSON();
+    status = [{ documentId: docId, revoked: false, reason: null, revokedAt: null, corrections: [{ correctionId: body.correctionId, note: "Issue date is wrong", createdAt: "2026-10-28T10:00:00Z", resolvedAt: "2026-10-28T11:00:00Z" }] }];
+    return route.fulfill({ json: { data: { correctionId: body.correctionId, replayed: false } } });
+  });
+  await page.route("**/api/v1/vault/revoke", route => { status = [{ documentId: docId, revoked: true, reason: route.request().postDataJSON().reason, revokedAt: "2026-10-28T12:00:00Z", corrections: [] }]; return route.fulfill({ json: { data: { documentId: docId, revoked: true } } }); });
+  await page.route("**/api/v1/vault/reinstate", route => { status = []; return route.fulfill({ json: { data: { documentId: docId, revoked: false } } }); });
+  await page.goto("/app/work-record");
+  const group = page.getByRole("group", { name: "Status and corrections for Existing letter" });
+  await group.getByText(/Correction notes \(0 open\)/).click();
+  await group.getByLabel("What needs correcting").fill("Issue date is wrong");
+  await group.getByRole("button", { name: "Add correction note" }).click();
+  await expect(group.getByRole("alert")).toBeVisible();
+  await group.getByRole("button", { name: "Add correction note" }).click();
+  await expect(group.getByText(/Correction notes \(1 open\)/)).toBeVisible();
+  expect(noteKeys[0]).toBe(noteKeys[1]);
+  await group.getByRole("button", { name: "Mark as fixed" }).click();
+  await expect(group.getByText("fixed", { exact: false })).toBeVisible();
+  await group.getByText("Mark as withdrawn or superseded").click();
+  await group.getByLabel("Why (shown only to you)").fill("Superseded by a newer certificate");
+  await group.getByRole("button", { name: "Mark as revoked" }).click();
+  await expect(group.getByRole("status")).toContainText("Superseded by a newer certificate");
+  await expect(group.getByRole("status")).toContainText("no employer or reviewer has confirmed it");
+  await group.getByRole("button", { name: "Mark as valid again" }).click();
+  await expect(group.getByRole("status")).toHaveCount(0);
+});

@@ -4,6 +4,8 @@ import { appRequest, ApiRequestError } from "@/features/authority/client";
 import { errorMessages, type ErrorCode } from "@/lib/errors";
 import { vaultCategories, vaultLimits, vaultListResponse, type VaultCategory, type VaultDocument } from "@/features/vault/schema";
 import { useI18n } from "@/i18n/use-i18n";
+import { evidenceStatusList, type EvidenceStatus } from "@/features/vault/evidence";
+import { DocumentStatus } from "./evidence-status";
 
 const accepted = ".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp";
 const size = (bytes: number) => bytes >= 1024 * 1024 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -30,6 +32,14 @@ export function EvidenceVault() {
   const [data, setData] = useState<Loaded | null>(null), [error, setError] = useState(""), [busy, setBusy] = useState(false), [notice, setNotice] = useState("");
   const [title, setTitle] = useState(""), [category, setCategory] = useState<VaultCategory>("certificate"), [confirming, setConfirming] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null), key = useRef<string | null>(null);
+  const [statuses, setStatuses] = useState<Record<string, EvidenceStatus>>({}), [statusKey, setStatusKey] = useState(0), hasDocuments = (data?.items.length ?? 0) > 0;
+  // Revocation and correction notes are read only once there is at least one document, so an empty vault adds no reads.
+  useEffect(() => {
+    if (!hasDocuments) return;
+    let active = true;
+    appRequest("/api/v1/vault/status").then(raw => { if (active) setStatuses(Object.fromEntries(evidenceStatusList.parse(raw).items.map(item => [item.documentId, item]))); }).catch(() => undefined);
+    return () => { active = false; };
+  }, [hasDocuments, statusKey]);
 
   const fetchVault = useCallback(async (): Promise<Loaded> => {
     const raw = await appRequest("/api/v1/vault") as Record<string, unknown>;
@@ -97,6 +107,7 @@ export function EvidenceVault() {
       {confirming === item.documentId
         ? <span role="group" aria-label="Confirm deleting"> Delete permanently? <button type="button" className="fw-secondary" disabled={busy} onClick={() => void remove(item.documentId)}>Delete now</button><button type="button" className="fw-secondary" onClick={() => setConfirming(null)}>Keep</button></span>
         : <button type="button" className="fw-secondary" disabled={busy} onClick={() => setConfirming(item.documentId)}>{t("vault.delete")}</button>}
+      <DocumentStatus documentId={item.documentId} title={item.title} status={statuses[item.documentId]} onChanged={async () => { setStatusKey(value => value + 1); }} />
     </li>)}</ul>
     <p>Files are checked by type and size, kept in private storage and never shown inside ORYQEN. They are not scanned for malware, so open downloads with care.</p>
   </section>;

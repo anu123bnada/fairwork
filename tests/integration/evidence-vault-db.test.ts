@@ -192,6 +192,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/20261028160000_vault_attachments.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261028190000_offer_notes.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261029110000_research_history.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261029120000_vault_evidence_status.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -441,5 +442,51 @@ describe("private company research history", () => {
     const items = (await rpc("research_history_list", {})).items as Record<string, unknown>[];
     expect(items).toHaveLength(50); expect(items[0]!.queryName).toBe("Synthetic 51"); expect(items.at(-1)!.queryName).toBe("Synthetic 2");
     for (const item of items) { if (items.indexOf(item) % 20 === 0) await clearQuotas(); await rpc("research_history_delete", { entryId: item.entryId }); }
+  });
+});
+
+describe("evidence correction notes and revocation", () => {
+  const stored = async (owner = WORKER) => { const request = doc({}, owner); await rpc("vault_register", request, owner); return request.documentId as string; };
+  const note = (documentId: string, over: Record<string, unknown> = {}) => { const id = crypto.randomUUID(); return { correctionId: id, documentId, note: "The issue date on this certificate is wrong.", idempotencyKey: id, ...over }; };
+  it("revokes with a reason, lists the status, reinstates, and refuses someone else's document", async () => {
+    await clearQuotas();
+    const id = await stored(), theirs = await stored(OTHER);
+    expect(await rpc("vault_revoke", { documentId: id, reason: "Superseded by a newer certificate" })).toEqual({ documentId: id, revoked: true });
+    expect(await rpc("vault_revoke", { documentId: id, reason: "Withdrawn" })).toEqual({ documentId: id, revoked: true });
+    expect((await rpc("vault_evidence_status", {})).items).toMatchObject([{ documentId: id, revoked: true, reason: "Withdrawn", corrections: [] }]);
+    expect(((await rpc("vault_evidence_status", {}, OTHER)).items as unknown[])).toEqual([]);
+    await expect(rpc("vault_revoke", { documentId: theirs, reason: "x" })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("vault_reinstate", { documentId: theirs })).rejects.toThrow("NOT_FOUND");
+    expect(await rpc("vault_reinstate", { documentId: id })).toEqual({ documentId: id, revoked: false });
+    await expect(rpc("vault_reinstate", { documentId: id })).rejects.toThrow("NOT_FOUND");
+    expect((await rpc("vault_evidence_status", {})).items).toEqual([]);
+    await rpc("vault_delete", { documentId: id }); await rpc("vault_delete", { documentId: theirs }, OTHER);
+  });
+  it("records a correction note, replays it, resolves it once, and keeps it private", async () => {
+    await clearQuotas();
+    const id = await stored(), first = note(id);
+    expect(await rpc("vault_correction_add", first)).toEqual({ correctionId: first.correctionId, replayed: false });
+    expect(await rpc("vault_correction_add", first)).toEqual({ correctionId: first.correctionId, replayed: true });
+    await expect(rpc("vault_correction_add", note(id, { idempotencyKey: first.idempotencyKey }))).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+    expect(((await rpc("vault_evidence_status", {})).items as { corrections: { resolvedAt: string | null }[] }[])[0]!.corrections).toMatchObject([{ resolvedAt: null }]);
+    await expect(rpc("vault_correction_resolve", { correctionId: first.correctionId }, OTHER)).rejects.toThrow("NOT_FOUND");
+    expect(await rpc("vault_correction_resolve", { correctionId: first.correctionId })).toEqual({ correctionId: first.correctionId, replayed: false });
+    expect(await rpc("vault_correction_resolve", { correctionId: first.correctionId })).toEqual({ correctionId: first.correctionId, replayed: true });
+    expect(((await rpc("vault_evidence_status", {})).items as { corrections: { resolvedAt: string | null }[] }[])[0]!.corrections[0]!.resolvedAt).not.toBeNull();
+    await expect(rpc("vault_correction_add", note(id), OTHER)).rejects.toThrow("NOT_FOUND");
+    await rpc("vault_delete", { documentId: id });
+    expect((await rpc("vault_evidence_status", {})).items).toEqual([]);
+  });
+  it("rejects bad shapes, caps open notes at twenty, and is closed to signed-out callers", async () => {
+    await clearQuotas();
+    const id = await stored();
+    for (const bad of [{ note: "" }, { note: "x".repeat(501) }, { documentId: "nope" }, { extra: "1" }]) await expect(rpc("vault_correction_add", note(id, bad)), JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
+    for (const bad of [{ reason: "" }, { reason: "x".repeat(301) }, { extra: 1 }]) await expect(rpc("vault_revoke", { documentId: id, reason: "ok", ...bad }), JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("vault_evidence_status", { extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    for (let i = 0; i < 20; i += 1) { if (i % 15 === 0) await clearQuotas(); await rpc("vault_correction_add", note(id, { note: `Note ${i}` })); }
+    await clearQuotas();
+    await expect(rpc("vault_correction_add", note(id))).rejects.toThrow("RATE_LIMITED");
+    await expect(rpc("vault_evidence_status", {}, null)).rejects.toThrow();
+    await rpc("vault_delete", { documentId: id });
   });
 });
