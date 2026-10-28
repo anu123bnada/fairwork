@@ -1,0 +1,34 @@
+/* Work Passport presentation. Colours come only from the existing --oq-* tokens so the
+   screen follows whatever the brand file defines in light and dark; no new hex values here. */
+.oq-passport { display: grid; gap: 16px; }
+.oq-pp-hero { background: var(--oq-surface); border: 1px solid var(--oq-border); border-top: 4px solid var(--oq-accent); border-radius: 16px; padding: 20px; display: grid; gap: 14px; }
+.oq-pp-person { display: flex; align-items: center; gap: 14px; }
+.oq-pp-person strong { display: block; font-size: 20px; color: var(--oq-text); }
+.oq-pp-sub { display: block; color: var(--oq-muted); font-size: 14px; }
+.oq-pp-avatar { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--oq-accent); color: var(--oq-on-accent); font-weight: 800; font-size: 22px; }
+.oq-pp-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.oq-pp-badge { display: inline-block; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--oq-border); background: var(--oq-soft); color: var(--oq-muted); font-size: 12px; font-weight: 700; letter-spacing: .02em; }
+.oq-pp-badge-ok { color: var(--oq-accent); border-color: var(--oq-accent); }
+.oq-pp-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+.oq-pp-stats div { background: var(--oq-soft); border-radius: 12px; padding: 12px; }
+.oq-pp-stats dt { color: var(--oq-muted); font-size: 12px; }
+.oq-pp-stats dd { margin: 2px 0 0; font-size: 24px; font-weight: 800; color: var(--oq-text); }
+.oq-pp-span, .oq-pp-note { margin: 0; color: var(--oq-muted); font-size: 13px; }
+.oq-pp-trust { margin: 0; padding: 12px 14px; border-left: 4px solid var(--oq-accent); background: var(--oq-soft); border-radius: 0 10px 10px 0; color: var(--oq-text); font-size: 14px; }
+.oq-pp-empty { display: grid; gap: 8px; padding: 18px; border: 1px dashed var(--oq-border); border-radius: 14px; background: var(--oq-surface); color: var(--oq-muted); }
+.oq-pp-empty strong { color: var(--oq-text); }
+.oq-pp-timeline { display: grid; gap: 18px; }
+.oq-pp-year { margin: 0 0 8px; color: var(--oq-muted); font-size: 13px; letter-spacing: .08em; }
+.oq-pp-timeline ol { list-style: none; margin: 0; padding: 0 0 0 18px; border-left: 2px solid var(--oq-border); display: grid; gap: 12px; }
+.oq-pp-entry { position: relative; }
+.oq-pp-dot { position: absolute; left: -31px; top: 14px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--oq-accent); color: var(--oq-on-accent); font-size: 13px; font-weight: 800; }
+.oq-pp-card { background: var(--oq-surface); border: 1px solid var(--oq-border); border-radius: 14px; padding: 14px; display: grid; gap: 6px; }
+.oq-pp-card p { margin: 0; font-size: 14px; color: var(--oq-text); }
+.oq-pp-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.oq-pp-card-head a { color: var(--oq-text); text-decoration: none; }
+.oq-pp-card .oq-pp-employer { color: var(--oq-muted); }
+.oq-pp-card .oq-pp-meta { color: var(--oq-muted); font-size: 13px; }
+.oq-pp-card details p { overflow-wrap: anywhere; color: var(--oq-muted); font-size: 12px; }
+@media (min-width: 520px) { .oq-pp-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: no-preference) { .oq-pp-card { transition: border-color .15s ease; } .oq-pp-card:hover { border-color: var(--oq-accent); } }
+@media print { .oq-pp-hero, .oq-pp-card { break-inside: avoid; } }
