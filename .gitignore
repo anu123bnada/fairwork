@@ -49,3 +49,7 @@ mobile/**/local.properties
 release-results/
 desktop/app-config.json
 mobile/poc/android/app/src/online/assets/capacitor.config.json
+
+release-artifacts/**/*.exe
+release-artifacts/**/*.blockmap
+release-artifacts/**/*.apk
