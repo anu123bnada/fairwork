@@ -572,3 +572,62 @@ describe("evidence references on a dispute", () => {
     await expect(db.exec("delete from private.case_evidence_refs")).rejects.toThrow();
   });
 });
+
+describe("evidence references: reviewer and operator read path", () => {
+  const REVIEWER = crypto.randomUUID(), ASSIGNER = crypto.randomUUID(), OPERATOR = crypto.randomUUID();
+  const WORK = crypto.randomUUID(), CASE = crypto.randomUUID();
+  const upload = async () => { const request = doc({}, WORKER); await rpc("vault_register", request, WORKER); return request.documentId as string; };
+  const as = (id: string, aal = "aal2") => async (name: string, body: unknown) => (await run<{ value: Record<string, unknown> }>(`select api.${name}($1::jsonb) value`, [body], claims(id, aal)))[0]!.value;
+  const assignment = async (sql: string, ...params: unknown[]) => { await db.exec("reset role"); await db.exec("set session_replication_role = replica"); try { await db.query(sql, params); } finally { await db.exec("set session_replication_role = origin"); } };
+  beforeAll(async () => {
+    await db.exec("reset role");
+    for (const id of [REVIEWER, ASSIGNER, OPERATOR]) {
+      await db.exec(`insert into auth.users values('${id}')`);
+      await run("select api.create_profile($1::jsonb)", [JSON.stringify({ displayName: `Synthetic ${id}`, locale: "en", timeZone: "UTC", idempotencyKey: crypto.randomUUID() })], claims(id));
+    }
+    await db.exec("set session_replication_role = replica");
+    await db.exec("delete from private.vault_documents");
+    await db.query("insert into private.work_records(id,agreement_id,worker_id,company_id,representative_id,current_version) values($1,$2,$3,$4,$5,1)", [WORK, crypto.randomUUID(), WORKER, COMPANY, APPROVER]);
+    await db.query("insert into private.work_cases(id,work_id,work_version,opened_by,reason_code,reason,content_hash,evidence_hash,status) values($1,$2,1,$3,'evidence_integrity','Synthetic concern',$4,$4,'open')", [CASE, WORK, WORKER, SHA]);
+    await db.query("insert into private.capability_assignments(subject_id,capability,granted_by,purpose,expires_at) values($1,'reviewer',$2,'Synthetic reviewer',now()+interval '1 day'),($3,'review_operator',$2,'Synthetic operator',now()+interval '1 day')", [REVIEWER, ASSIGNER, OPERATOR]);
+    await db.exec("set session_replication_role = origin");
+  });
+  it("shows the references only to a reviewer whose assignment is accepted, current and independent, and never to an operator", async () => {
+    await clearQuotas();
+    const id = await upload();
+    await clearQuotas();
+    await rpc("case_evidence_attach", { caseId: CASE, documentId: id });
+    await assignment("insert into private.work_case_assignments(case_id,reviewer_id,assigned_by,reason,expires_at) values($1,$2,$3,'Synthetic assignment',now()+interval '1 day')", CASE, REVIEWER, ASSIGNER);
+    const reviewer = as(REVIEWER), operator = as(OPERATOR);
+    await clearQuotas();
+    await expect(reviewer("case_evidence_list", { caseId: CASE })).rejects.toThrow("NOT_FOUND");
+    await assignment("update private.work_case_assignments set accepted_at=now() where case_id=$1 and reviewer_id=$2", CASE, REVIEWER);
+    await clearQuotas();
+    const items = (await reviewer("case_evidence_list", { caseId: CASE })).items as Record<string, unknown>[];
+    expect(items).toMatchObject([{ documentId: id, title: "Synthetic welding certificate", sha256: SHA, attachedBy: WORKER }]);
+    expect(Object.keys(items[0]!).sort()).toEqual(["attachedAt", "attachedBy", "byteSize", "category", "documentId", "fileName", "mediaType", "sha256", "title"]);
+    await clearQuotas();
+    await expect(as(REVIEWER, "aal1")("case_evidence_list", { caseId: CASE })).rejects.toThrow("NOT_FOUND");
+    await expect(operator("case_evidence_list", { caseId: CASE })).rejects.toThrow("NOT_FOUND");
+    await expect(reviewer("case_evidence_attach", { caseId: CASE, documentId: id })).rejects.toThrow("NOT_FOUND");
+    for (const actor of [REVIEWER, OPERATOR, OTHER]) {
+      await expect(run("select id from private.vault_documents", [], claims(actor))).rejects.toThrow();
+      await expect(run("select id from private.case_evidence_refs", [], claims(actor))).rejects.toThrow();
+    }
+  });
+  it("stops showing the references when the assignment is revoked or expires, or the reviewer capability is revoked", async () => {
+    await clearQuotas();
+    const reviewer = as(REVIEWER);
+    expect(((await reviewer("case_evidence_list", { caseId: CASE })).items as unknown[]).length).toBe(1);
+    await assignment("update private.capability_assignments set revoked_at=clock_timestamp() where subject_id=$1 and capability='reviewer'", REVIEWER);
+    await clearQuotas();
+    await expect(reviewer("case_evidence_list", { caseId: CASE })).rejects.toThrow("NOT_FOUND");
+    await assignment("insert into private.capability_assignments(subject_id,capability,granted_by,purpose,expires_at) values($1,'reviewer',$2,'Synthetic renewal',now()+interval '1 day')", REVIEWER, ASSIGNER);
+    await clearQuotas();
+    expect(((await reviewer("case_evidence_list", { caseId: CASE })).items as unknown[]).length).toBe(1);
+    await assignment("update private.work_case_assignments set revoked_at=clock_timestamp() where case_id=$1 and reviewer_id=$2", CASE, REVIEWER);
+    await clearQuotas();
+    await expect(reviewer("case_evidence_list", { caseId: CASE })).rejects.toThrow("NOT_FOUND");
+    expect(((await rpc("case_evidence_list", { caseId: CASE })).items as unknown[]).length).toBe(1);
+  });
+});

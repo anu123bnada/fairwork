@@ -314,3 +314,34 @@ it("refuses to rewrite the chain or the audit tables through the normal path",as
  await expect(db.exec("delete from private.audit_chain")).rejects.toThrow();
  await expect(db.exec("update private.admin_audit set reason=reason")).rejects.toThrow();
 });
+const writeAudit=async(sql:string)=>{await db.exec("reset role");return db.query(sql);};
+it("verification does not depend on the session time zone that wrote or reads the rows",async()=>{
+ const saved=(await db.query<{tz:string}>("select current_setting('TimeZone') tz")).rows[0]!.tz;
+ try{
+  expect((await verify()).ok,"baseline in the default zone "+saved).toBe(true);
+  await db.exec("reset role");await db.exec("set time zone 'Asia/Colombo'");
+  await writeAudit(`insert into private.admin_audit(id,actor_id,action,target_id,revision,reason,changes) values('${randomUUID()}','${owner}','settings','${owner}',1,'Written from a UTC+05:30 session','{}'::jsonb)`);
+  await db.exec("set time zone 'UTC'");
+  const utc=await verify();
+  await db.exec("set time zone 'America/Los_Angeles'");
+  const la=await verify();
+  expect({ok:utc.ok,bad:utc.alteredOrDeletedRecords},"verified from UTC").toEqual({ok:true,bad:0});
+  expect({ok:la.ok,bad:la.alteredOrDeletedRecords},"verified from America/Los_Angeles").toEqual({ok:true,bad:0});
+ }finally{await db.exec(`set time zone '${saved}'`);}
+});
+// leaves the chain deliberately broken (a deleted audit row), so it must stay the last verifying test
+it("each audit write adds exactly one link, in either audit table, and a deleted audit row is detected",async()=>{
+ const before=(await verify()).checked;
+ const a=randomUUID(),b=randomUUID();
+ await writeAudit(`insert into private.admin_audit(id,actor_id,action,target_id,revision,reason,changes) values('${a}','${owner}','settings','${owner}',1,'Chain growth probe','{}'::jsonb)`);
+ expect((await verify()).checked).toBe(before+1);
+ await writeAudit(`insert into private.audit_logs(id,actor_id,action,target_id,request_id,changed_field_names,reason_code,retention_class) values('${b}','${owner}','update_profile','${owner}','${randomUUID()}',array['display_name'],'offline_capability_bootstrap','authority')`);
+ const grown=await verify();expect(grown.ok).toBe(true);expect(grown.checked).toBe(before+2);
+ const src=(await db.query<{source:string}>("select source from private.audit_chain order by seq desc limit 2")).rows.map(r=>r.source).sort();expect(src).toEqual(["admin_audit","audit_logs"]);
+ await asSuperuser(`delete from private.audit_logs where id='${b}'`);
+ const gone=await verify();expect(gone.ok).toBe(false);expect(gone.alteredOrDeletedRecords).toBe(1);expect(gone.firstProblemSeq).not.toBeNull();
+});
+it("keeps verification closed to reviewers, operators and organization representatives",async()=>{
+ for(const id of [worker,representative])await expect(rpc("audit_chain_verify",{},id)).rejects.toThrow(/ACTION_FORBIDDEN|AUTH_REQUIRED/);
+ await expect(rpc("audit_chain_verify",{},support)).rejects.toThrow(/ACTION_FORBIDDEN|AUTH_REQUIRED/);
+});
