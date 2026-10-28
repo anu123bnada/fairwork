@@ -1,6 +1,6 @@
 # Staging migration batch 2 — for owner approval (28 Oct 2026)
 
-Status: **PREPARED, NOT APPLIED.** Applying needs your explicit approval. Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource is involved.
+Status: **APPLIED to staging on 28 Oct 2026 (owner-approved).** Backup of record: `backups/staging-logical-20261028-1541Z` (127 tables, 283 rows, live counts matched, restore rehearsal 0 differences). Post-migration: 53/53 migrations matched; both tables RLS enabled and forced, owner `fw_schema_owner`, owner-only policies; five functions `SECURITY DEFINER`, empty `search_path`, execute only by `authenticated`; no create-on-schema grants left; existing row counts unchanged (users 5, identities 5, profiles 2, audit logs 2, receipts 2, field registry 6). Original text: applying needed explicit approval. Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource is involved.
 
 ## Contents (one migration so far; more will be added to this batch as features land)
 | # | File | SHA-256 | Purpose |
