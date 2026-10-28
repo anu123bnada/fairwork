@@ -41,6 +41,13 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [context, view]);
+  // Searching or filtering must cover every saved offer, not only the first page: while either is active, keep loading the remaining pages (at most 200 offers).
+  useEffect(() => {
+    if (!(query.trim() || decisionFilter !== "all") || !list?.nextCursor || busy || list.items.length >= 200) return;
+    let active = true; const cursor = list.nextCursor;
+    void Promise.resolve().then(() => { if (active) return load(cursor); });
+    return () => { active = false; };
+  }, [query, decisionFilter, list, busy, load]);
   async function update(item: OfferList["items"][number], archived: boolean, decision: string) {
     if (saving.current || busy) return;
     saving.current = true; setBusy(true); setError("");

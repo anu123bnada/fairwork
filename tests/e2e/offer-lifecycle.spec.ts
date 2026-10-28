@@ -39,7 +39,7 @@ test("private decision and archive survive reload, and an ambiguous write retrie
   await expect(decisions).toHaveValue("interested");
 });
 
-test("loaded offers can be searched by role and filtered by decision, and the page says it only covers loaded offers", async ({ page }) => {
+test("loaded offers can be searched by role and filtered by decision, and the page says searching covers all saved offers", async ({ page }) => {
   const id = (n: number) => `40000000-0000-4000-8000-00000000000${n}`;
   await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: id(1), displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
   const row = (n: number, role: string, decision: string) => ({ offerId: id(n), companyId: id(1), version: 1, role, createdAt: "2026-10-25", questions: 0, archived: false, decision, lifecycleRevision: 0 });
@@ -47,7 +47,7 @@ test("loaded offers can be searched by role and filtered by decision, and the pa
   await page.goto("/app/home");
   const region = page.getByRole("region", { name: "Saved offers" });
   await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(3);
-  await expect(region).toContainText("only the offers loaded on this page");
+  await expect(region).toContainText("loads your remaining saved offers first");
   await region.getByLabel("Search loaded offers by role").fill("ware");
   await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
   await region.getByLabel("Search loaded offers by role").fill("");
@@ -55,4 +55,22 @@ test("loaded offers can be searched by role and filtered by decision, and the pa
   await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
   await region.getByLabel("Search loaded offers by role").fill("welder");
   await expect(region).toContainText("No loaded offer matches");
+});
+
+test("searching loads the remaining pages so an older offer is found", async ({ page }) => {
+  const id = (n: number) => `40000000-0000-4000-8000-0000000000${String(n).padStart(2, "0")}`;
+  await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: id(1), displayName: "Synthetic Worker", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  const row = (n: number, role: string) => ({ offerId: id(n), companyId: id(1), version: 1, role, createdAt: "2026-10-25", questions: 0, archived: false, decision: "considering", lifecycleRevision: 0 });
+  const cursors: (string | null)[] = [];
+  await page.route("**/api/v1/offers?*", route => {
+    const cursor = new URL(route.request().url()).searchParams.get("cursor"); cursors.push(cursor);
+    return route.fulfill({ json: { data: cursor === id(3) ? { items: [row(4, "Boat Captain")], nextCursor: null } : { items: [row(2, "Welder"), row(3, "Cook")], nextCursor: id(3) } } });
+  });
+  await page.goto("/app/home");
+  const region = page.getByRole("region", { name: "Saved offers" });
+  await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(2);
+  expect(cursors).toEqual([null]);
+  await region.getByLabel("Search loaded offers by role").fill("captain");
+  await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
+  expect(cursors).toEqual([null, id(3)]);
 });
