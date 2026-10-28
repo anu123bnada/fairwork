@@ -1,6 +1,6 @@
 # Staging migration batch 3 — for owner approval (28 Oct 2026)
 
-Status: **PREPARED, NOT APPLIED.** Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource.
+Status: **APPLIED to staging on 28 Oct 2026 (owner-approved).** Backup of record `backups/staging-logical-20261028-1613Z` (129 tables, 284 rows; live counts matched; restore rehearsal 0 differences). Verified after: 54/54 migrations matched; `vault_attach` and `vault_attach_offer` each exist once, contain the revocation check, owner `fw_user_exec`, security definer, empty `search_path`, executable only by `authenticated`; no create-on-schema grant; existing counts unchanged. NOT verified with a real signed-in staging account (none available to the assistant). Original status: Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource.
 
 | # | File | SHA-256 | Purpose |
 |---|---|---|---|
