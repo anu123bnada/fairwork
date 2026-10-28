@@ -1,0 +1,15 @@
+/* Agreement picker. Shared --oq-* tokens only. */
+.oq-agp { display: grid; gap: 10px; }
+.oq-agp h3 { margin: 0; color: var(--oq-text); }
+.oq-agp ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.oq-agp-item { width: 100%; text-align: start; display: grid; gap: 8px; padding: 14px; border-radius: 14px; border: 1px solid var(--oq-border); background: var(--oq-surface); color: var(--oq-text); cursor: pointer; font: inherit; }
+.oq-agp-item:hover:not(:disabled) { border-color: var(--oq-accent); }
+.oq-agp-item:disabled { opacity: .6; cursor: progress; }
+.oq-agp-main { display: grid; gap: 2px; }
+.oq-agp-main span { color: var(--oq-muted); font-size: 13px; }
+.oq-agp-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.oq-agp-tag { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--oq-border); background: var(--oq-soft); color: var(--oq-muted); font-size: 12px; font-weight: 700; }
+.oq-agp-tag-warn { color: var(--oq-warning); border-color: var(--oq-warning); }
+.oq-agp-note { margin: 0; color: var(--oq-muted); font-size: 13px; }
+.oq-agp-empty { display: grid; gap: 6px; padding: 18px; border: 1px dashed var(--oq-border); border-radius: 14px; background: var(--oq-surface); color: var(--oq-muted); }
+.oq-agp-empty strong { color: var(--oq-text); }

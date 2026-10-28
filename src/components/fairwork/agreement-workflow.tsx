@@ -10,6 +10,8 @@ import { participantWorkflowId } from "@/features/offer/participant-path";
 import { agreementReadSchema } from "@/features/offer/read-schema";
 import { useI18n } from "@/i18n/use-i18n";
 import { AgreementCompare } from "./agreement-compare";
+import { AgreementPicker } from "./agreement-picker";
+import { rememberAgreement } from "@/features/offer/agreement-choices";
 import type { MessageKey } from "@/i18n";
 
 export function CreateVersionedAgreement({ offerId, version, termHash, representativeId }: { offerId:string;version:number;termHash:string;representativeId?:string|null }) {
@@ -59,7 +61,7 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
     try {
       const next=workflowReadSchema.parse(await appRequest(`/api/v1/agreement-workflows?agreementId=${encodeURIComponent(id)}`));
       if(token===generation.current){
-        setWorkflow(next);setSelectedId(next.agreementId);
+        setWorkflow(next);setSelectedId(next.agreementId);rememberAgreement(next.agreementId);
         // Keep an authorized manual lookup recoverable after refresh or sign-in.
         window.history.replaceState(null,"",`/app/agreement-workflow?workflowId=${next.agreementId}`);
       }
@@ -107,11 +109,16 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
     {error&&<div className="fw-error" role="alert"><p>{error instanceof ApiRequestError?error.message:t("ag.loadFailed")}</p>
       {error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"?<Link href={`/sign-in?workflowId=${selectedId}`}>{t("ag.signIn")}</Link>:<button className="fw-secondary" disabled={busy||!selectedId} onClick={()=>void load(selectedId)}>{t("ag.reloadAuth")}</button>}
     </div>}
-    {!workflow&&!busy&&<form className="fw-card fw-offer-detail-card" onSubmit={event=>{event.preventDefault();setSelectedId(openId);void load(openId);}}>
-      <label className="fw-field">{t("ag.idLabel")}<input value={openId} onChange={event=>setOpenId(event.target.value)} required pattern={"[0-9a-fA-F\\-]{36}"} /></label><button className="fw-secondary">{t("ag.openById")}</button>
-    </form>}
+    {!workflow&&!busy&&<>
+      <AgreementPicker busy={busy} onOpen={id=>{setSelectedId(id);void load(id);}}/>
+      <details className="fw-card fw-offer-detail-card"><summary>{t("agp.byRef")}</summary>
+        <form onSubmit={event=>{event.preventDefault();setSelectedId(openId);void load(openId);}}>
+          <label className="fw-field">{t("ag.idLabel")}<input value={openId} onChange={event=>setOpenId(event.target.value)} required pattern={"[0-9a-fA-F\\-]{36}"} /></label><button className="fw-secondary">{t("ag.openById")}</button>
+        </form>
+      </details>
+    </>}
     {workflow&&<>
-      <p className="fw-notice">{t("ag.designated")}: {workflow.workerId}<br/>{t("ag.employerRep")}: {workflow.representativeId}</p>
+      <p className="fw-notice">{t("ag.designated")}: {workflow.workerId===actorId?t("agp.you"):t("ag.worker")}<br/>{t("ag.employerRep")}: {workflow.representativeId===actorId?t("agp.you"):t("ag.employer")}</p>
       {!current&&<p className="fw-notice">{t("ag.preparing")}</p>}
       {effective&&effective.version!==current?.version&&<section className="fw-card fw-offer-detail-card" aria-label={t("ag.effectiveAria")}><strong>{t("ag.lastConfirmed",{version:effective.version})}</strong><p>{t("ag.lastConfirmedNote")}</p><TermSummary version={effective}/></section>}
       {current&&<>

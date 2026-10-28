@@ -26,6 +26,7 @@ async function session(context:BrowserContext,actor:string,model:AgreementWorkfl
 test("manual agreement lookup remains recoverable after refresh and rechecks access",async({context,page})=>{
  const model=fixture(),requests:Record<string,unknown>[]=[];await session(context,worker,model,requests);
  await page.goto("/app/agreement-workflow");
+ await page.getByText("Open by link or reference").click();
  await page.getByLabel("Versioned agreement ID",{exact:true}).fill(id);
  await page.getByRole("button",{name:"Open versioned agreement"}).click();
  await expect(page).toHaveURL(`/app/agreement-workflow?workflowId=${id}`);
@@ -44,6 +45,7 @@ test("failed manual lookup does not install a participant URL",async({context,pa
  await session(context,worker,fixture(),[]);
  await context.route("**/api/v1/agreement-workflows?*",route=>route.fulfill({status:404,json:{error:{code:"NOT_FOUND"}}}));
  await page.goto("/app/agreement-workflow");
+ await page.getByText("Open by link or reference").click();
  await page.getByLabel("Versioned agreement ID",{exact:true}).fill(id);
  await page.getByRole("button",{name:"Open versioned agreement"}).click();
  await expect(page.locator('.fw-error[role="alert"]')).toBeVisible();
