@@ -8,8 +8,9 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test policy.test.cjs",
-    "build:windows": "electron-builder --win nsis --x64 --publish never",
-    "build:windows:release": "electron-builder --config electron-builder.release.cjs --win nsis --x64 --publish never"
+    "config": "node scripts/write-config.cjs",
+    "build:windows": "node scripts/write-config.cjs && electron-builder --win nsis --x64 --publish never",
+    "build:windows:release": "node scripts/write-config.cjs && electron-builder --config electron-builder.release.cjs --win nsis --x64 --publish never"
   },
   "build": {
     "appId": "app.oryqen.desktop",
@@ -20,6 +21,7 @@
     "files": [
       "main.cjs",
       "policy.cjs",
+      "app-config.json",
       "offline.html",
       "package.json"
     ],

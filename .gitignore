@@ -47,3 +47,5 @@ mobile/**/local.properties
 *service-account*.json
 *credentials*.json
 release-results/
+desktop/app-config.json
+mobile/poc/android/app/src/online/assets/capacitor.config.json

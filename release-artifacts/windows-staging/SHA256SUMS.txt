@@ -1,0 +1,2 @@
+bd27ed2fec1c6c15e32929de57db89bac6f758c73d6da3f318c206e02eb393e3 *ORYQEN-Preview-0.1.0-x64-Setup.exe
+4f4eec33a17faae68c2a9dd52624f2d50d39f54daf2ac5484a95cf68a35e8a03 *ORYQEN-Preview-0.1.0-x64-Setup.exe.blockmap

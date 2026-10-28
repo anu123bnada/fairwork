@@ -21,7 +21,7 @@ module.exports = {
   productName: "ORYQEN",
   copyright: "ORYQEN",
   directories: { output: "../test-results/windows-release" },
-  files: ["main.cjs", "policy.cjs", "offline.html", "package.json"],
+  files: ["main.cjs", "policy.cjs", "app-config.json", "offline.html", "package.json"],
   asar: true,
   win: { target: "nsis", icon, signAndEditExecutable: true },
   nsis: { oneClick: false, perMachine: false, allowToChangeInstallationDirectory: true, runAfterFinish: false },

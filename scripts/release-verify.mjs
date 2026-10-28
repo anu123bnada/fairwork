@@ -103,16 +103,17 @@ if (wanted('android-build')) {
     const javaHome = path.dirname(path.dirname(androidInventory.javaExecutable));
     const env = { JAVA_HOME: javaHome, ANDROID_HOME: androidInventory.androidSdk, GRADLE_USER_HOME: path.resolve('.tmp/android-gradle') };
     const sync = run(node, ['node_modules/@capacitor/cli/bin/capacitor', 'copy', 'android'], { cwd: 'mobile/poc', env });
-    const gradle = sync.ok ? run(path.resolve('mobile/poc/android/gradlew.bat'), ['assembleDebug', '--no-daemon', '--no-watch-fs', '--max-workers=1', '--console=plain'], { cwd: 'mobile/poc/android', env }) : sync;
-    const apk = 'mobile/poc/android/app/build/outputs/apk/debug/app-debug.apk';
-    if (gradle.ok && existsSync(apk)) add('android-build', 'android', 'PASS', `debug-signed preview APK built (${statSync(apk).size} bytes, sha256 ${createHash('sha256').update(readFileSync(apk)).digest('hex').slice(0, 16)}...). Debug-signed: not a release`, { artifact: apk });
+    const gradle = sync.ok ? run(path.resolve('mobile/poc/android/gradlew.bat'), ['assembleOnline', `-PoryqenOnlineOrigin=${process.env.ORYQEN_ANDROID_ORIGIN ?? 'https://oryqen-staging.vercel.app'}`, '--no-daemon', '--no-watch-fs', '--max-workers=1', '--console=plain'], { cwd: 'mobile/poc/android', env }) : sync;
+    const apk = 'mobile/poc/android/app/build/outputs/apk/online/app-online.apk';
+    if (gradle.ok && existsSync(apk)) add('android-build', 'android', 'PASS', `debug-signed online preview APK (staging origin) built (${statSync(apk).size} bytes, sha256 ${createHash('sha256').update(readFileSync(apk)).digest('hex').slice(0, 16)}...). Debug-signed: not a release`, { artifact: apk });
     else add('android-build', 'android', 'FAIL', 'the Android debug build failed', { evidence: gradle.tail });
   }
 }
 if (wanted('windows-build')) {
   if (!full) add('windows-build', 'windows', 'SKIPPED', 'long gate; rerun with --full');
   else {
-    const build = run('npm', ['run', 'build:windows', '--', '-c.directories.output=../test-results/windows-verify'], { cwd: 'desktop' });
+    // The preview installer's backend comes from configuration, not source: the approved staging origin unless the owner sets another for this run.
+    const build = run('npm', ['run', 'build:windows', '--', '-c.directories.output=../test-results/windows-verify'], { cwd: 'desktop', env: { ORYQEN_DESKTOP_ORIGIN: process.env.ORYQEN_DESKTOP_ORIGIN ?? 'https://oryqen-staging.vercel.app' } });
     const installers = existsSync('test-results/windows-verify') ? readdirSync('test-results/windows-verify').filter(name => /\.exe$/i.test(name) && !/uninstall/i.test(name)) : [];
     if (build.ok && installers.length) add('windows-build', 'windows', 'PASS', `unsigned preview installer built: ${installers.join(', ')}. Not code-signed: not a release`);
     else add('windows-build', 'windows', 'FAIL', 'the Windows installer build failed', { evidence: build.tail });

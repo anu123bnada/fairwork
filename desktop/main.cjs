@@ -12,9 +12,12 @@ else {
     profile.setPermissionCheckHandler(() => false);
     profile.on('will-download', event => event.preventDefault());
     window = new BrowserWindow({ width: 1280, height: 900, minWidth: 360, minHeight: 600, show: false,
-      title: 'ORYQEN Preview', backgroundColor: '#eaf0ff',
+      title: ORIGIN ? `ORYQEN Preview (${new URL(ORIGIN).host})` : 'ORYQEN Preview (not configured)', backgroundColor: '#eaf0ff',
       webPreferences: { partition: 'persist:oryqen', nodeIntegration: false, contextIsolation: true, sandbox: true, webSecurity: true, allowRunningInsecureContent: false, webviewTag: false } });
-    const goHome = () => window.loadURL(`${ORIGIN}/sign-in`).catch(() => {});
+    // A build with no configured origin refuses to guess one: it shows the offline page instead of connecting anywhere.
+    // The window title names the environment this build talks to; a web page must not replace it.
+    window.on('page-title-updated', event => event.preventDefault());
+    const goHome = () => { if (!ORIGIN) { void window.loadFile(path.join(__dirname, 'offline.html')); return; } window.loadURL(`${ORIGIN}/sign-in`).catch(() => {}); };
     const openExternal = async url => {
       if (!external(url)) return;
       const result = await dialog.showMessageBox(window, { type: 'question', buttons: ['Cancel', 'Open browser'], defaultId: 0, cancelId: 0, message: 'Open an external website?', detail: new URL(url).origin });

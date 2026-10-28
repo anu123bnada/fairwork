@@ -83,6 +83,30 @@ tasks.register("oryqenReleaseConfig") {
         ]))
     }
 }
+// The online (testing) variant connects to an origin supplied at build time, never one committed to the source:
+//   gradlew assembleOnline -PoryqenOnlineOrigin=https://oryqen-staging.vercel.app
+// Its capacitor config is generated into src/online (git-ignored), so the installed app's backend is visible in the build log and cannot drift from the source.
+def oryqenOnlineOrigin = (project.findProperty("oryqenOnlineOrigin") ?: "").toString().trim().replaceAll('/+$', '')
+def onlineConfigured = oryqenOnlineOrigin ==~ /^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/
+logger.lifecycle("ORYQEN online variant: " + (onlineConfigured ? "connects to " + oryqenOnlineOrigin : "origin not set (assembleOnline will refuse)"))
+tasks.register("oryqenOnlineConfig") {
+    def target = file("src/online/assets/capacitor.config.json")
+    inputs.property("origin", oryqenOnlineOrigin)
+    outputs.file(target)
+    doLast {
+        if (!onlineConfigured) throw new GradleException("The online build needs -PoryqenOnlineOrigin=https://<host> (https only, no path)")
+        target.parentFile.mkdirs()
+        target.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson([
+            appId: "org.fairwork.localpoc.online", appName: "ORYQEN Online Preview", webDir: "www",
+            server: [url: oryqenOnlineOrigin + "/sign-in", cleartext: false, errorPath: "offline.html"],
+            android: [allowMixedContent: false],
+            plugins: [SystemBars: [insetsHandling: "native"], CapacitorHttp: [enabled: false], CapacitorCookies: [enabled: false]]
+        ]))
+    }
+}
+tasks.configureEach { task ->
+    if (task.name != "oryqenOnlineConfig" && task.name ==~ /.*Online.*/ && !task.name.startsWith("oryqen")) task.dependsOn("oryqenOnlineConfig")
+}
 tasks.configureEach { task ->
     if (task.name != "oryqenReleaseConfig" && task.name.contains("Release")) task.dependsOn("oryqenReleaseConfig")
 }
