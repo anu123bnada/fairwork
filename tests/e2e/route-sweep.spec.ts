@@ -31,7 +31,8 @@ for (const screen of screens) for (const width of widths) test(`/app/${screen} l
 for (const width of [375, 1440]) test(`landing page has no controls under 24 CSS px at ${width}px`, async ({ page }) => {
   await page.setViewportSize({ width, height: 900 });
   await page.goto('/');
-  await page.waitForLoadState('networkidle');
+  // The landing page keeps animating and loading media, so network idle is not a reliable signal there; wait for load and a moment of rendering instead.
+  await page.waitForLoadState('load'); await page.waitForTimeout(1500);
   const small = await page.evaluate(() => [...document.querySelectorAll('a,button,input:not([type=hidden]),select,textarea')].filter(el => { const r = el.getBoundingClientRect(), s = getComputedStyle(el); return r.width > 0 && s.visibility !== 'hidden' && (r.height < 24 || r.width < 24); }).map(el => `${el.tagName.toLowerCase()} "${(el.textContent || '').trim().slice(0, 24)}" ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`));
   expect(small).toEqual([]);
 });
