@@ -46,5 +46,5 @@ delete from supabase_migrations.schema_migrations where version in ('20261029150
 commit;
 ```
 
-## Code already deployed vs waiting
-The new categories in the form and the evidence panel are in the code. Until the migrations are applied, choosing a new category is refused by the database with a generic validation message and the evidence panel stays hidden (it hides itself when the endpoint fails), so pushing the code first is safe; the features go live only after the migrations.
+## Code deployment order
+The code in the same commit adds the new categories to the form. Until migration 24 is applied the database would refuse them, so **the code is held locally and will be pushed only after the migrations are applied** (the evidence panel alone would hide itself harmlessly, but the category list would not).
