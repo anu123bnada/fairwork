@@ -1,6 +1,6 @@
 # Staging migration batch 4 — for owner approval (28 Oct 2026)
 
-Status: **PREPARED, NOT APPLIED.** Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource.
+Status: **APPLIED to staging on 28 Oct 2026 (owner-approved).** Backup of record `backups/staging-logical-20261028-1636Z` (129 tables, 285 rows; live counts matched; restore rehearsal 0 differences; destructive-keyword scan 0). Verified after: 55/55 migrations matched; `agreement_expiries` RLS enabled and forced, owner `fw_schema_owner`, three policies (participant read, worker insert, worker update), grants only select/insert/update to `fw_user_exec`; the three new functions and `agreement_workflow` are security definer, empty `search_path`, owner `fw_user_exec`, executable only by `authenticated`; `agreement_workflow` exists once and contains the expiry check; no create-on-schema grants; existing counts unchanged (agreement roots 0, versions 0, users 5, profiles 2); hosted smoke 24/24 and rendering pass; `/api/v1/agreement-expiries` answers 401 signed out. NOT exercised by a real signed-in staging account. Original status: Target: staging project `jpvgsmzomlmowarlfkdl` only. No production, `main` or Fairwork resource.
 
 | # | File | SHA-256 | Purpose |
 |---|---|---|---|

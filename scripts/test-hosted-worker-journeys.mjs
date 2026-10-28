@@ -120,6 +120,42 @@ await step('5 Evidence Vault: upload, list, signed download of the same bytes, d
   return 'bucket and key work; the test file was deleted';
 });
 
+// ---- 5b. Evidence Vault: the person's own revocation and correction notes (module 6)
+await step('5b Evidence status: correction note, resolve, revoke, reinstate, all private to this account', async () => {
+  const pdf = Buffer.from('%PDF-1.7\nSynthetic status check ' + randomUUID() + '\n');
+  const upload = await call('/api/v1/vault', { title: 'Synthetic status check', category: 'other', idempotencyKey: randomUUID(), file: { name: 'status-check.pdf', mimeType: 'application/pdf', buffer: pdf } }, { raw: true });
+  const id = upload.data.documentId;
+  try {
+    const statusOf = async () => (await call('/api/v1/vault/status')).data.items.find(item => item.documentId === id);
+    const noteId = randomUUID(), noteKey = randomUUID();
+    const body = { correctionId: noteId, documentId: id, note: 'Synthetic: the date needs checking', idempotencyKey: noteKey };
+    const first = (await call('/api/v1/vault/corrections', body)).data, again = (await call('/api/v1/vault/corrections', body)).data;
+    if (first.replayed !== false || again.replayed !== true) throw new Error('the same note was not replayed safely');
+    if ((await statusOf())?.corrections?.[0]?.resolvedAt !== null) throw new Error('the new note should be open');
+    await call('/api/v1/vault/corrections/resolve', { correctionId: noteId });
+    if (!(await statusOf())?.corrections?.[0]?.resolvedAt) throw new Error('the note was not marked fixed');
+    await call('/api/v1/vault/revoke', { documentId: id, reason: 'Synthetic: superseded' });
+    const revoked = await statusOf(); if (revoked?.revoked !== true || revoked.reason !== 'Synthetic: superseded') throw new Error('revocation was not recorded');
+    await call('/api/v1/vault/reinstate', { documentId: id });
+    if ((await statusOf())?.revoked !== false) throw new Error('reinstating did not clear the revocation');
+    const stranger = await call('/api/v1/vault/revoke', { documentId: randomUUID(), reason: 'x' }, { statuses: [404] });
+    return `note replayed, resolved; revoked then reinstated; someone else's document answers ${stranger.status}`;
+  } finally { await call('/api/v1/vault/delete', { documentId: id }).catch(() => null); }
+});
+
+// ---- 2b. Company research history (module 2); the search itself uses the public GLEIF registry with a made-up name
+await step('2b Research history: a search is saved privately, listed, and can be deleted', async () => {
+  const name = 'Zzyzx Synthetic Check ' + randomUUID().slice(0, 8);
+  const search = await call(`/api/v1/research/companies?name=${encodeURIComponent(name)}`, undefined, { statuses: [200, 429, 503] });
+  if (search.status !== 200) return `NOT EXERCISED: the registry search answered ${search.status}`;
+  const listed = (await call('/api/v1/research/history')).data.items;
+  const mine = listed.find(item => item.queryName === name);
+  if (!mine) throw new Error('the search was not saved to the history');
+  await call('/api/v1/research/history/remove', { entryId: mine.entryId });
+  if ((await call('/api/v1/research/history')).data.items.some(item => item.entryId === mine.entryId)) throw new Error('the entry is still listed after deletion');
+  return `saved as "${mine.topMatch}" and deleted`;
+});
+
 // ---- 10. discovery
 await step('10 Job discovery: listings load and private preferences persist', async () => {
   const page = (await call('/api/v1/opportunities?view=discover')).data;
@@ -158,6 +194,7 @@ await step('1 Account: sign out ends the session', async () => { await call('/ap
 
 for (const [id, why] of [
   ['2 Offer workspace (saved offers, notes, documents)', 'needs an organization the account may use'],
+  ['4b Agreement expiry and renewal', 'needs a second account and an agreement proposal'], ['5c Revocation blocks attaching', 'needs a saved work record or offer'],
   ['4 Digital agreements', 'needs a second account'], ['6 Work Passport (verified work, sharing)', 'needs an employer account to verify a record'],
   ['8 Dispute and appeals', 'needs an independent reviewer capability'], ['9 Organization portal', 'needs two independent approvers with the authority capability'],
   ['11 Recruiter scam protection', 'needs an organization representative'],
