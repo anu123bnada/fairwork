@@ -32,7 +32,7 @@ Columns: I implemented, L locally tested, D deployed to staging, H hosted authen
 | 10 | Trust Ledger and Audit | partial | yes | yes (export logging) | no | Cross-record hash chain is NOT built |
 | 11 | AI Career Copilot | partial | yes (rules-based) | yes | no | Model-backed copilot waits for AI approval |
 | 12 | Security and Privacy | partial | yes | yes | no | Passkeys, account-deletion executor, security-event log view missing |
-| 13 | Administration | partial | yes | yes | no | Account moderation is NOT built |
+| 13 | Administration | partial | yes | yes | no | Account restriction and restoration already exist in the admin console (owner or administrator role, MFA, reason, optimistic revision check, cannot target administrators or oneself, written to the administrative audit); organization suspension also exists. Missing: operational monitoring and the console's forms, dialogs and detail panels are still English |
 | 14 | Premium Multiplatform UX | partial | layout sweep with a mocked login (16 screens at 8 widths) | yes | no | Real signed-in screens unreviewed; keyboard and screen-reader audit missing |
 | 15 | Localization | partial | yes (server messages in four languages) | yes | no | Drafts need native review |
 | 16 | Country-Aware Guidance | partial | yes | yes | no | Germany only |
@@ -63,6 +63,6 @@ The gateway, consent, redaction, budgets and breaker exist and are unit-tested; 
 
 ## Known limitations and open risks
 - No hosted authenticated verification of any feature.
-- Recruiter roles, account moderation and the audit hash chain are not implemented. Legal pages are not written (`docs/ORYQEN_LEGAL_DECISIONS.md`).
+- Recruiter roles and the audit hash chain are not implemented. (Account restriction and restoration are implemented; an earlier note that moderation was missing was wrong, corrected here.) Legal pages are not written (`docs/ORYQEN_LEGAL_DECISIONS.md`).
 - Layout verified with a mocked login only. Windows and Android are unsigned or debug builds.
 - Docker Desktop was unstable earlier. Staging backups use the Docker-free scripts `scripts/backup-staging-logical.mjs` and `scripts/restore-check-logical-backup.mjs`. The restore rehearsal covers `private` data; `auth` data is backed up and counted but not restored in the rehearsal.
