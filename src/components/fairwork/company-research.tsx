@@ -2,7 +2,8 @@
 import { useI18n } from "@/i18n/use-i18n";
 import { bcp47, type LocaleCode, type MessageKey } from "@/i18n";
 import { useRef, useState, type FormEvent } from "react";
-import { appRequest } from "@/features/authority/client";
+import { appRequest, ApiRequestError } from "@/features/authority/client";
+import { ResearchHistory } from "./research-history";
 import { researchResponse, type Finding, type ResearchResponse } from "@/features/research/schema";
 
 const COUNTRY_CODES = ["LK", "DE", "GB", "IN", "US", "AU", "SG", "AE"];
@@ -17,16 +18,17 @@ export function CompanyResearch() {
   const when = (value: string | null) => value && !Number.isNaN(Date.parse(value)) ? new Date(value).toLocaleDateString(bcp47(locale), { year: "numeric", month: "short", day: "numeric" }) : t("research.unknown");
   const [name, setName] = useState(""), [country, setCountry] = useState("");
   const [result, setResult] = useState<ResearchResponse | null>(null), [busy, setBusy] = useState(false), [error, setError] = useState("");
-  const sequence = useRef(0);
-  async function search(event: FormEvent) {
-    event.preventDefault();
+  const sequence = useRef(0), [historyKey, setHistoryKey] = useState(0);
+  async function search(event: FormEvent | null, override?: { name: string; country: string }) {
+    event?.preventDefault();
+    const queryName = (override?.name ?? name).trim(), queryCountry = override ? override.country : country;
     const current = ++sequence.current; setBusy(true); setError(""); setResult(null);
     try {
-      const params = new URLSearchParams({ name: name.trim() }); if (country) params.set("country", country);
+      const params = new URLSearchParams({ name: queryName }); if (queryCountry) params.set("country", queryCountry);
       const value = researchResponse.parse(await appRequest(`/api/v1/research/companies?${params}`));
-      if (current === sequence.current) setResult(value);
+      if (current === sequence.current) { setResult(value); setHistoryKey(key => key + 1); }
     } catch (caught) {
-      if (current === sequence.current) setError(caught instanceof Error ? caught.message : t("research.unavailable"));
+      if (current === sequence.current) setError(caught instanceof ApiRequestError ? caught.message : t("research.unavailable"));
     } finally { if (current === sequence.current) setBusy(false); }
   }
   return <section className="fw-list-card fw-research" aria-label={t("research.title")}>
@@ -56,5 +58,6 @@ export function CompanyResearch() {
       </article>)}
       <details><summary>{t("research.limits")}</summary><ul>{result.limitations.map((text, index) => <li key={index}>{text}</li>)}</ul></details>
     </>}
+    <ResearchHistory refreshKey={historyKey} onSearchAgain={(again, againCountry) => { setName(again); setCountry(againCountry ?? ""); void search(null, { name: again, country: againCountry ?? "" }); }} />
   </section>;
 }

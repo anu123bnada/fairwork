@@ -191,6 +191,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/20261027100000_evidence_vault.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261028160000_vault_attachments.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261028190000_offer_notes.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261029110000_research_history.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -404,5 +405,41 @@ describe("private offer notes and supporting documents", () => {
     await rpc("vault_delete", { documentId: mine });
     expect((await rpc("vault_offer_attachments", { offerId: OFFER })).items).toEqual([]);
     await rpc("vault_delete", { documentId: theirs }, OTHER);
+  });
+});
+
+describe("private company research history", () => {
+  const entry = (over: Record<string, unknown> = {}) => { const id = crypto.randomUUID(); return { entryId: id, queryName: "Synthetic Garage Ltd", queryCountry: "DE", totalMatches: 3, topLei: "5493001KJTIIGC8Y1R12", topName: "SYNTHETIC GARAGE LTD", topMatch: "exact", source: "GLEIF", retrievedAt: "2026-10-28T10:00:00Z", idempotencyKey: id, ...over }; };
+  it("saves, lists newest first, replays and deletes only the owner's entries", async () => {
+    await clearQuotas();
+    const first = entry(), second = entry({ queryName: "Another Synthetic Co", queryCountry: null, topLei: null, topName: null, topMatch: "none", totalMatches: 0 });
+    expect(await rpc("research_history_add", first)).toEqual({ entryId: first.entryId, replayed: false });
+    expect(await rpc("research_history_add", first)).toEqual({ entryId: first.entryId, replayed: true });
+    await rpc("research_history_add", second);
+    const listed = (await rpc("research_history_list", {})).items as Record<string, unknown>[];
+    expect(listed.map(item => item.queryName)).toEqual(["Another Synthetic Co", "Synthetic Garage Ltd"]);
+    expect(listed[1]).toMatchObject({ topLei: "5493001KJTIIGC8Y1R12", topMatch: "exact", source: "GLEIF", totalMatches: 3 });
+    expect(((await rpc("research_history_list", {}, OTHER)).items as unknown[])).toEqual([]);
+    await expect(rpc("research_history_delete", { entryId: first.entryId }, OTHER)).rejects.toThrow("NOT_FOUND");
+    await rpc("research_history_delete", { entryId: first.entryId });
+    await rpc("research_history_delete", { entryId: second.entryId });
+    await expect(rpc("research_history_delete", { entryId: first.entryId })).rejects.toThrow("NOT_FOUND");
+  });
+  it("refuses a reused key with a different entry, bad shapes and signed-out callers", async () => {
+    await clearQuotas();
+    const base = entry(); await rpc("research_history_add", base);
+    await expect(rpc("research_history_add", entry({ idempotencyKey: base.idempotencyKey }))).rejects.toThrow("IDEMPOTENCY_CONFLICT");
+    for (const bad of [{ queryName: "" }, { queryName: "x".repeat(201) }, { queryCountry: "de" }, { topLei: "short" }, { topMatch: "perfect" }, { totalMatches: -1 }, { totalMatches: 1.5 }, { retrievedAt: "not a time" }, { extra: 1 }])
+      await expect(rpc("research_history_add", entry(bad)), JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("research_history_list", { extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    await expect(rpc("research_history_list", {}, null)).rejects.toThrow();
+    await rpc("research_history_delete", { entryId: base.entryId });
+  });
+  it("keeps only the newest fifty entries per person", async () => {
+    await clearQuotas();
+    for (let i = 0; i < 52; i += 1) { if (i % 20 === 0) await clearQuotas(); await rpc("research_history_add", entry({ queryName: `Synthetic ${i}` })); }
+    const items = (await rpc("research_history_list", {})).items as Record<string, unknown>[];
+    expect(items).toHaveLength(50); expect(items[0]!.queryName).toBe("Synthetic 51"); expect(items.at(-1)!.queryName).toBe("Synthetic 2");
+    for (const item of items) { if (items.indexOf(item) % 20 === 0) await clearQuotas(); await rpc("research_history_delete", { entryId: item.entryId }); }
   });
 });

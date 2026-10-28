@@ -58,3 +58,35 @@ test("a search with no registry match says it proves nothing, and a failure show
   await panel.getByRole("button", { name: "Search registry" }).click();
   await expect(panel.locator("p[role=alert]")).toBeVisible(); await expect(panel.getByRole("article")).toHaveCount(0);
 });
+test("saved searches load only when opened, can be searched again and deleted, and a bad reply shows a safe message", async ({ page }) => {
+  await employer(page);
+  const entryId = "50000000-0000-4000-8000-000000000001";
+  const calls: string[] = [];
+  let items = [{ entryId, queryName: "Commercial Bank of Ceylon", queryCountry: "LK", totalMatches: 2, topLei: "254900XV5B725ZG6RS07", topName: "Commercial Bank of Ceylon PLC", topMatch: "close", source: "GLEIF Global LEI Index", retrievedAt: "2026-10-26T09:00:00Z", createdAt: "2026-10-26T09:00:01Z" }];
+  await page.route("**/api/v1/research/history", route => { calls.push("list"); return route.fulfill({ json: { data: { items } } }); });
+  await page.route("**/api/v1/research/history/remove", route => { calls.push("remove"); items = []; return route.fulfill({ json: { data: { entryId } } }); });
+  const searches: string[] = [];
+  await page.route("**/api/v1/research/companies?*", route => { searches.push(new URL(route.request().url()).search); return route.fulfill({ status: 429, json: { error: { code: "RATE_LIMITED" } } }); });
+  await page.goto("/app/employer");
+  const panel = page.getByRole("region", { name: "Research an employer" });
+  await expect(panel.getByText("My earlier company searches")).toBeVisible();
+  expect(calls).toEqual([]);
+  await panel.getByText("My earlier company searches").click();
+  const saved = panel.getByRole("article").filter({ hasText: "Commercial Bank of Ceylon · LK" });
+  await expect(saved).toContainText("2 records matched · best match: close"); await expect(saved).toContainText("LEI 254900XV5B725ZG6RS07");
+  await saved.getByRole("button", { name: "Search again" }).click();
+  await expect.poll(() => searches).toEqual(["?name=Commercial+Bank+of+Ceylon&country=LK"]);
+  await expect(panel.getByLabel("Company name")).toHaveValue("Commercial Bank of Ceylon");
+  await saved.getByRole("button", { name: "Delete" }).click();
+  await expect(panel.getByText("No saved searches yet.")).toBeVisible();
+  expect(calls).toContain("remove");
+});
+test("a malformed research reply never shows raw validation data", async ({ page }) => {
+  await employer(page);
+  await page.route("**/api/v1/research/companies?*", route => route.fulfill({ json: { data: { surprise: true } } }));
+  await page.goto("/app/employer");
+  const panel = page.getByRole("region", { name: "Research an employer" });
+  await panel.getByLabel("Company name").fill("Anything Ltd");
+  await panel.getByRole("button", { name: "Search registry" }).click();
+  await expect(panel.locator("p[role=alert]")).toHaveText("Research is unavailable right now. Try again later.");
+});

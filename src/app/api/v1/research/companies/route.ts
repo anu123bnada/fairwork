@@ -5,6 +5,7 @@ import { isAuthServiceUnavailable } from "@/lib/auth-errors";
 import { researchQuery, researchResponse } from "@/features/research/schema";
 import { buildFindings, nameMatch, noMatchLimitation, sourceFreshness, standardLimitations } from "@/features/research/analysis";
 import { GLEIF_SOURCE, searchGleif } from "@/server/research/gleif";
+import { addResearchHistory, rpcFor } from "@/server/research/history";
 export const dynamic = "force-dynamic";
 
 // Per-process, per-user limiter (a hosted deployment with many instances multiplies this limit).
@@ -34,6 +35,9 @@ export async function GET(request: Request) {
     const results = records.map(record => ({ record, nameMatch: nameMatch(input.data.name, record), freshness: sourceFreshness(record, now), findings: buildFindings(record, { name: input.data.name, country }, now) }));
     const order = { exact: 0, close: 1, partial: 2, weak: 3 } as const;
     results.sort((a, b) => order[a.nameMatch] - order[b.nameMatch]);
+    // Keep a private record of this search for the person. It never blocks or fails the search itself.
+    const top = results[0];
+    await addResearchHistory(rpcFor(client as never), { queryName: input.data.name, queryCountry: country, totalMatches: total, topLei: top?.record.identifier.value ?? null, topName: top?.record.legalName ?? null, topMatch: top?.nameMatch ?? "none", source: GLEIF_SOURCE.name, retrievedAt: top?.record.retrievedAt ?? now.toISOString() }).catch(() => undefined);
     return researchResponse.parse({
       query: { name: input.data.name, country }, results: results.slice(0, 10), totalMatches: total, source: GLEIF_SOURCE,
       limitations: results.length ? standardLimitations : [noMatchLimitation, ...standardLimitations],
