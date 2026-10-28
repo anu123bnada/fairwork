@@ -1,5 +1,6 @@
 "use client";
 
+import { AgreementExpiry } from "./agreement-expiry";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -115,6 +116,7 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
       {effective&&effective.version!==current?.version&&<section className="fw-card fw-offer-detail-card" aria-label={t("ag.effectiveAria")}><strong>{t("ag.lastConfirmed",{version:effective.version})}</strong><p>{t("ag.lastConfirmedNote")}</p><TermSummary version={effective}/></section>}
       {current&&<>
         <p className={current.status==="effective"?"fw-success":"fw-notice"} role="status">{t("ag.versionLine",{version:current.version,status:t(statusKey(current.status))})}</p>
+        <AgreementExpiry agreementId={workflow.agreementId} version={current.version} state={current.state}/>
         <div className="fw-signatures">{[{id:workflow.workerId,label:t("ag.worker")},{id:workflow.representativeId,label:t("ag.employer")}].map(party=><div className="fw-signature" key={party.id}><span className="fw-signature-avatar" aria-hidden="true">{party.label[0]}</span><span><strong>{party.label}</strong><br/>{current.decisions.find(d=>d.actorId===party.id)?.decision==="confirm"?t("ag.confirmed"):current.decisions.find(d=>d.actorId===party.id)?.decision==="decline"?t("ag.declinedParty"):current.acknowledgements.some(a=>a.actorId===party.id)?t("ag.ackedNotConfirmed"):t("ag.awaitingAck")}</span></div>)}</div>
         <TermSummary version={current}/>
         <section className="fw-card fw-offer-detail-card" aria-label={t("ag.unresolvedAria")}><h3>{t("ag.unresolvedTitle")}</h3>

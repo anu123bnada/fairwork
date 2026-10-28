@@ -128,3 +128,29 @@ for (const locale of ["si","ta","de"] as const) {
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBeLessThanOrEqual(0);
  });
 }
+
+test("the worker sets and renews a proposal's expiry; an expired proposal says so, and the employer can only read it",async({context,page})=>{
+ const model=fixture(),requests:Record<string,unknown>[]=[];await session(context,worker,model,requests);
+ let expiry:{expiresAt:string|null;expired:boolean;renewals:number}={expiresAt:null,expired:false,renewals:0};const sets:Record<string,unknown>[]=[];let canSet=true;
+ await context.route("**/api/v1/agreement-expiry**",route=>{
+   if(route.request().method()==="GET")return route.fulfill({json:{data:{agreementId:id,version:1,...expiry,canSet}}});
+   const body=route.request().postDataJSON();sets.push(body);expiry={expiresAt:body.expiresAt,expired:false,renewals:expiry.expiresAt?expiry.renewals+1:0};
+   return route.fulfill({json:{data:{agreementId:id,version:1,expiresAt:body.expiresAt,renewals:expiry.renewals,replayed:false}}});
+ });
+ await page.goto(`/app/agreement-workflow?workflowId=${id}`);
+ const region=page.getByRole("region",{name:"Proposal expiry"});
+ await expect(region).toContainText("No expiry date is set");
+ const day=(n:number)=>new Date(Date.now()+n*86_400_000).toISOString().slice(0,10);
+ await region.getByLabel("Expiry date (up to one year ahead)").fill(day(10));
+ await region.getByRole("button",{name:"Set expiry"}).click();
+ await expect(region).toContainText("Open until");
+ expect(sets).toHaveLength(1);expect(sets[0]).toMatchObject({agreementId:id,expectedVersion:1});expect(Date.parse(String(sets[0]!.expiresAt))).toBeGreaterThan(Date.now()+9*86_400_000);
+ await region.getByLabel("New expiry date").fill(day(20));
+ await region.getByRole("button",{name:"Renew"}).click();
+ await expect(region).toContainText("renewed 1 time(s)");
+ expiry={expiresAt:new Date(Date.now()-3_600_000).toISOString(),expired:true,renewals:1};
+ await page.reload();
+ await expect(region).toContainText("Expired on");await expect(region).toContainText("can no longer be acknowledged or decided");
+ canSet=false;await page.reload();
+ await expect(region.getByRole("button",{name:"Renew"})).toHaveCount(0);await expect(region).toContainText("Ask the person who proposed it to renew it.");
+});

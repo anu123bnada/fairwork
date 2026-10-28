@@ -2,6 +2,7 @@ export const errorMessages = {
   INVALID_JSON: "The request body is not valid JSON.",
   VALIDATION_FAILED: "Check the supplied fields.",
   AUTH_REQUIRED: "Sign in to continue.",
+  AGREEMENT_EXPIRED: "This agreement proposal has expired. The person who proposed it can renew it by setting a later expiry date.",
   EVIDENCE_REVOKED: "This document is marked as revoked. Mark it as valid again in your Evidence Vault before attaching it.",
   INVALID_CREDENTIALS: "That email and password do not match. Check them, or use Forgot password to set a new one.",
   EMAIL_NOT_CONFIRMED: "Your email address is not confirmed yet. Open the confirmation email we sent you, or request another from the Create account page.",
@@ -29,7 +30,7 @@ export function mapDatabaseError(error: { code?: string; message?: string }): Ap
   // Only controlled tokens, never provider messages, reach the client.
   const known: Partial<Record<string, [ErrorCode, number]>> = {
     AUTH_REQUIRED: ["AUTH_REQUIRED", 401], ACTION_FORBIDDEN: ["ACTION_FORBIDDEN", 403],
-    MFA_REQUIRED: ["MFA_REQUIRED", 403], EVIDENCE_REVOKED: ["EVIDENCE_REVOKED", 409],
+    MFA_REQUIRED: ["MFA_REQUIRED", 403], EVIDENCE_REVOKED: ["EVIDENCE_REVOKED", 409], AGREEMENT_EXPIRED: ["AGREEMENT_EXPIRED", 409],
     NOT_FOUND: ["NOT_FOUND", 404], VALIDATION_FAILED: ["VALIDATION_FAILED", 422],
     VERSION_CONFLICT: ["VERSION_CONFLICT", 409], IDEMPOTENCY_CONFLICT: ["IDEMPOTENCY_CONFLICT", 409],
     RATE_LIMITED: ["RATE_LIMITED", 429],

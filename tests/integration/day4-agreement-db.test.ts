@@ -184,6 +184,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/202610100001_day3_offer_agreement.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/202610120001_agreement_participant_read.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/202610140001_versioned_agreements.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261029140000_agreement_expiry.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -356,6 +357,54 @@ describe("Day 4 restricted-role agreement contract", () => {
     await new Promise(resolve=>setTimeout(resolve,2100));
     try {await expect(read(id,APPROVER)).rejects.toThrow("NOT_FOUND");await expect(command({operation:"decide",...acknowledgement(id,v),decision:"confirm"})).rejects.toThrow("ACTION_FORBIDDEN");}
     finally{await change(4,new Date(Date.now()+86400000).toISOString());}
+  });
+  describe("agreement expiry and renewal", () => {
+    const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+    const rpcAs = async (name: string, request: unknown, actor: string | null = WORKER) => (await run<{ value: Record<string, unknown> }>(`select api.${name}($1::jsonb) value`, [request], actor ? claims(actor) : ({} as ReturnType<typeof claims>), actor ? "authenticated" : "anon"))[0]!.value;
+    const pastDue = (id: string) => run("update private.agreement_expiries set expires_at=transaction_timestamp()-interval '1 hour' where agreement_id=$1", [id], claims(WORKER), "fixture_root");
+    it("lets only the worker set and renew an expiry on the current version, and both participants read it", async () => {
+      await clearQuotas();
+      const { id } = await draft(); const v = await propose(id);
+      expect(await rpcAs("agreement_expiry_read", { agreementId: id })).toMatchObject({ expiresAt: null, expired: false, canSet: true, version: v.version });
+      const first = inDays(10);
+      expect(await rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: first })).toMatchObject({ renewals: 0, replayed: false });
+      expect(await rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: first })).toMatchObject({ renewals: 0, replayed: true });
+      expect(await rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: inDays(20) })).toMatchObject({ renewals: 1, replayed: false });
+      expect(await rpcAs("agreement_expiry_read", { agreementId: id }, APPROVER)).toMatchObject({ expired: false, canSet: false, renewals: 1 });
+      await expect(rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: inDays(30) }, APPROVER)).rejects.toThrow("NOT_FOUND");
+      await expect(rpcAs("agreement_expiry_read", { agreementId: id }, OTHER)).rejects.toThrow("NOT_FOUND");
+      await expect(rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version + 1, expiresAt: inDays(5) })).rejects.toThrow("VERSION_CONFLICT");
+      expect(((await rpcAs("agreement_expiries", {})).items as { agreementId: string; role: string }[]).filter(item => item.agreementId === id)).toMatchObject([{ role: "worker" }]);
+      expect(((await rpcAs("agreement_expiries", {}, APPROVER)).items as { agreementId: string; role: string }[]).filter(item => item.agreementId === id)).toMatchObject([{ role: "representative" }]);
+      expect(((await rpcAs("agreement_expiries", {}, OTHER)).items as unknown[])).toEqual([]);
+    });
+    it("rejects bad dates and shapes and signed-out callers", async () => {
+      await clearQuotas();
+      const { id } = await draft(); const v = await propose(id);
+      const base = { agreementId: id, expectedVersion: v.version };
+      for (const bad of [{ expiresAt: inDays(-1) }, { expiresAt: inDays(400) }, { expiresAt: "not a date" }, { expiresAt: 5 }, { expiresAt: inDays(5), extra: 1 }]) await expect(rpcAs("agreement_expiry_set", { ...base, ...bad }), JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
+      await expect(rpcAs("agreement_expiry_set", { ...base, expiresAt: inDays(5) }, null)).rejects.toThrow();
+      await expect(rpcAs("agreement_expiries", { extra: 1 })).rejects.toThrow("VALIDATION_FAILED");
+    });
+    it("refuses to acknowledge or decide after the date, leaves history untouched, and works again once renewed", async () => {
+      await clearQuotas();
+      const { id } = await draft(); const v = await propose(id);
+      await rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: inDays(2) });
+      await pastDue(id);
+      expect(await rpcAs("agreement_expiry_read", { agreementId: id })).toMatchObject({ expired: true });
+      await expect(command({ operation: "acknowledge", ...acknowledgement(id, v) })).rejects.toThrow("AGREEMENT_EXPIRED");
+      await expect(command({ operation: "decide", ...acknowledgement(id, v), decision: "decline" }, APPROVER)).rejects.toThrow("AGREEMENT_EXPIRED");
+      const after = await read(id);
+      expect(after.versions.at(-1)).toMatchObject({ version: v.version, state: "proposed", contentHash: v.contentHash });
+      await rpcAs("agreement_expiry_set", { agreementId: id, expectedVersion: v.version, expiresAt: inDays(7) });
+      await command({ operation: "acknowledge", ...acknowledgement(id, v) });
+      await command({ operation: "decide", ...acknowledgement(id, v), decision: "confirm" });
+    });
+    it("does not affect agreements without an expiry", async () => {
+      await clearQuotas();
+      const { id } = await draft(); const v = await propose(id);
+      await command({ operation: "acknowledge", ...acknowledgement(id, v) });
+    });
   });
   it.skipIf(!realPostgres)("serializes actual concurrent PostgreSQL acknowledgements/confirmations and rejects amendment races",async()=>{
     await clearQuotas();const {id}=await draft();const v=await propose(id);

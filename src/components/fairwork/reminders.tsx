@@ -33,6 +33,14 @@ export function expiringChecks(items: RecruiterCheck[], now: number, windowDays 
     .sort((a, b) => Date.parse(a.expiresAt) - Date.parse(b.expiresAt));
 }
 
+// Open agreement proposals whose expiry has passed, or ends within the window (a short one: a proposal is a live negotiation), soonest first.
+export function expiringAgreements(items: { expiresAt: string; expired: boolean }[], now: number, windowDays = 7) {
+  return items
+    .filter(item => item.expired || (Date.parse(item.expiresAt) > now && Date.parse(item.expiresAt) - now <= windowDays * DAY))
+    .map(item => ({ ...item, daysLeft: Math.max(1, Math.ceil((Date.parse(item.expiresAt) - now) / DAY)) }))
+    .sort((a, b) => Date.parse(a.expiresAt) - Date.parse(b.expiresAt));
+}
+
 // Reminders are derived in the app from data the person already has; nothing is emailed or pushed (those channels are not connected).
 export function Reminders() {
   const { t, locale } = useI18n();
@@ -40,6 +48,7 @@ export function Reminders() {
   const [checks, setChecks] = useState<ReturnType<typeof expiringChecks>>([]);
   const [shares, setShares] = useState<ReturnType<typeof expiringShares>>([]);
   const [waiting, setWaiting] = useState(0);
+  const [agreements, setAgreements] = useState<{ expiresAt: string; expired: boolean; daysLeft: number }[]>([]);
   useEffect(() => {
     let active = true;
     appRequest("/api/v1/credentials").then(raw => {
@@ -54,6 +63,10 @@ export function Reminders() {
       const list = (raw as { items?: Grant[] }).items;
       if (active && Array.isArray(list)) setShares(expiringShares(list, Date.now()));
     }).catch(() => { /* same rule */ });
+    appRequest("/api/v1/agreement-expiries").then(raw => {
+      const list = (raw as { items?: { expiresAt: string; expired: boolean }[] }).items;
+      if (active && Array.isArray(list)) setAgreements(expiringAgreements(list, Date.now()));
+    }).catch(() => { /* same rule */ });
     appRequest("/api/v1/recruiter/queue").then(raw => {
       const list = (raw as { items?: { mine: unknown }[] }).items;
       if (active && Array.isArray(list)) setWaiting(list.filter(item => !item.mine).length);
@@ -61,7 +74,7 @@ export function Reminders() {
     return () => { active = false; };
   }, []);
   const credentials = items ?? [];
-  if (credentials.length === 0 && checks.length === 0 && shares.length === 0 && waiting === 0) return null;
+  if (credentials.length === 0 && checks.length === 0 && shares.length === 0 && waiting === 0 && agreements.length === 0) return null;
   const date = (value: string) => new Date(value).toLocaleDateString(bcp47(locale), { year: "numeric", month: "short", day: "numeric" });
   return <section className="fw-list-card" aria-label={t("reminders.title")}>
     <h3>{t("reminders.title")}</h3>
@@ -75,8 +88,10 @@ export function Reminders() {
       {checks.map(item => <li key={item.verificationId}>
         {t(item.daysLeft === 1 ? "reminders.checkOne" : "reminders.checkMany", { name: item.recruiterName, days: item.daysLeft, date: date(item.expiresAt) })}
       </li>)}
+      {agreements.map(item => <li key={item.expiresAt}>{item.expired ? t("reminders.agreementExpired", { date: date(item.expiresAt) }) : t("reminders.agreementSoon", { days: item.daysLeft, date: date(item.expiresAt) })}</li>)}
       {waiting > 0 && <li>{t("reminders.queue", { count: waiting })}</li>}
     </ul>
+    {agreements.length > 0 && <Link className="fw-secondary" href="/app/agreement-workflow">{t("reminders.agreementOpen")}</Link>}
     {(credentials.length > 0 || shares.length > 0) && <Link className="fw-secondary" href="/app/passport">{t("reminders.open")}</Link>}
     {checks.length > 0 && <Link className="fw-secondary" href="/app/check">{t("reminders.checkOpen")}</Link>}
     {waiting > 0 && <Link className="fw-secondary" href="/app/employer">{t("reminders.queueOpen")}</Link>}
