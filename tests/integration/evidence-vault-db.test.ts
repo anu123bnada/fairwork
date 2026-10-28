@@ -194,6 +194,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/20261029110000_research_history.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261029120000_vault_evidence_status.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261029130000_vault_revocation_enforcement.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261029151000_case_evidence_refs.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -519,5 +520,55 @@ describe("revocation is enforced when attaching", () => {
     await rpc("vault_attach_offer", { documentId: other, offerId: OFFER });
     await expect(rpc("vault_attach", { documentId: "00000000-0000-4000-8000-000000000999", workId: WORK })).rejects.toThrow("NOT_FOUND");
     await rpc("vault_delete", { documentId: id }); await rpc("vault_delete", { documentId: other });
+  });
+});
+
+describe("evidence references on a dispute", () => {
+  const WORK_A = crypto.randomUUID(), WORK_B = crypto.randomUUID(), WORK_C = crypto.randomUUID();
+  const CASE_OPEN = crypto.randomUUID(), CASE_THEIRS = crypto.randomUUID(), CASE_DONE = crypto.randomUUID();
+  const upload = async (owner = WORKER) => { const request = doc({}, owner); await rpc("vault_register", request, owner); return request.documentId as string; };
+  beforeAll(async () => {
+    await db.exec("reset role");
+    await db.exec("set session_replication_role = replica");
+    // Earlier groups in this file leave documents behind; this group needs room under the fifty-document limit.
+    await db.exec("delete from private.vault_documents");
+    for (const [work, worker] of [[WORK_A, WORKER], [WORK_B, OTHER], [WORK_C, WORKER]] as const) {
+      await db.query("insert into private.work_records(id,agreement_id,worker_id,company_id,representative_id,current_version) values($1,$2,$3,$4,$5,1)", [work, crypto.randomUUID(), worker, COMPANY, APPROVER]);
+    }
+    for (const [id, work, opener, status] of [[CASE_OPEN, WORK_A, WORKER, "open"], [CASE_THEIRS, WORK_B, OTHER, "open"], [CASE_DONE, WORK_C, WORKER, "resolved"]] as const) {
+      await db.query("insert into private.work_cases(id,work_id,work_version,opened_by,reason_code,reason,content_hash,evidence_hash,status,closed_at) values($1,$2,1,$3,'evidence_integrity','Synthetic concern',$4,$4,$5,$6)", [id, work, opener, SHA, status, status === "resolved" ? new Date().toISOString() : null]);
+    }
+    await db.exec("set session_replication_role = origin");
+  });
+  it("lets the opener attach their own document as a reference, replays it, and lists a snapshot with the document's hash", async () => {
+    await clearQuotas();
+    const id = await upload();
+    expect(await rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: id })).toEqual({ caseId: CASE_OPEN, documentId: id, replayed: false });
+    expect(await rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: id })).toEqual({ caseId: CASE_OPEN, documentId: id, replayed: true });
+    const listed = (await rpc("case_evidence_list", { caseId: CASE_OPEN })).items as Record<string, unknown>[];
+    expect(listed).toMatchObject([{ documentId: id, title: "Synthetic welding certificate", sha256: SHA, mediaType: "application/pdf", attachedBy: WORKER }]);
+    await rpc("vault_delete", { documentId: id });
+    expect(((await rpc("case_evidence_list", { caseId: CASE_OPEN })).items as unknown[]).length).toBe(1);
+  });
+  it("keeps references private to the case, refuses foreign, revoked and unknown documents and closed cases, and caps them at ten (one reference from the previous test already counts)", async () => {
+    await clearQuotas();
+    const mine = await upload(), theirs = await upload(OTHER), revoked = await upload();
+    await expect(rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: theirs })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("case_evidence_attach", { caseId: CASE_THEIRS, documentId: mine })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("case_evidence_attach", { caseId: CASE_DONE, documentId: mine })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("case_evidence_attach", { caseId: crypto.randomUUID(), documentId: mine })).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("case_evidence_list", { caseId: CASE_OPEN }, OTHER)).rejects.toThrow("NOT_FOUND");
+    await expect(rpc("case_evidence_list", { caseId: CASE_OPEN }, null)).rejects.toThrow();
+    await rpc("vault_revoke", { documentId: revoked, reason: "Superseded" });
+    await expect(rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: revoked })).rejects.toThrow("EVIDENCE_REVOKED");
+    for (const bad of [{ extra: 1 }, { caseId: 5 }]) await expect(rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: mine, ...bad })).rejects.toThrow("VALIDATION_FAILED");
+    await rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: mine });
+    for (let i = 0; i < 8; i += 1) { await clearQuotas(); const extra = await upload(); await clearQuotas(); await rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: extra }); }
+    await clearQuotas(); const overflow = await upload(); await clearQuotas();
+    await expect(rpc("case_evidence_attach", { caseId: CASE_OPEN, documentId: overflow })).rejects.toThrow("RATE_LIMITED");
+  });
+  it("makes references append-only", async () => {
+    await expect(db.exec("update private.case_evidence_refs set title='changed'")).rejects.toThrow();
+    await expect(db.exec("delete from private.case_evidence_refs")).rejects.toThrow();
   });
 });

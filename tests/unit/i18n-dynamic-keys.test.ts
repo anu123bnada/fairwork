@@ -8,7 +8,7 @@ const families: Record<string, string[]> = {
   "as.st.": ["stated", "missing", "uncertain", "concern"],
   "as.ex.": ["stated", "missing", "uncertain", "concern"],
   "ag.st.": ["ready_for_review", "awaiting_answers", "awaiting_acknowledgements", "awaiting_confirmations", "effective", "declined", "superseded", "revision_conflict"],
-  "cs.reason.": ["work_inaccurate", "evidence_integrity", "verification_conflict", "suspected_fraud"],
+  "cs.reason.": ["work_inaccurate", "evidence_integrity", "verification_conflict", "suspected_fraud", "incorrect_pay", "incorrect_hours", "incorrect_duties", "incorrect_dates", "contract_terms", "missing_payment", "unfair_termination", "other"],
   "sh.f.": ["task_summary", "observation_date", "evidence_kind", "confirmation_method", "authority_assurance", "verification_status"],
   "ai.out.": ["success", "quota", "paused", "budget", "configuration", "model", "unavailable", "network", "timeout", "incomplete", "blocked", "invalid", "consent_stale"],
   "ai.name.": ["gemini", "openai", "selfhosted", "fallback"],

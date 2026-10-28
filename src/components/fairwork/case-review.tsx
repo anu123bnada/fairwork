@@ -6,9 +6,10 @@ import { appRequest,ApiRequestError } from "@/features/authority/client";
 import { caseCommandSchema,caseReadSchema,caseListSchema,caseReceiptSchema,type CaseView,type CaseList } from "@/features/cases/schema";
 import { workReadSchema,type WorkVersion } from "@/features/work/schema";
 import { CaseFollowups } from "./case-followups";
+import { CaseEvidence } from "./case-evidence";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
-const reasonCodes=["work_inaccurate","evidence_integrity","verification_conflict","suspected_fraud"] as const;
+const reasonCodes=["work_inaccurate","evidence_integrity","verification_conflict","suspected_fraud","incorrect_pay","incorrect_hours","incorrect_duties","incorrect_dates","contract_terms","missing_payment","unfair_termination","other"] as const;
 function queryId(name:string){const value=new URLSearchParams(window.location.search).get(name);return z.uuid().safeParse(value).success?value:null;}
 export function CaseReviewScreen({basePath="/app/cases"}:{basePath?:"/app/cases"|"/admin/cases"}){
  const { t } = useI18n();
@@ -50,6 +51,7 @@ export function CaseReviewScreen({basePath="/app/cases"}:{basePath?:"/app/cases"
    {!!view.events.length&&<details open><summary>{t("cs.timeline")}</summary><ol className="fw-case-timeline">{view.events.map(e=><li key={e.id}><strong>{t("cs.eventLine",{operation:e.operation,revision:e.revision})}</strong><p>{e.note}</p><small>{new Date(e.recordedAt).toLocaleString()} · {e.actorId}</small></li>)}</ol></details>}
    <label className="fw-field">{t("cs.link")}<input readOnly value={`/app/cases?caseId=${view.caseId}`} onFocus={e=>e.target.select()}/></label><p>{t("cs.linkNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void load(null)}>{t("cs.backList")}</button>
   </section>}
+  {view?.basis&&<CaseEvidence key={`ev:${view.caseId}:${view.revision}`} caseId={view.caseId} open={view.status==="open"}/>}
   {view?.basis&&<CaseFollowups key={`${view.caseId}:${view.revision}`} caseId={view.caseId} revision={view.revision} basePath={basePath}/>}
   <Link className="fw-dark-button" href="/app/work-record">{t("cs.backWork")}</Link><Link className="fw-secondary" href="/app/passport">{t("cs.viewPassport")}</Link>
  </div>;

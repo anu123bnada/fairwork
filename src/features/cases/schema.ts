@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { workState } from "@/features/work/schema";
 const hash=z.string().regex(/^[0-9a-f]{64}$/),time=z.iso.datetime({offset:true});
-export const caseReason=z.enum(["work_inaccurate","evidence_integrity","verification_conflict","suspected_fraud"]);
+export const caseReason=z.enum(["work_inaccurate","evidence_integrity","verification_conflict","suspected_fraud","incorrect_pay","incorrect_hours","incorrect_duties","incorrect_dates","contract_terms","missing_payment","unfair_termination","other"]);
 export const caseOutcome=z.enum(["dismiss","uphold","correction_required"]);
 const base={caseId:z.uuid(),idempotencyKey:z.uuid()},revision={expectedRevision:z.number().int().positive()};
 export const caseCommandSchema=z.discriminatedUnion("operation",[

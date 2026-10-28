@@ -47,3 +47,39 @@ for (const locale of ["si","ta","de"] as const) {
   await expect(page.locator("body")).not.toContainText(/\bcs\.[a-zA-Z.]+\b/);
  });
 }
+
+test("the open-case form offers every approved dispute category and sends the chosen one",async({context,page})=>{
+ const state=model(),requests:Record<string,unknown>[]=[];
+ await session(context,state,worker,requests,false);
+ await page.goto(`/app/cases?workId=${id}`);
+ await page.getByRole("button",{name:"Load record for review"}).click();
+ const select=page.getByLabel("Concern type");
+ const labels=await select.locator("option").allInnerTexts();
+ for(const label of ["Incorrect pay","Incorrect working hours","Incorrect duties","Incorrect dates","Contract terms","Missing payment","Unfair termination (unproven concern)","Other"])expect(labels,label).toContain(label);
+ await select.selectOption({label:"Missing payment"});
+ await page.getByLabel("Concern details").fill("Two months of pay are missing");
+ await page.getByRole("button",{name:"Submit concern"}).click();
+ await expect(page.getByRole("region",{name:"Case details"})).toBeVisible();
+ expect(requests.find(request=>request.operation==="open")).toMatchObject({reasonCode:"missing_payment"});
+});
+
+test("the opener attaches a vault document as an evidence reference, and the reference lists its checksum",async({context,page})=>{
+ const state=model(),requests:Record<string,unknown>[]=[];
+ await session(context,state,worker,requests,false);
+ const doc="50000000-0000-4000-8000-0000000000aa",sha="ab".repeat(32);let items:Record<string,unknown>[]=[];const attaches:Record<string,unknown>[]=[];
+ await context.route("**/api/v1/vault",route=>route.fulfill({json:{data:{items:[{documentId:doc,title:"Payslip March",category:"payslip",fileName:"march.pdf",mediaType:"application/pdf",byteSize:2048,sha256:sha,createdAt:"2026-10-27T08:00:00Z"}],limit:50,used:1,storageConfigured:true}}}));
+ await context.route("**/api/v1/work-cases/evidence**",route=>{
+  if(route.request().method()==="GET")return route.fulfill({json:{data:{caseId:id,items}}});
+  const body=route.request().postDataJSON();attaches.push(body);
+  items=[{documentId:doc,title:"Payslip March",category:"payslip",fileName:"march.pdf",mediaType:"application/pdf",byteSize:2048,sha256:sha,attachedAt:time,attachedBy:worker}];
+  return route.fulfill({json:{data:{caseId:id,documentId:doc,replayed:false}}});
+ });
+ await page.goto(`/app/cases?caseId=${id}`);
+ const region=page.getByRole("region",{name:"Evidence references"});
+ await expect(region).toContainText("No evidence references yet.");
+ await region.getByText("Attach one of my vault documents as a reference").click();
+ await region.getByLabel("Document").selectOption({label:"Payslip March"});
+ await region.getByRole("button",{name:"Attach reference"}).click();
+ await expect(region).toContainText("Payslip March");await expect(region).toContainText(`checksum ${sha.slice(0,12)}`);
+ expect(attaches).toEqual([{caseId:id,documentId:doc}]);
+});

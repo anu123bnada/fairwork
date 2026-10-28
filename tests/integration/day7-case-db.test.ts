@@ -222,6 +222,7 @@ beforeAll(async () => {
       await runMigration(await readFile(`supabase/migrations/${migration[0]}`, "utf8"));
       await checkActivationStage(index + 1);
     }
+    await runMigration(await readFile("supabase/migrations/20261029150000_dispute_categories.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -306,6 +307,19 @@ async function restoreReviewer(){await db.exec(`insert into private.capability_a
 
 describe("Day 7 denial-first work case review",()=>{
  it("preserves all pre-existing foundation rows across the six migrations",()=>{expect(foundationRowsPreserved).toBe(true);});
+ it("accepts the owner-approved dispute categories alongside the original four and refuses anything else",async()=>{
+  const codes=["work_inaccurate","evidence_integrity","verification_conflict","suspected_fraud","incorrect_pay","incorrect_hours","incorrect_duties","incorrect_dates","contract_terms","missing_payment","unfair_termination","other"];
+  const def=(await db.query<{d:string}>("select pg_get_constraintdef(c.oid) d from pg_constraint c where c.conrelid='private.work_cases'::regclass and c.contype='c' and pg_get_constraintdef(c.oid) like '%reason_code%'")).rows[0]!.d;
+  for(const code of codes)expect(def,code).toContain(`'${code}'`);
+  for(const code of ["incorrect_pay","unfair_termination","other"]){
+   const c=await verified(),input={...openInput(c),reasonCode:code};
+   await caseCommand(input);
+   expect((await caseRead(input.caseId)).status,code).toBe("open");
+   expect((await db.query<{reason_code:string}>("select reason_code from private.work_cases where id=$1",[input.caseId])).rows[0]!.reason_code).toBe(code);
+  }
+  const c=await verified();
+  for(const bad of ["made_up","INCORRECT_PAY","","incorrect_pay "])await expect(caseCommand({...openInput(c),reasonCode:bad}),bad).rejects.toThrow("VALIDATION_FAILED");
+ });
  it.each([0,1,2,3,4,5,6])("activation stage %i satisfies the read-only security assertions",stage=>{
   expect(activationStages).toContain(stage);
  });
