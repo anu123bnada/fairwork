@@ -47,6 +47,7 @@ describe("data export", () => {
     const result = await buildDataExport(get, NOW);
     expect(result.sections.credentials).toEqual({ status: "unavailable", reason: "Too many requests. Try again shortly." });
     expect(result.sections.evidenceVaultDocuments?.status).toBe("unavailable");
+    expect(Object.keys(result.sections)).toEqual(expect.arrayContaining(["evidenceVaultStatus", "researchHistory"]));
     expect(result.sections.profile?.status).toBe("ok"); expect(result.sections.workRecords?.status).toBe("ok");
   });
 

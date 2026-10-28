@@ -4,8 +4,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { localPostgresConnection } from "../local-postgres";
 
-// Rehearsal of the hosted upgrade. The staging project has the first 32 migrations applied and holds data; 19 migrations were pending then (they have since been applied there); every later migration, 21 in total at present, is rehearsed the same way. This applies the first
-// 32 to a fresh database, writes synthetic rows, then applies the remaining 21 in order and checks that: every migration applies cleanly on top of existing
+// Rehearsal of the hosted upgrade. The staging project has the first 32 migrations applied and holds data; 19 migrations were pending then (they have since been applied there); every later migration, 22 in total at present, is rehearsed the same way. This applies the first
+// 32 to a fresh database, writes synthetic rows, then applies the remaining 22 in order and checks that: every migration applies cleanly on top of existing
 // data, no existing row was changed or lost, and everything the pending migrations added is protected (row-level security enabled and forced, no direct
 // client grants, no function callable by the public or anonymous roles).
 const APPLIED_ON_STAGING = "20261024053156";
@@ -40,11 +40,11 @@ afterAll(() => db.close());
 
 it("starts from the staging state: 32 migrations, with real rows present", async () => {
   expect(files.filter(file => file.split("_")[0]! <= APPLIED_ON_STAGING)).toHaveLength(32);
-  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(21);
+  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(22);
   expect(before.profiles).toBe(2);
 });
 
-it("applies the 21 pending migrations in order on top of existing data without error", async () => {
+it("applies the 22 pending migrations in order on top of existing data without error", async () => {
   const pending = files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING);
   for (const file of pending) {
     try { await db.exec(await readFile(`supabase/migrations/${file}`, "utf8")); }

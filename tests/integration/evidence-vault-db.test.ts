@@ -193,6 +193,7 @@ beforeAll(async () => {
     await runMigration(await readFile("supabase/migrations/20261028190000_offer_notes.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261029110000_research_history.sql", "utf8"));
     await runMigration(await readFile("supabase/migrations/20261029120000_vault_evidence_status.sql", "utf8"));
+    await runMigration(await readFile("supabase/migrations/20261029130000_vault_revocation_enforcement.sql", "utf8"));
   } catch (error) {
     await db.exec("rollback").catch(() => undefined);
     throw error;
@@ -488,5 +489,35 @@ describe("evidence correction notes and revocation", () => {
     await expect(rpc("vault_correction_add", note(id))).rejects.toThrow("RATE_LIMITED");
     await expect(rpc("vault_evidence_status", {}, null)).rejects.toThrow();
     await rpc("vault_delete", { documentId: id });
+  });
+});
+
+describe("revocation is enforced when attaching", () => {
+  const WORK = crypto.randomUUID(), OFFER = crypto.randomUUID();
+  const upload = async (owner = WORKER) => { const request = doc({}, owner); await rpc("vault_register", request, owner); return request.documentId as string; };
+  beforeAll(async () => {
+    await db.exec("reset role");
+    await db.exec("set session_replication_role = replica");
+    await db.query("insert into private.work_records(id,agreement_id,worker_id,company_id,representative_id,current_version) values($1,$2,$3,$4,$5,1)", [WORK, crypto.randomUUID(), WORKER, COMPANY, APPROVER]);
+    await db.query("insert into private.day3_offers(id,offer_id,company_id,worker_id,representative_id,requester_id,requester_role,version,term_hash,snapshot,created_by) values($1,$2,$3,$4,$5,$4,'WORKER',1,$6,'{}'::jsonb,$4)", [crypto.randomUUID(), OFFER, COMPANY, WORKER, APPROVER, SHA]);
+    await db.exec("set session_replication_role = origin");
+  });
+  it("refuses to attach a revoked document to a work record or an offer, keeps older links, and allows it again once reinstated", async () => {
+    await clearQuotas();
+    const id = await upload();
+    await rpc("vault_attach", { documentId: id, workId: WORK });
+    await rpc("vault_attach_offer", { documentId: id, offerId: OFFER });
+    await rpc("vault_revoke", { documentId: id, reason: "Superseded" });
+    const other = await upload();
+    await rpc("vault_revoke", { documentId: other, reason: "Withdrawn" });
+    await expect(rpc("vault_attach", { documentId: other, workId: WORK })).rejects.toThrow("EVIDENCE_REVOKED");
+    await expect(rpc("vault_attach_offer", { documentId: other, offerId: OFFER })).rejects.toThrow("EVIDENCE_REVOKED");
+    expect(((await rpc("vault_attachments", { workId: WORK })).items as Record<string, unknown>[]).map(item => item.documentId)).toContain(id);
+    expect(((await rpc("vault_offer_attachments", { offerId: OFFER })).items as Record<string, unknown>[]).map(item => item.documentId)).toContain(id);
+    await rpc("vault_reinstate", { documentId: other });
+    await rpc("vault_attach", { documentId: other, workId: WORK });
+    await rpc("vault_attach_offer", { documentId: other, offerId: OFFER });
+    await expect(rpc("vault_attach", { documentId: "00000000-0000-4000-8000-000000000999", workId: WORK })).rejects.toThrow("NOT_FOUND");
+    await rpc("vault_delete", { documentId: id }); await rpc("vault_delete", { documentId: other });
   });
 });

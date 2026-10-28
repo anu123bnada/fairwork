@@ -23,6 +23,8 @@ export const sources: Source[] = [
   { name: "workCases", path: "/api/v1/work-cases", paging: "cursor" },
   { name: "credentials", path: "/api/v1/credentials" },
   { name: "evidenceVaultDocuments", path: "/api/v1/vault" },
+  { name: "evidenceVaultStatus", path: "/api/v1/vault/status" },
+  { name: "researchHistory", path: "/api/v1/research/history" },
   { name: "plan", path: "/api/v1/entitlements" },
   { name: "developerKeys", path: "/api/v1/developer/keys" },
   { name: "developerWebhooks", path: "/api/v1/developer/webhooks" },
