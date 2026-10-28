@@ -11,7 +11,12 @@ assert.equal(config.plugins.CapacitorCookies.enabled, false);
 // Native viewport padding preserves system/keyboard insets without mutating the
 // server-rendered <html> style before React hydration.
 assert.equal(config.plugins.SystemBars.insetsHandling, "native");
-assert.match(read("android/app/build.gradle"), /beforeVariants\(selector\(\)\.withBuildType\("release"\)\)[\s\S]*?variantBuilder\.enable = false/);
+// The release variant is disabled unless a non-development application ID and an https origin are supplied as build parameters; the development ID
+// prefix and any other origin form are always refused.
+const gradle = read("android/app/build.gradle");
+assert.match(gradle, /beforeVariants\(selector\(\)\.withBuildType\("release"\)\)[\s\S]*?variantBuilder\.enable = releaseConfigured/);
+assert.match(gradle, /def releaseConfigured = [^\n]*\n[^\n]*!oryqenReleaseAppId\.startsWith\("org\.fairwork\."\)[^\n]*\n[^\n]*https:/);
+assert.match(gradle, /oryqenReleaseOrigin = \(project\.findProperty\("oryqenReleaseOrigin"\) \?: ""\)/);
 const network = read("android/app/src/debug/res/xml/local_poc_network_security.xml");
 assert.match(network, /<base-config cleartextTrafficPermitted="false"\s*\/>/);
 assert.match(network, /<domain includeSubdomains="false">localhost<\/domain>/);
