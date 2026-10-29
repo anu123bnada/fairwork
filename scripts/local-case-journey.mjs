@@ -1,7 +1,9 @@
 // Invoked only by the guarded local real-service harness. No forged sessions.
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { expect } from '@playwright/test';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 
 export async function localCaseJourney({ worker, employer, reviewer, operator, workId, request, record, localSql, evidence, origin, sharedRead }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
@@ -57,8 +59,9 @@ export async function localCaseJourney({ worker, employer, reviewer, operator, w
   must(visible === (resolved.outcome === 'dismiss'), 'Resolved case eligibility obeys the actual decision and independent integrity checks');
   if(sharedRead)must(((await sharedRead()).entries.length===1)===visible,'Case resolution preserves all independent eligibility conditions in shared projection');
   const page = worker.context.pages()[0];
+  const navLog=[];const onNav=frame=>{if(frame===page.mainFrame())navLog.push(`${Date.now()} ${frame.url()}`);};const onResp=response=>{if(response.url().includes('/api/'))navLog.push(`${Date.now()} ${response.status()} ${response.url()}`);};page.on('framenavigated',onNav);page.on('response',onResp);
   await page.goto(`${origin}/app/cases?caseId=${opening.caseId}`);
-  await expect(page.getByRole('region', { name: 'Decision receipt' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Decision receipt' })).toBeVisible().catch(async error=>{await page.screenshot({path:`${evidence}/case-decision-receipt-missing.png`,fullPage:true});writeFileSync(`${evidence}/case-decision-receipt-missing.txt`,`${navLog.slice(-60).join('\n')}\n${page.url()}\n${await page.locator('body').innerText().catch(()=>'')}`);throw error;});
   await page.screenshot({ path: `${evidence}/real-case-resolution.png`, fullPage: true });
   must(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Real case decision and audit timeline render without mobile horizontal overflow');
   await page.goto(`${origin}/app/passport`);
@@ -74,6 +77,6 @@ export async function localCaseJourney({ worker, employer, reviewer, operator, w
   await request(operator, endpoint, {operation:'assign',caseId:appeal.linkedCaseId,expectedRevision:1,reviewerId:reviewer.id,expiresAt:new Date(Date.now()+3600000).toISOString(),reason:'Previous reviewer denial probe',idempotencyKey:randomUUID()}, [403]);
   must(!(await request(worker, '/api/v1/passport')).entries.some(e=>e.workId===workId), 'Real appeal suppresses Passport while original reviewer reassignment is denied');
   await page.goto(`${origin}/app/cases?caseId=${opening.caseId}`);
-  await expect(page.getByRole('link',{name:'Open linked appeal case'})).toBeVisible();
+  await expect(page.getByRole('link',{name:'Open linked appeal case'})).toBeVisible({timeout:20000}).catch(async error=>{await page.screenshot({path:`${evidence}/case-linked-appeal-missing.png`,fullPage:true});throw error;});
   record('Real linked appeal is reopenable from the original case screen');
 }

@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { expect } from '@playwright/test';
+import { expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 
 export async function localOfferHistoryJourney({ worker, employer, outsider, offer, request, record, origin, evidence }) {
   const url = `/api/v1/offers/history?offerId=${offer.offerId}`;

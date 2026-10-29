@@ -1,7 +1,9 @@
 // Called by the guarded real local harness; all identities use actual Auth/MFA.
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { expect } from '@playwright/test';
+import { expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 export async function localPrivacyJourney({worker, employer, operator, approver, localSql, record, evidence, origin}) {
  const ownerPath='/api/v1/privacy-requests',reviewPath='/api/v1/operator/privacy-requests';
  const must=(ok,label)=>{if(!ok)throw new Error(label);record(label);};
@@ -62,7 +64,7 @@ export async function localPrivacyJourney({worker, employer, operator, approver,
  const page=worker.context.pages()[0];await page.goto(origin+'/app/settings');
  await page.getByText('Manage privacy requests',{exact:true}).click();
  const region=page.getByRole('region',{name:'Privacy requests',exact:true});
- await expect(region.getByText(body.scope,{exact:true})).toBeVisible();
+ await expect(region.getByText(body.scope,{exact:true})).toBeVisible({timeout:20000});
  await region.getByText('Request audit timeline',{exact:true}).first().click();
  await page.screenshot({path:`${evidence}/privacy-requests.png`,fullPage:true});
  must(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Real privacy requests render on mobile without horizontal overflow');

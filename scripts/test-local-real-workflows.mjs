@@ -1,6 +1,8 @@
 // Real local Auth, mail and application APIs. No route fixtures or forged JWTs.
 // Creates synthetic accounts/records and retains their audit history. Never hosted.
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 import { generateKeyPair, exportJWK } from 'jose';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
 import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';

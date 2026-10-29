@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { decodeJwt, decodeProtectedHeader, compactVerify, importJWK } from 'jose';
-import { expect } from '@playwright/test';
+import { expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 
 // Real local stack: real Auth sessions, real PostgreSQL, the app's real signing key (a throwaway test key
 // supplied to the local app process only) and a real browser verifying against the published public key.

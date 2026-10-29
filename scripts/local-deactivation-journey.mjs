@@ -2,7 +2,9 @@
 import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
-import { expect } from '@playwright/test';
+import { expect as baseExpect } from '@playwright/test';
+// The local stack and the browser share one machine, so first loads (the local app runs in development mode and compiles each route on demand) can take much longer than the default 5 s.
+const expect = baseExpect.configure({ timeout: 60000 });
 import { checkLocalDocker } from './local-development-runtime.mjs';
 export async function localDeactivationJourney({worker,employer,request,record,origin,evidence,localSql,grantId,totp}) {
  checkLocalDocker();
