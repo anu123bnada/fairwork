@@ -94,3 +94,7 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-row:ha
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product :is(.fw-card, .fw-list-card, .fw-offer-detail-card) p:not([class]) { font-size: 14px; line-height: 1.55; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-term-row { grid-template-columns: minmax(96px, 38%) minmax(0, 1fr) 10px; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-term-row span:first-child { overflow-wrap: break-word; hyphens: auto; }
+/* Pages with a fixed primary action: reserve room for the bar (up to about 180px tall with its hint lines) plus its offset, and on phones the bottom navigation,
+   so the last content is never underneath. Measured by the "end of page is not covered" tests. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:is(:has(.fw-fixed-action), :has(.fw-demo-passport-action)) .fw-product-body { padding-bottom: calc(244px + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:is(:has(.fw-fixed-action), :has(.fw-demo-passport-action)) .fw-product-body { padding-bottom: calc(236px + env(safe-area-inset-bottom)); } }
