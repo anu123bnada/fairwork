@@ -19,3 +19,6 @@ These need the second test account plus capabilities on staging. Nothing is gran
 
 ## What does not count as hosted verification
 Layout sweeps with an intercepted identity, mocked API replies, local real-stack runs, and database tests. They are useful and are reported separately.
+
+## Browser journeys (added by the release pass)
+`node scripts/run-hosted-browser-journeys.mjs --email <test account>` signs in through the real sign-in page and drives the signed-in screens in a fresh browser context. Read-only by default (`--writes` adds one private draft, `--signout` adds a sign-out journey). See `docs/ORYQEN_RELEASE_VERIFICATION.md`.
