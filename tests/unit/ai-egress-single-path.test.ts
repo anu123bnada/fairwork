@@ -35,7 +35,7 @@ describe("AI provider egress", () => {
     const example = text(".env.example");
     expect(example).toMatch(/^ORYQEN_AI_ENABLED=false\s*$/m);
     expect(example).not.toMatch(/^ORYQEN_AI_POLICY_APPROVED=true/m);
-    for (const name of ["GEMINI_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY", "ORYQEN_SELFHOSTED_AI_KEY"]) expect(example, name).not.toMatch(new RegExp(`^${name}=\S`, "m"));
+    for (const name of ["GEMINI_API_KEY", "GOOGLE_API_KEY", "OPENAI_API_KEY", "ORYQEN_SELFHOSTED_AI_KEY"]) expect(example, name).not.toMatch(new RegExp(`^${name}=.`, "m"));
   });
   it("no client-visible variable name can carry a provider key", () => {
     const names = new Set(sources.flatMap(file => text(file).match(/NEXT_PUBLIC_[A-Z0-9_]+/g) ?? []));
