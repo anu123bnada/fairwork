@@ -51,7 +51,7 @@ async function signedIn(context:BrowserContext){
  await context.route("**/api/v1/notifications**",r=>r.fulfill({json:{data:{items:[{eventKey:"a",kind:"work_decision",title:"Work record verified",message:"Your employer verified a record.",href:"/app/work-record",recordedAt:new Date().toISOString(),read:false},{eventKey:"b",kind:"agreement_decision",title:"Agreement confirmed",message:"",href:"/app/agreement-workflow",recordedAt:"2026-10-20T00:00:00Z",read:true}],nextCursor:null}}}));
 }
 
-const routes:[string,string][]=[["/app/home","dashboard"],["/app/add-offer","addoffer"],[`/app/check?offerId=${id}`,"check"],["/app/agreement-workflow","agreements"],[`/app/agreement-workflow?workflowId=${id}`,"agreementdetail"],["/app/work-record","workrecords"],[`/app/work-record?workId=${id}`,"workrecorddetail"],["/app/passport","passport"],["/app/cases","cases"],["/app/notifications","notifications"],["/app/settings","settings"]];
+const routes:[string,string][]=[["/app/home","dashboard"],["/app/add-offer","addoffer"],[`/app/check?offerId=${id}`,"check"],["/app/agreement-workflow","agreements"],[`/app/agreement-workflow?workflowId=${id}`,"agreementdetail"],["/app/work-record","workrecords"],[`/app/work-record?workId=${id}`,"workrecorddetail"],["/app/passport","passport"],["/app/cases","cases"],["/app/notifications","notifications"],["/app/settings","settings"],["/app/employer","organizations"]];
 for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
 for(const scheme of ["light","dark"] as const)
 for(const [route,label] of routes)

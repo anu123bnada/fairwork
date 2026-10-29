@@ -42,3 +42,10 @@ Tests after the second pass: full unit suite 114 files / 647 tests pass; eslint 
 
 ## Final QA correction (29 Oct)
 `src/components/oryqen/brand.css`, which defines `--oq-*`, is not imported by the application, so every screen style written against `--oq-*` rendered without backgrounds, borders or colours in the integrated build. `feature-tokens.css` now defines those tokens scoped to the feature classes only (the shell's own blue/navy and dark-surface values), and fixes the work-record row grid. Delete it once the shared design system defines `--oq-*` globally.
+
+## Design system (30 Oct)
+- `src/components/oryqen/tokens.css`: semantic light/dark tokens (owner palette). `design-system.css`: glass cards, gradient CTAs, inputs, focus, nav, badges, skeleton, ring, toast. Both are imported in `layout.tsx`; the component layer applies to `.fw-product` screens only, so sign-in and public pages keep their own design (a saved dark preference must not override the sign-in page; `oryqen.spec.ts` pins this).
+- Theme: `public/oryqen-theme.js` (loaded in `<head>`, no inline script, so the source audit still passes) applies the saved choice before paint on every route; `ThemeToggle` (match device / light / dark) is in the app header; key `oryqen.appearance`.
+- Primitives in `src/components/ui`: StatusBadge, EmptyState, Skeleton, ProgressRing, toast. Dialogs, drawers and menus are not built (no screen needs one yet; an unused component would be dead code).
+- Known shell limits (Agent 1): the dashboard journey strip is clipped at 390px; "Figma sample" and "Demo" links appear only when no Supabase backend is configured (`REAL_BACKEND`), never in a real build.
+- Tests: `tests/e2e/design-system.spec.ts` (12 screens x 1440/390 x light/dark: no overflow, no raw ids, no page errors; theme persistence). All browser results are against mocked API replies.
