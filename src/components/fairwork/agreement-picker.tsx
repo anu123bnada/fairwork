@@ -9,8 +9,7 @@ import "./agreement-picker.css";
 
 // Choose an agreement from the ones this account already knows about instead of typing a reference.
 // The server still decides access when one is opened.
-export function AgreementPicker({ busy, onOpen }: { busy: boolean; onOpen: (agreementId: string) => void }) {
-  const { t } = useI18n();
+export function useAgreementChoices() {
   const [choices, setChoices] = useState<AgreementChoice[] | null>(null);
   useEffect(() => {
     let active = true;
@@ -22,6 +21,14 @@ export function AgreementPicker({ busy, onOpen }: { busy: boolean; onOpen: (agre
     })();
     return () => { active = false; };
   }, []);
+  return choices;
+}
+
+// Choose an agreement from the ones this account already knows about instead of typing a reference.
+// The server still decides access when one is opened.
+export function AgreementPicker({ busy, onOpen }: { busy: boolean; onOpen: (agreementId: string) => void }) {
+  const { t } = useI18n();
+  const choices = useAgreementChoices();
   if (choices === null) return <p role="status" className="fw-notice">{t("agp.loading")}</p>;
   if (!choices.length) return <section className="oq-agp-empty"><strong>{t("agp.emptyTitle")}</strong><span>{t("agp.emptyBody")}</span></section>;
   return <section className="oq-agp" aria-label={t("agp.title")}>
