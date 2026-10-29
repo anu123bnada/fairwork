@@ -33,7 +33,7 @@ test("dashboard summary, journey and recent offers are derived from the person's
   await expect(recent.getByRole("link", { name: "Review offer: Motorcycle Technician" })).toHaveAttribute("href", `/app/agreement?offerId=${id(11)}`);
   const journey = page.getByRole("list", { name: "Your employment journey" });
   await expect(journey.locator("li.is-done")).toHaveCount(3); // offer, record and passport are proven by the data
-  await expect(journey.locator("li.is-current")).toContainText("Check");
+  await expect(journey.locator("li.is-current")).toContainText("Findings");
   await expect(offersCard).toBeVisible();
   for (const [name, w, h, scheme] of [["desktop-light", 1440, 900, "light"], ["mobile-light", 390, 844, "light"], ["desktop-dark", 1440, 900, "dark"], ["mobile-dark", 390, 844, "dark"]] as const) {
     mkdirSync("test-results/dashboard", { recursive: true });
@@ -49,7 +49,7 @@ test("with no records the dashboard keeps its composition and guides the person 
   await page.goto("/app/home");
   await expect(page.locator(".fw-sum-card").filter({ hasText: "Saved offers" })).toContainText("Nothing saved yet");
   await expect(page.getByRole("region", { name: "Recent offers" })).toContainText("Your first offer starts here");
-  await expect(page.getByRole("list", { name: "Your employment journey" }).locator("li.is-current")).toContainText("Add offer");
+  await expect(page.getByRole("list", { name: "Your employment journey" }).locator("li.is-current")).toContainText("Your offer");
   await expect(page.getByRole("region", { name: "Welcome and next step" }).getByRole("link", { name: /Add offer/ }).first()).toHaveAttribute("href", "/app/add-offer");
 });
 

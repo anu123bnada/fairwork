@@ -6,7 +6,8 @@ test("ORYQEN restores splash-to-onboarding and supports keyboard navigation", as
   await page.clock.pauseAt(new Date());
   // "/" is the public cinematic landing page; the product splash stays at /intro/splash.
   await page.goto("/intro/splash");
-  await expect(page.getByRole("heading", {name:"ORYQEN",exact:true})).toBeVisible();
+  // The splash shows the owner-approved symbol; its accessible name is the product name.
+  await expect(page.getByAltText("ORYQEN").first()).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link",{name:"Skip to content"})).toBeFocused();
   await page.keyboard.press("Enter");

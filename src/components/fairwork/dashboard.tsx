@@ -69,17 +69,17 @@ export function SummaryCards({ data }: { data: Data }) {
   const verified = records?.filter(item => item.state === "verified").length ?? 0;
   const unavailable = <p className="fw-sum-note">{t("dash.unavailable")}</p>;
   return <div className="fw-sum-grid">
-    <Card icon="offer" title={t("dash.offers")} label={t("dash.offers")}>
+    <Card icon="offer" title={t("dash.offers")} label={t("dash.cardOffers")}>
       {data.offers.state === "failed" ? unavailable : offers === null ? <p className="fw-sum-note" role="status">…</p> : offers.length === 0
-        ? <><p className="fw-sum-value">0</p><p className="fw-sum-note">{t("dash.offersEmpty")}</p><Link className="fw-sum-link" href="/app/add-offer">{t("home.addOffer")} →</Link></>
+        ? <><p className="fw-sum-value">0</p><p className="fw-sum-note">{t("dash.offersEmpty")}</p><Link className="fw-sum-link" href="/app/add-offer">{t("dash.firstOffer")} →</Link></>
         : <><p className="fw-sum-value">{offers.length}{data.offers.state === "ready" && data.offers.data.nextCursor ? "+" : ""}</p><p className="fw-sum-note">{t("dash.offersLatest", { role: latest?.role || t("offers.untitled") })}</p>{open > 0 && <p className="fw-sum-chip">{t("dash.questionsOpen", { count: open })}</p>}</>}
     </Card>
-    <Card icon="record" title={t("dash.records")} label={t("dash.records")}>
+    <Card icon="record" title={t("dash.records")} label={t("dash.cardRecords")}>
       {data.records.state === "failed" ? unavailable : records === null ? <p className="fw-sum-note" role="status">…</p> : records.length === 0
         ? <><p className="fw-sum-value">0</p><p className="fw-sum-note">{t("dash.recordsEmpty")}</p></>
         : <><p className="fw-sum-value">{records.length}</p><p className="fw-sum-note">{t("dash.recordsVerified", { count: verified })}</p></>}
     </Card>
-    <Card icon="passport" title={t("dash.passport")} label={t("dash.passport")}>
+    <Card icon="passport" title={t("dash.passport")} label={t("dash.cardPassport")}>
       {data.records.state === "failed" ? unavailable : records === null ? <p className="fw-sum-note" role="status">…</p>
         : <><p className="fw-sum-value">{verified}</p><p className="fw-sum-note">{verified === 0 ? t("dash.passportNone") : t("dash.passportSome", { count: verified })}</p><Link className="fw-sum-link" href="/app/passport">{t("dash.openPassport")} →</Link></>}
     </Card>
@@ -90,11 +90,11 @@ export function RecentOffers({ data }: { data: Data }) {
   const { t, locale } = useI18n();
   const day = (value: string) => Number.isNaN(Date.parse(value)) ? value : new Date(value).toLocaleDateString(bcp47(locale), { year: "numeric", month: "short", day: "numeric" });
   return <section className="fw-recent" aria-label={t("dash.recent")}>
-    <header><h3>{t("dash.recent")}</h3><Link href="/app/add-offer">{t("home.addOffer")}</Link></header>
+    <header><h3>{t("dash.recent")}</h3><Link href="/app/add-offer">{t("dash.newOffer")}</Link></header>
     {data.offers.state === "failed" && <p className="fw-sum-note">{t("dash.unavailable")}</p>}
     {data.offers.state === "ready" && data.offers.data.items.length === 0 && <div className="fw-recent-empty">
       <p><strong>{t("dash.recentEmptyTitle")}</strong></p><p>{t("dash.recentEmptyBody")}</p>
-      <Link className="fw-primary" href="/app/add-offer">{t("home.addOffer")}</Link>
+      <Link className="fw-primary" href="/app/add-offer">{t("dash.firstOffer")}</Link>
     </div>}
     {data.offers.state === "ready" && data.offers.data.items.length > 0 && <ul>
       {data.offers.data.items.slice(0, 5).map(item => <li key={item.offerId}>

@@ -70,7 +70,7 @@ test("the home dashboard is translated end to end in Sinhala, Tamil and German w
     await page.getByLabel(/Language|භාෂාව|மொழி|Sprache/).selectOption(locale);
     await page.goto("/app/home");
     await expect(page.getByRole("heading", { name: translate(locale, "home.greeting", { name: "Synthetic" }) })).toBeVisible();
-    for (const key of ["home.workspace", "home.understand", "home.addPrompt", "home.addOffer", "home.passportTitle", "home.hintStrong", "home.discover", "home.guidance"] as const) {
+    for (const key of ["home.workspace", "dash.offers", "dash.records", "dash.passport", "dash.recent", "home.passportTitle", "home.hintStrong", "home.discover", "home.guidance"] as const) {
       await expect(page.getByText(translate(locale, key), { exact: false }).first(), `${locale}:${key}`).toBeVisible();
     }
     await expect(page.getByRole("link", { name: translate(locale, "home.notifications") })).toBeVisible();

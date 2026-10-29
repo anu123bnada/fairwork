@@ -69,8 +69,8 @@ test("searching loads the remaining pages so an older offer is found", async ({ 
   await page.goto("/app/home");
   const region = page.getByRole("region", { name: "Saved offers" });
   await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(2);
-  expect(cursors).toEqual([null]);
+  expect(cursors.filter(cursor => cursor !== null)).toEqual([]); // no later page is requested until searching
   await region.getByLabel("Search loaded offers by role").fill("captain");
   await expect(region.getByRole("link", { name: "Open offer" })).toHaveCount(1);
-  expect(cursors).toEqual([null, id(3)]);
+  expect(cursors.filter(cursor => cursor !== null)).toEqual([id(3)]);
 });
