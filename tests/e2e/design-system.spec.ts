@@ -51,7 +51,7 @@ async function signedIn(context:BrowserContext){
  await context.route("**/api/v1/notifications**",r=>r.fulfill({json:{data:{items:[{eventKey:"a",kind:"work_decision",title:"Work record verified",message:"Your employer verified a record.",href:"/app/work-record",recordedAt:new Date().toISOString(),read:false},{eventKey:"b",kind:"agreement_decision",title:"Agreement confirmed",message:"",href:"/app/agreement-workflow",recordedAt:"2026-10-20T00:00:00Z",read:true}],nextCursor:null}}}));
 }
 
-const routes:[string,string][]=[["/app/home","dashboard"],["/app/add-offer","addoffer"],[`/app/check?offerId=${id}`,"check"],["/app/agreement-workflow","agreements"],[`/app/agreement-workflow?workflowId=${id}`,"agreementdetail"],["/app/work-record","workrecords"],[`/app/work-record?workId=${id}`,"workrecorddetail"],["/app/passport","passport"],["/app/cases","cases"],["/app/notifications","notifications"],["/app/settings","settings"]];
+const routes:[string,string][]=[["/app/home","dashboard"],["/app/add-offer","addoffer"],[`/app/check?offerId=${id}`,"check"],["/app/agreement-workflow","agreements"],[`/app/agreement-workflow?workflowId=${id}`,"agreementdetail"],["/app/work-record","workrecords"],[`/app/work-record?workId=${id}`,"workrecorddetail"],["/app/passport","passport"],["/app/cases","cases"],["/app/notifications","notifications"],["/app/settings","settings"],["/app/employer","organizations"]];
 for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
 for(const scheme of ["light","dark"] as const)
 for(const [route,label] of routes)
@@ -92,5 +92,116 @@ test("the chosen theme applies on every route before paint, persists across relo
   expect(await canvas()).toBe("#f5f7ff");
   await page.emulateMedia({colorScheme:"dark"});
   expect(await canvas()).toBe("#090f24");
+ }finally{await context.close();}
+});
+
+for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
+for(const scheme of ["light","dark"] as const)
+test(`a new account sees a guided start, not an empty dashboard (${name} ${scheme})`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height},colorScheme:scheme});
+ try{
+  await signedIn(context);
+  await context.route("**/api/v1/offers?*",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await context.route("**/api/v1/work-records",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const start=page.getByRole("region",{name:"Recent offers"});
+  await expect(start).toContainText("Your first offer starts here");
+  const steps=start.getByRole("list").getByRole("link");
+  await expect(steps).toHaveCount(3);
+  await expect(steps.nth(0)).toHaveAttribute("href","/app/add-offer");
+  await expect(steps.nth(1)).toHaveAttribute("href","/app/check");
+  await expect(steps.nth(2)).toHaveAttribute("href","/app/work-record");
+  await expect(page.getByRole("region",{name:"Welcome and next step"}).getByRole("link",{name:/Add offer/}).first()).toHaveAttribute("href","/app/add-offer");
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
+  mkdirSync("test-results/design",{recursive:true});
+  await page.screenshot({path:`test-results/design/newuser-${name}-${scheme}.png`,fullPage:true});
+ }finally{await context.close();}
+});
+
+test("the offer workbench shows the selected offer and switches on selection",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const second={offerId:"40000000-0000-4000-8000-000000000099",companyId:company,version:1,role:"Warehouse Assistant",createdAt:"2026-10-20T09:00:00Z",questions:0,archived:false,decision:"considering",lifecycleRevision:0};
+  await context.route("**/api/v1/offers?*",r=>r.fulfill({json:{data:{items:[...offers,second],nextCursor:null}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const wb=page.getByRole("region",{name:"Recent offers"});
+  const detail=wb.getByRole("article",{name:"Selected offer"});
+  await expect(detail).toContainText("Motorcycle Technician");
+  await expect(detail.getByRole("link",{name:"Review offer: Motorcycle Technician"})).toHaveAttribute("href",`/app/agreement?offerId=${id}`);
+  await wb.getByRole("button",{name:/Warehouse Assistant/}).click();
+  await expect(detail).toContainText("Warehouse Assistant");
+  await expect(detail).toContainText("Considering");
+  await expect(detail.getByRole("link",{name:"See findings"})).toHaveAttribute("href",`/app/check?offerId=${second.offerId}`);
+  await expect(wb.getByRole("button",{name:/Warehouse Assistant/})).toHaveAttribute("aria-pressed","true");
+ }finally{await context.close();}
+});
+
+test("the dashboard work area is a keyboard-operable tab set that keeps each panel's state",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const tabs=page.getByRole("tablist",{name:"Manage"});
+  await expect(tabs.getByRole("tab")).toHaveText(["Saved offers","Work records","Research an employer"]);
+  await expect(tabs.getByRole("tab",{name:"Saved offers"})).toHaveAttribute("aria-selected","true");
+  await tabs.getByRole("tab",{name:"Research an employer"}).click();
+  const panel=page.getByRole("region",{name:"Research an employer"});
+  await panel.getByLabel("Company name").fill("Draft query");
+  await tabs.getByRole("tab",{name:"Saved offers"}).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(tabs.getByRole("tab",{name:"Work records"})).toBeFocused();
+  await expect(tabs.getByRole("tab",{name:"Work records"})).toHaveAttribute("aria-selected","true");
+  await page.keyboard.press("End");
+  await expect(tabs.getByRole("tab",{name:"Research an employer"})).toHaveAttribute("aria-selected","true");
+  await expect(panel.getByLabel("Company name")).toHaveValue("Draft query");
+  await page.keyboard.press("Home");
+  await expect(tabs.getByRole("tab",{name:"Saved offers"})).toHaveAttribute("aria-selected","true");
+  await expect(page.getByRole("tabpanel",{name:"Research an employer"})).toBeHidden();
+ }finally{await context.close();}
+});
+
+test("the dashboard agreements card counts open proposals with an expiry date and links to agreements",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const soon=new Date(Date.now()+5*86_400_000).toISOString(),past=new Date(Date.now()-2*86_400_000).toISOString();
+  await context.route("**/api/v1/agreement-expiries",r=>r.fulfill({json:{data:{items:[{agreementId:id,version:1,expiresAt:soon,expired:false,role:"worker"},{agreementId:"40000000-0000-4000-8000-0000000000b2",version:1,expiresAt:past,expired:true,role:"worker"}]}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const card=page.locator(".fw-sum-card").filter({hasText:"Agreements"});
+  await expect(card).toContainText("2");
+  await expect(card).toContainText("1 expired");
+  await expect(card).toContainText("Next expiry");
+  await expect(card.getByRole("link",{name:/Open agreements/})).toHaveAttribute("href","/app/agreement-workflow");
+ }finally{await context.close();}
+});
+
+const researchRecord={provider:"gleif",providerName:"GLEIF Global LEI Index",identifier:{scheme:"LEI",value:"254900XV5B725ZG6RS07"},legalName:"Commercial Bank of Ceylon PLC",otherNames:[],country:"LK",jurisdiction:"LK",legalForm:"Public Limited Company",entityStatus:"ACTIVE",registrationStatus:"ISSUED",corroboration:"FULLY_CORROBORATED",registrationAuthority:{id:"RA000540",entityId:"PQ116"},legalAddress:"21, Bristol Street, Colombo, 00100, LK",sourceLastUpdated:"2026-09-01T18:13:29Z",nextRenewal:"2027-09-04T19:37:18Z",sourceUrl:"https://api.gleif.org/api/v1/lei-records/254900XV5B725ZG6RS07",retrievedAt:"2026-10-26T09:00:00Z"};
+for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
+for(const scheme of ["light","dark"] as const)
+test(`research results show a facts grid and badged findings, never a score (${name} ${scheme})`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height},colorScheme:scheme});
+ try{
+  await signedIn(context);
+  await context.route("**/api/v1/organizations",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await context.route("**/api/v1/research/companies?*",r=>r.fulfill({json:{data:{query:{name:"Commercial Bank of Ceylon",country:"LK"},totalMatches:1,source:{provider:"gleif",name:"GLEIF Global LEI Index",url:"https://www.gleif.org/en/lei-data/gleif-api",kind:"third_party_registry"},limitations:["Data comes from a third-party registry. It is not complete."],results:[{record:researchRecord,nameMatch:"close",freshness:{status:"current",sourceAgeDays:55,verifyAgainBy:"2026-11-25T09:00:00.000Z"},findings:[{id:"a",kind:"supports",title:"Registered name matches apart from the legal-form suffix",detail:"A matching name does not prove that a job offer belongs to this entity."},{id:"b",kind:"outdated",title:"Record may be outdated",detail:"Check the source date."},{id:"c",kind:"limitation",title:"What this research does not establish",detail:"It does not verify that this entity made a specific offer."}]}]}}}));
+  const page=await context.newPage();
+  await page.goto("/app/employer");
+  const panel=page.getByRole("region",{name:"Research an employer"});
+  await panel.getByLabel("Company name").fill("Commercial Bank of Ceylon");
+  await panel.getByLabel("Country").selectOption("LK");
+  await panel.getByRole("button",{name:"Search registry"}).click();
+  const card=panel.getByRole("article",{name:/Registry record: Commercial Bank/});
+  await expect(card).toContainText("Registry record, not verified by ORYQEN");
+  await expect(card).toContainText("Supports:");
+  await expect(card.locator(".oq-badge")).toHaveCount(4);
+  await expect(panel).not.toContainText(/trust score|\d+\s*\/\s*100|\d+\s*%/i);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
+  mkdirSync("test-results/design",{recursive:true});
+  await card.screenshot({path:`test-results/design/research-${name}-${scheme}.png`});
  }finally{await context.close();}
 });

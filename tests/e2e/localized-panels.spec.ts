@@ -43,6 +43,7 @@ for (const locale of ["si", "ta", "de"] as const) {
     await expect(offers.getByRole("combobox", { name: translate(locale, "offers.decisionFor", { role: "Maintenance technician" }) })).toBeVisible();
     await expect(offers.getByRole("option", { name: translate(locale, "offers.accepted") }).first()).toBeAttached();
 
+    await page.getByRole("tab").nth(2).click();
     const panel = page.getByRole("region", { name: translate(locale, "research.title") });
     await panel.getByLabel(translate(locale, "research.companyName")).fill("Commercial Bank of Ceylon");
     await panel.getByLabel(translate(locale, "research.country")).selectOption("LK");

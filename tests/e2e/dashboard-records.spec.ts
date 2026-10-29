@@ -9,10 +9,12 @@ test("dashboard reloads persisted work, keeps references and recovers from read 
     ? route.fulfill({ status: 503, json: { error: { code: "SERVICE_UNAVAILABLE" } } })
     : route.fulfill({ json: { data: { items: [{ workId: id, version: 1, state: "draft", hours: "16", periodStart: "2026-10-01", periodEnd: "2026-10-02" }], nextCursor: null } } }));
   await page.goto("/app/home");
+  await page.getByRole("tab", { name: "Work records" }).click();
   const records = page.getByRole("region", { name: "Dashboard work records" });
   await expect(records).toContainText("16 hours · draft");
   await expect(records.getByRole("link", { name: "Open work record", exact: true })).toHaveAttribute("href", `/app/work-record?workId=${id}`);
   await page.reload();
+  await page.getByRole("tab", { name: "Work records" }).click();
   await expect(records).toContainText("16 hours · draft");
   unavailable = true;
   await records.getByRole("button", { name: "Refresh work records" }).click();

@@ -42,3 +42,23 @@ Tests after the second pass: full unit suite 114 files / 647 tests pass; eslint 
 
 ## Final QA correction (29 Oct)
 `src/components/oryqen/brand.css`, which defines `--oq-*`, is not imported by the application, so every screen style written against `--oq-*` rendered without backgrounds, borders or colours in the integrated build. `feature-tokens.css` now defines those tokens scoped to the feature classes only (the shell's own blue/navy and dark-surface values), and fixes the work-record row grid. Delete it once the shared design system defines `--oq-*` globally.
+
+## Design system (30 Oct)
+- `src/components/oryqen/tokens.css`: semantic light/dark tokens (owner palette). `design-system.css`: glass cards, gradient CTAs, inputs, focus, nav, badges, skeleton, ring, toast. Both are imported in `layout.tsx`; the component layer applies to `.fw-product` screens only, so sign-in and public pages keep their own design (a saved dark preference must not override the sign-in page; `oryqen.spec.ts` pins this).
+- Theme: `public/oryqen-theme.js` (loaded in `<head>`, no inline script, so the source audit still passes) applies the saved choice before paint on every route; `ThemeToggle` (match device / light / dark) is in the app header; key `oryqen.appearance`.
+- Primitives in `src/components/ui`: StatusBadge, EmptyState, Skeleton, ProgressRing, toast. Dialogs, drawers and menus are not built (no screen needs one yet; an unused component would be dead code).
+- Known shell limits (Agent 1): the dashboard journey strip is clipped at 390px; "Figma sample" and "Demo" links appear only when no Supabase backend is configured (`REAL_BACKEND`), never in a real build.
+- Tests: `tests/e2e/design-system.spec.ts` (12 screens x 1440/390 x light/dark: no overflow, no raw ids, no page errors; theme persistence). All browser results are against mocked API replies.
+
+## Dashboard and employer redesign (30 Oct)
+- `dashboard.tsx` + `dashboard-overview.css`: hero with layered depth and a journey that wraps (no clipping at 390px); four KPI cards (offers, work records, verified hours, Passport) with a real per-record hours chart (solid = confirmed, dashed = not yet; heights are the record hours, nothing estimated); the recent-offers block is now an offer workbench (selectable list + detail pane with real revision, saved date, open questions, decision, and links to the existing agreement and findings routes); a guided three-step start for accounts with no offers.
+- `saved-offers.tsx` (`EmployerWorkspace`) + `employer-overview.css`: hero band with the real actions, the three-step setup path, and two columns (organization / hiring). Every existing panel and its API wiring is unchanged; headings "Your employer workspace" and "Set up your organization" are unchanged.
+- Files shared with the dashboard owner: `dashboard.tsx` and `saved-offers.tsx`; `product-app.tsx` is not changed in this pass. Coordination: I could not reach the Agent 1 session through the messaging tool (every address resolved to this session), so these files were changed without a reply.
+- Tests: `design-system.spec.ts` adds the new-account guided start (4 viewport/theme combinations) and the workbench selection test.
+
+## Dashboard work area, agreements summary and research results (30 Oct, pass 2)
+- `dashboard.tsx`: five summaries from real reads (offers, work records, verified hours, agreements, Passport). The agreements card counts open proposals that carry an expiry date (`/api/v1/agreement-expiries`), the only agreement list the API exposes without a record id; it says so and links to `/app/agreement-workflow`. The workbench has a dashed "add another offer" tile (a real link).
+- `dashboard-manage.tsx` (new): saved offers, work records and employer research are one keyboard-operable tab set (arrows, Home, End). All three panels stay mounted, so a typed query or loaded list survives switching tabs. `product-app.tsx` changes only the three mount lines in the home block.
+- `company-research.tsx`: search bar layout, facts grid, finding kinds as status badges; all existing text, aria names and the no-score rule are unchanged (the colon after the kind is kept as hidden text so "Supports:" still reads in full).
+- New English-only keys (`dash.*`, `theme.*`, `wr.*`, `agp.*`, `cws.*`, and others) fall back to English in Sinhala, Tamil and German until translated.
+- Specs updated because the home page now defaults to the Saved offers tab: `dashboard-records.spec.ts`, `localized-panels.spec.ts`. The employer note keeps its original sentence because `product-app.spec.ts` asserts it.

@@ -1,4 +1,5 @@
 "use client";
+import "./employer-overview.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TeamRoster } from "./team-roster";
 import { CompanyResearch } from "./company-research";
@@ -89,20 +90,34 @@ export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPL
 }
 
 export function EmployerWorkspace() {
-  return <>
-    <header className="fw-employer-top"><Link href="/app/settings">Back to settings</Link><span className="fw-pill fw-employer-pill">EMPLOYER VIEW</span></header>
-    <div className="fw-employer-heading"><h2>Your employer workspace</h2><p>Only offers where you are the designated representative with current organization authority appear here.</p></div>
-    <section className="fw-list-card" aria-label="Employer onboarding"><h3>Set up your organization</h3><ol><li>Request a new organization or join an existing one below.</li><li>Check your request status after independent review.</li><li>Once authorized, complete company information and manage your offers.</li></ol><p>Account registration is complete. Organization verification is separate; no real employer verification service is connected.</p></section>
-    <OrganizationRequests />
-    <CompanyProfiles />
-    <CompanyResearch />
-    <RecruiterEmployerPanel />
-    <OrganizationPlan />
-    <TeamRoster />
-    <Link className="fw-secondary" href="/app/opportunities">Manage opportunity listings</Link>
-    <SavedOffers context="EMPLOYER" />
-    <section className="fw-card fw-employer-new-offer"><span><strong>Create an offer</strong><br /><small>Approved organization membership is required. Selecting employer does not grant access.</small></span><Link className="fw-small-action" href="/app/add-offer">+ New</Link></section>
-    <Link className="fw-secondary" href="/app/work-record">Review work records</Link>
-    <Link className="fw-secondary" href="/app/cases">Case review</Link>
-  </>;
+  return <div className="oq-emp">
+    <section className="oq-emp-hero" aria-label="Employer overview">
+      <div className="oq-emp-bar"><Link href="/app/settings">Back to settings</Link><span className="fw-pill fw-employer-pill">EMPLOYER VIEW</span></div>
+      <div className="fw-employer-heading"><h2>Your employer workspace</h2><p>Only offers where you are the designated representative with current organization authority appear here.</p></div>
+      <div className="oq-emp-actions">
+        <Link className="oq-emp-primary" href="/app/add-offer">Create an offer</Link>
+        <Link className="oq-emp-secondary" href="/app/opportunities">Manage opportunity listings</Link>
+        <Link className="oq-emp-secondary" href="/app/work-record">Review work records</Link>
+        <Link className="oq-emp-secondary" href="/app/cases">Case review</Link>
+      </div>
+      <p className="oq-emp-note">Approved organization membership is required. Selecting employer does not grant access.</p>
+    </section>
+    <section className="oq-emp-steps fw-list-card" aria-label="Employer onboarding"><h3>Set up your organization</h3>
+      <ol><li><span className="oq-emp-n" aria-hidden="true">1</span>Request a new organization or join an existing one below.</li><li><span className="oq-emp-n" aria-hidden="true">2</span>Check your request status after independent review.</li><li><span className="oq-emp-n" aria-hidden="true">3</span>Once authorized, complete company information and manage your offers.</li></ol>
+      <p>Account registration is complete. Organization verification is separate; no real employer verification service is connected.</p>
+    </section>
+    <div className="oq-emp-grid">
+      <div className="oq-emp-col" aria-label="Organization">
+        <OrganizationRequests />
+        <CompanyProfiles />
+        <OrganizationPlan />
+        <TeamRoster />
+      </div>
+      <div className="oq-emp-col" aria-label="Hiring and research">
+        <CompanyResearch />
+        <RecruiterEmployerPanel />
+        <SavedOffers context="EMPLOYER" />
+      </div>
+    </div>
+  </div>;
 }
