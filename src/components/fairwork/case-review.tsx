@@ -8,6 +8,7 @@ import { workReadSchema,type WorkVersion } from "@/features/work/schema";
 import { CaseFollowups } from "./case-followups";
 import { CaseEvidence } from "./case-evidence";
 import "./case-experience.css";
+import "./feature-tokens.css";
 import { CaseWorkSelect } from "./case-work-select";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";

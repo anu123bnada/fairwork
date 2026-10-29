@@ -7,6 +7,7 @@ import { collectPrivatePassportExport } from "@/features/work/passport-export";
 import { groupPassportByYear,summarizePassport } from "@/features/work/passport-summary";
 import { useI18n } from "@/i18n/use-i18n";
 import "./passport-experience.css";
+import "./feature-tokens.css";
 
 export function WorkPassportScreen({displayName}:{displayName:string}) {
  const { t } = useI18n();

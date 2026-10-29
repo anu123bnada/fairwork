@@ -6,6 +6,7 @@ import { passportSchema } from "@/features/work/passport-schema";
 import { mergeAgreementChoices, readRecentAgreements, type AgreementChoice } from "@/features/offer/agreement-choices";
 import { useI18n } from "@/i18n/use-i18n";
 import "./agreement-picker.css";
+import "./feature-tokens.css";
 
 // Choose an agreement from the ones this account already knows about instead of typing a reference.
 // The server still decides access when one is opened.

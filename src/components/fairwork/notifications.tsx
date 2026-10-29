@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import { groupByDay } from "@/features/identity/notification-groups";
 import "./notifications-experience.css";
+import "./feature-tokens.css";
 import { categories, essentialCategories, filterNotifications, hiddenFromStorage, STORAGE_KEY, toggleCategory, type NotificationCategory } from "@/features/identity/notification-preferences";
 function readHidden(): NotificationCategory[] { try { return hiddenFromStorage(window.localStorage.getItem(STORAGE_KEY)); } catch { return []; } }
 export function NotificationFeed(){
