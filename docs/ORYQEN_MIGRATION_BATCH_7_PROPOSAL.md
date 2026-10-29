@@ -36,36 +36,22 @@ The hashes change if a file is edited; recompute before any approval. Apply orde
 - Triggers signal the offer parties, the parties and assigned reviewer of a case, and the named recipient of a Passport grant (activation and revocation). A failing or absent Realtime service never fails or rolls back the business write (tested by making the sender raise).
 - **Must be verified on the hosted project with two real accounts before anyone relies on it:** that `realtime.send` can be called by the granted role (otherwise change the owner of `private.realtime_signal`), that private channels and the policy behave as modelled, and that a second account cannot join the first account's topic. Until then the UI must keep presenting the feed as "refresh", not "live".
 
+## Companion work already in this branch (inert until the batch is approved)
+
+- **Qualification API contract:** `src/features/qualifications/schema.ts` and `src/app/api/v1/me/qualifications/route.ts` (GET list, POST save/remove). The schema has no way to send or receive "verified" (`verification` is `self_reported | document_attached`, `independentlyVerified` is the literal `false`), and a database answer that claimed otherwise fails to parse and becomes a 503. Until section B exists the route answers 503. `tests/unit/qualifications-contract.test.ts` (6 tests) and the batch 7 rehearsal (the real database output parses with the browser schema) cover it. **No screen exists yet**; UI owners must label the two states honestly ("You entered this" / "Document attached by you, not checked by anyone") and must keep qualifications out of shared Passports and the signed export.
+- **Hosted two-account Realtime check:** `scripts/verify-hosted-realtime.mjs` (logic in `scripts/lib/realtime-authz-check.mjs`, 6 unit tests with a fake client that applies the proposed policy). Staging project or loopback only, hidden password prompts, never writes or publishes. Checks: each account joins its own channel; neither joins the other's; `user:*`, `user:`, `user:%`, `user` and a prefixed topic are refused; an account with no session is refused; clients cannot publish; optional `--listen N` verifies every received payload is exactly `{area}`. Run it only after the batch is applied to staging.
+- **Rollback:** rehearsed (see above).
+
 ## Risks
 
 1. The projection wrapper adds one insert to every recipient view (already rate limited by the existing quota).
 2. A wrapper over `private.notification_events()` is stacked on the existing wrapper chain (the same pattern earlier migrations used); each event source adds a union branch to the feed query.
 3. C touches `realtime.messages`, which Supabase manages; policy syntax follows the documented pattern but is unverified here.
-4. The rollback script below has not been rehearsed yet; rehearse it on the disposable database before approval.
-5. None of A, B or C changes an existing table, grant, policy or the 22-module status.
+4. None of A, B or C changes an existing table, grant, policy or the 22-module status.
 
-## Rollback (no data outside the new objects is touched)
+## Rollback
 
-```sql
--- C
-drop trigger signal_offer_change on private.day3_offers;
-drop trigger signal_case_event on private.work_case_events;
-drop trigger signal_passport_grant on private.passport_grants;
-drop policy oryqen_own_topic_receive on realtime.messages;
-drop function private.signal_offer_change(), private.signal_case_event(), private.signal_passport_grant(), private.realtime_signal(uuid,text);
--- B
-drop function api.qualifications(jsonb); drop table private.qualification_revisions;
--- A
-drop function private.notification_events();
-alter function private.notification_events_before_passport() rename to notification_events;
-drop function private.passport_notification_events();
-drop function api.passport_access_summary(jsonb);
-drop function api.passport_projection(jsonb);
-alter function api.passport_projection_core(jsonb) rename to passport_projection;
-grant execute on function api.passport_projection(jsonb) to authenticated, fw_user_exec;
-drop table private.passport_access_log;
-```
-Dropping the log discards audit history; prefer leaving the table and only restoring the functions.
+`docs/proposed-migrations/rollback_batch7.sql` (reverse order; touches only the objects batch 7 added and restores the renamed functions and their grants). Rehearsed in `proposed-batch7-db.test.ts`: after the rollback the projection, the notification feed and every earlier flow work as before, no batch 7 object remains, existing rows are unchanged, and the three files apply again cleanly. Dropping the access log discards that audit history; remove the last `drop table` line of section A if it should be kept.
 
 ## To promote after approval
 

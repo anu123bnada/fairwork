@@ -3,6 +3,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { readFile, readdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { localPostgresConnection } from "../local-postgres";
+import { qualificationPage, qualificationReceipt } from "../../src/features/qualifications/schema";
 import { twoAccountFlow } from "../../scripts/hosted-two-account-flow.mjs";
 
 // REVIEW-ONLY rehearsal of the PROPOSED batch 7 (docs/proposed-migrations/*.sql). The three files are applied on top of every real migration in a disposable database;
@@ -123,6 +124,9 @@ describe("B. Qualification records", () => {
     await expect(save({ id, expectedRevision: 0, content: { ...content, title: "Changed" }, idempotencyKey: key })).rejects.toThrow("IDEMPOTENCY_CONFLICT");
     await expect(save({ id, expectedRevision: 0, content })).rejects.toThrow("VERSION_CONFLICT");
     expect((await list()).items).toMatchObject([{ id, revision: 1, verification: "self_reported", independentlyVerified: false, content }]);
+    // The browser-side contract accepts exactly what the database returns (so a mismatch cannot hide behind a 503) and has no way to express "verified".
+    expect(qualificationPage.parse(await rpc("qualifications", { operation: "list", cursor: null })).items).toHaveLength(1);
+    expect(qualificationReceipt.parse(await save({ id, expectedRevision: 0, content, idempotencyKey: key }))).toEqual({ id, revision: 1, saved: true });
     for (const forged of [{ verification: "issuer_verified" }, { verified: true }, { independentlyVerified: true }, { status: "verified" }])
       await expect(save({ id: randomUUID(), expectedRevision: 0, content: { ...content, ...forged } }), JSON.stringify(forged)).rejects.toThrow("VALIDATION_FAILED");
     await expect(save({ id: randomUUID(), expectedRevision: 0, content, ...{ verification: "issuer_verified" } })).rejects.toThrow("VALIDATION_FAILED");
@@ -234,5 +238,39 @@ describe("C. Realtime signals (against a stub of the Realtime schema)", () => {
       await db.exec("reset role");
       await db.exec("drop function realtime.send(jsonb,text,text,boolean);alter function realtime.send_ok(jsonb,text,text,boolean) rename to send");
     }
+  });
+});
+
+describe("rollback rehearsal (runs last)", () => {
+  const counts = async () => (await superuser<{ t: string; n: string }>("select 'offers' t, count(*)::text n from private.day3_offers union all select 'grants', count(*)::text from private.passport_grants union all select 'cases', count(*)::text from private.work_cases union all select 'profiles', count(*)::text from private.profiles union all select 'audit', count(*)::text from private.audit_logs")).map(r => `${r.t}:${r.n}`);
+  const objects = async () => (await superuser<{ n: string }>("select (select count(*) from pg_proc p join pg_namespace s on s.oid=p.pronamespace where (s.nspname='api' and p.proname in ('passport_projection_core','passport_access_summary','qualifications')) or (s.nspname='private' and p.proname in ('realtime_signal','signal_offer_change','signal_case_event','signal_passport_grant','passport_notification_events','notification_events_before_passport')))::text || ',' || (select count(*) from pg_class where relname in ('passport_access_log','qualification_revisions') and relnamespace='private'::regnamespace)::text || ',' || (select count(*) from pg_trigger where tgname in ('signal_offer_change','signal_case_event','signal_passport_grant'))::text n"))[0]!.n;
+  it("restores the original projection, feed and grants, removes every batch 7 object, keeps all other data, and the batch applies again", async () => {
+    expect(await objects()).not.toBe("0,0,0");
+    const before = await counts();
+    await db.exec("reset role");
+    await db.exec(await readFile("docs/proposed-migrations/rollback_batch7.sql", "utf8"));
+    expect(await objects(), "no batch 7 function, table or trigger remains").toBe("0,0,0");
+    expect(await counts(), "no row of an existing table changed").toEqual(before);
+    const closed = await superuser<{ a: boolean; b: boolean; c: boolean }>("select has_function_privilege('authenticated','api.passport_projection(jsonb)','EXECUTE') a, has_function_privilege('fw_user_exec','api.passport_projection(jsonb)','EXECUTE') b, has_function_privilege('anon','api.passport_projection(jsonb)','EXECUTE') c");
+    expect(closed[0]).toEqual({ a: true, b: true, c: false });
+    // The pre-batch behaviour works again end to end: a share is prepared, activated, read by its recipient, listed in the feed's old shape, and revoked.
+    const passport = await rpc<{ entries: { workId: string; version: number }[] }>("read_passport", { cursor: null });
+    const entry = passport.entries.find(e => e.workId === journey.workId);
+    if (entry) {
+      const item = randomUUID(), grantId = randomUUID();
+      await rpc("passport_share_command", { operation: "select", itemId: item, workId: journey.workId, workVersion: entry.version, summary: "After rollback", fields: ["task_summary"] });
+      await rpc("passport_share_command", { operation: "prepare", grantId, itemId: item, recipientId: recipient, expiresAt: new Date(Date.now() + 86400000).toISOString(), fields: ["task_summary"] });
+      await rpc("passport_share_command", { operation: "activate", grantId });
+      await clearQuotas();
+      expect((await rpc<{ entries: unknown[] }>("passport_projection", { grantId, mode: "recipient" }, recipient)).entries).toHaveLength(1);
+      await rpc("passport_share_command", { operation: "revoke", grantId });
+    }
+    await clearQuotas();
+    const feed = await rpc<{ items: { kind: string }[] }>("notifications", { operation: "list", cursorAt: null, cursorKey: null }, worker);
+    expect(feed.items.some(i => i.kind.startsWith("passport_"))).toBe(false);
+    await expect(rpc("qualifications", { operation: "list", cursor: null })).rejects.toThrow();
+    // Re-apply: the proposal can be tried again after a rollback.
+    for (const file of ["20261030100000_passport_access_log.sql", "20261030110000_qualifications.sql", "20261030120000_realtime_signals.sql"]) await apply(file);
+    expect(await objects()).not.toBe("0,0,0");
   });
 });
