@@ -90,3 +90,7 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-row:ha
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-row:has(input[type="checkbox"]) > label:first-child { flex: 1 1 100%; display: flex; align-items: flex-start; gap: 10px; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-row:has(input[type="checkbox"]) > .fw-field { flex: 1 1 180px; margin: 0; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-row:has(input[type="checkbox"]) > :is(.fw-small-action, .fw-secondary) { white-space: nowrap; flex: 0 0 auto; }
+/* One type scale for plain paragraphs inside cards (they ranged from 12px to 18px between screens), and term labels that no longer break mid-word. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product :is(.fw-card, .fw-list-card, .fw-offer-detail-card) p:not([class]) { font-size: 14px; line-height: 1.55; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-term-row { grid-template-columns: minmax(96px, 38%) minmax(0, 1fr) 10px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-term-row span:first-child { overflow-wrap: break-word; hyphens: auto; }

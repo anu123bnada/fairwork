@@ -2,3 +2,6 @@
 .oq-nf-summary { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; margin: 0; color: var(--oq-text); font-weight: 700; }
 .oq-nf-toggle { font-weight: 400; color: var(--oq-muted); display: inline-flex; gap: 6px; align-items: center; }
 .oq-nf-group { display: grid; gap: 8px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-notification > div { display: grid; gap: 8px; justify-items: start; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-notification > div p { margin: 0; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-notification.is-unread { border-inline-start: 4px solid var(--oq-accent); }
