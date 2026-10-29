@@ -19,6 +19,7 @@ export default defineConfig({
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "worker", testMatch: /journeys\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"], storageState: stateFile } },
+    { name: "visual", testMatch: /visual\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"], storageState: stateFile } },
     { name: "worker-mobile", testMatch: /journeys\.spec\.ts/, grep: /@mobile/, dependencies: ["setup"], use: { ...devices["Pixel 7"], storageState: stateFile } },
   ],
 });
