@@ -35,7 +35,8 @@ for (const locale of ["si", "ta", "de"] as LocaleCode[]) {
     await expect(page.getByText(translate(locale, "work.eyebrow"))).toBeVisible();
     await page.getByRole("button", { name: translate(locale, "work.logWork"), exact: true }).first().click();
     const form = page.locator("form.fw-offer-detail-card");
-    for (const key of ["work.agreementId", "work.role", "work.periodStart", "work.periodEnd", "work.hours", "work.performed"] as const) await expect(form.getByText(translate(locale, key), { exact: false }).first(), `${locale}:${key}`).toBeVisible();
+    // A new record picks its agreement from the agreement chooser (covered by the agreement-picker tests); the free-text id appears only when editing an existing record.
+    for (const key of ["work.role", "work.periodStart", "work.periodEnd", "work.hours", "work.performed"] as const) await expect(form.getByText(translate(locale, key), { exact: false }).first(), `${locale}:${key}`).toBeVisible();
     await expect(form.getByRole("button", { name: translate(locale, "work.loadBasis") })).toBeVisible();
     await expect(form.getByRole("button", { name: translate(locale, "work.savePrivate") })).toBeVisible();
     await expect(form.getByText(translate(locale, "work.evidenceNote"))).toBeVisible();

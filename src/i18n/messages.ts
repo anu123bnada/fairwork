@@ -3438,6 +3438,14 @@ export const si: Partial<Messages> = {
   "dash.cardOffers": "ඔබේ දීමනා සාරාංශය",
   "dash.cardRecords": "ඔබේ රැකියා ඉතිහාස සාරාංශය",
   "dash.cardPassport": "පාස්පෝර්ට් තත්ත්ව සාරාංශය",
+  "check.ov.title": "පරීක්ෂාවෙන් සොයාගත් දේ",
+  "check.ov.stated": "පැහැදිලිව සඳහන්",
+  "check.ov.missing": "අතුරුදන්",
+  "check.ov.risks": "විය හැකි අවදානම්",
+  "check.ov.questions": "ඇසිය යුතු ප්‍රශ්න",
+  "check.ov.srcTerms": "සඳහන් සහ අතුරුදන් කොන්දේසි පැමිණෙන්නේ ඔබ සුරැකි සංශෝධනයෙන් සහ සේවාදායකයේ සම්පූර්ණත්ව පරීක්ෂාවෙනි.",
+  "check.ov.srcRules": "විය හැකි අවදානම් පැමිණෙන්නේ දේශීය වාක්‍ය රීතිවලිනි. ඒවා ඇසීමට යෝජනා මිස නීතිමය නිගමන නොවේ.",
+  "check.ov.srcAi": "මෙම තිරයේ AI භාවිතා කර නැත. විකල්ප AI විශ්ලේෂණය වෙනම වන අතර දීමනාවක් එක් කිරීමේදී ඔබේ කැමැත්තෙන් පමණක් ක්‍රියාත්මක වේ.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -5107,6 +5115,14 @@ export const ta: Partial<Messages> = {
   "dash.cardOffers": "உங்கள் சலுகைகளின் சுருக்கம்",
   "dash.cardRecords": "உங்கள் பணி வரலாற்றின் சுருக்கம்",
   "dash.cardPassport": "கடவுச்சீட்டு நிலைச் சுருக்கம்",
+  "check.ov.title": "சரிபார்ப்பு கண்டறிந்தவை",
+  "check.ov.stated": "தெளிவாகக் குறிப்பிடப்பட்டவை",
+  "check.ov.missing": "விடுபட்டவை",
+  "check.ov.risks": "சாத்தியமான அபாயங்கள்",
+  "check.ov.questions": "கேட்க வேண்டிய கேள்விகள்",
+  "check.ov.srcTerms": "குறிப்பிடப்பட்ட மற்றும் விடுபட்ட விதிமுறைகள் நீங்கள் சேமித்த திருத்தத்திலிருந்தும் சேவையகத்தின் முழுமைச் சரிபார்ப்பிலிருந்தும் வருகின்றன.",
+  "check.ov.srcRules": "சாத்தியமான அபாயங்கள் உள்ளூர் சொற்றொடர் விதிகளிலிருந்து வருகின்றன. அவை கேட்பதற்கான குறிப்புகள், சட்டக் கண்டுபிடிப்பு அல்ல.",
+  "check.ov.srcAi": "இந்தத் திரையில் AI பயன்படுத்தப்படவில்லை. விருப்பத் AI பகுப்பாய்வு தனியானது; சலுகையைச் சேர்க்கும்போது உங்கள் சம்மதத்துடன் மட்டுமே இயங்கும்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -6776,4 +6792,12 @@ export const de: Partial<Messages> = {
   "dash.cardOffers": "Zusammenfassung Ihrer Angebote",
   "dash.cardRecords": "Zusammenfassung Ihres Arbeitsverlaufs",
   "dash.cardPassport": "Zusammenfassung zum Passstatus",
+  "check.ov.title": "Das hat die Prüfung ergeben",
+  "check.ov.stated": "Klar angegeben",
+  "check.ov.missing": "Fehlt",
+  "check.ov.risks": "Mögliche Risiken",
+  "check.ov.questions": "Fragen an den Arbeitgeber",
+  "check.ov.srcTerms": "Angegebene und fehlende Bedingungen stammen aus der von Ihnen gespeicherten Fassung und der Vollständigkeitsprüfung des Servers.",
+  "check.ov.srcRules": "Mögliche Risiken stammen aus lokalen Formulierungsregeln. Sie sind Anlass zum Nachfragen, keine rechtliche Feststellung.",
+  "check.ov.srcAi": "Auf diesem Bildschirm wurde keine KI verwendet. Die optionale KI-Analyse ist getrennt und läuft nur mit Ihrer Zustimmung beim Hinzufügen eines Angebots.",
 };

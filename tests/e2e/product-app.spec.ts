@@ -84,7 +84,7 @@ test("integrated product routes carry an offer through check, answer, and agreem
   await page.getByRole("link", { name: /See ORYQEN Check/ }).click();
   await expect(page).toHaveURL(/\/app\/check$/);
   await expect(page.getByText(/1 need clarification/)).toBeVisible();
-  await page.getByRole("link", { name: /Questions to ask/ }).click();
+  await page.getByRole("link", { name: /Questions to ask/ }).last().click(); // the findings overview also links to the questions
   await expect(page.getByRole("button", { name: /Continue to agreement/ })).toBeDisabled();
   await page.getByLabel("Your answer to What core responsibilities are still unresolved?").fill("Pack orders.");
   await page.getByRole("button", { name: "Save answer" }).click();

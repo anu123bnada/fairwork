@@ -35,7 +35,7 @@ for (const locale of ["si", "ta", "de"] as LocaleCode[]) {
     await expect(grid.getByText(translate(locale, "check.stated"), { exact: true }).first()).toBeVisible();
     await expect(page.getByText(translate(locale, "check.foundFew"))).toBeVisible();
     await expect(page.getByText(translate(locale, "check.changes"))).toBeVisible();
-    await expect(page.getByRole("link", { name: new RegExp(translate(locale, "check.questionsToAsk")) })).toBeVisible();
+    await expect(page.getByRole("link", { name: new RegExp(translate(locale, "check.questionsToAsk")) }).last()).toBeVisible(); // the findings overview links to the questions as well
     // The rule analysis still receives English field names, so its findings do not depend on the display language.
     await expect(page.locator("body")).not.toContainText(/\b(?:check|field|add)\.[a-zA-Z.]+\b/);
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth), `${locale} check overflow`).toBeLessThanOrEqual(0);

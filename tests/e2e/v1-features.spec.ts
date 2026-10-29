@@ -113,7 +113,7 @@ test("a Word document is read locally in the browser, reviewed, then moved to th
   const uploads: string[] = [];
   page.on("request", request => { if (request.method() === "POST" && (request.postData()?.includes("PK") ?? false) && request.url().includes("/api/")) uploads.push(request.url()); });
   await page.goto("/app/add-offer");
-  await page.getByRole("tab", { name: "PDF", exact: true }).click();
+  await page.getByRole("tab", { name: "Word document", exact: true }).click();
   const input = page.getByLabel("Offer Word document (.docx)");
   await input.setInputFiles({ name: "offer.docx", mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", buffer: docxBytes(["Salary LKR 95000 per month", "Probation 3 months unpaid"]) });
   const review = page.getByLabel("Review extracted text").last();
@@ -121,7 +121,7 @@ test("a Word document is read locally in the browser, reviewed, then moved to th
   await page.getByRole("button", { name: "Use this text" }).last().click();
   await expect(page.getByRole("tab", { name: "Paste text" })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByPlaceholder("Paste a job offer here.")).toHaveValue(/Salary LKR 95000 per month/);
-  await page.getByRole("tab", { name: "PDF", exact: true }).click();
+  await page.getByRole("tab", { name: "Word document", exact: true }).click();
   await input.setInputFiles({ name: "old.doc", mimeType: "application/msword", buffer: Buffer.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0, 0, 0, 0, 0, 0, 0, 0]) });
   await expect(page.locator("p[role=alert]").filter({ hasText: "Old .doc files are not supported" })).toBeVisible();
   await input.setInputFiles({ name: "evil.docx", mimeType: "application/octet-stream", buffer: Buffer.from("<svg><script>alert(1)</script></svg>") });
