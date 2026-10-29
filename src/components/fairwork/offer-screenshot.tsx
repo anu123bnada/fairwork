@@ -2,6 +2,7 @@
 import { useEffect,useRef,useState } from "react";
 import { screenshotDimensions } from "@/features/offer/screenshot-validation";
 import { useI18n } from "@/i18n/use-i18n";
+import { ExtractionQualityNote } from "./extraction-quality-note";
 
 export function OfferScreenshot({onReviewed}:{onReviewed:(text:string)=>void}){
  const { t } = useI18n();
@@ -37,6 +38,6 @@ export function OfferScreenshot({onReviewed}:{onReviewed:(text:string)=>void}){
   <label className="fw-field">{t("im.shot.file")}<input type="file" accept="image/png,image/jpeg" disabled={busy} onChange={event=>{void extract(event.target.files?.[0]);event.target.value="";}}/></label>
   {busy&&<><p role="status">{t("im.reading")}</p><button type="button" className="fw-secondary" onClick={()=>{stop();setBusy(false);setText("");}}>{t("im.shot.cancel")}</button></>}
   {error&&<p role="alert">{error}</p>}
-  {text&&<><label className="fw-field">{t("im.review")}<textarea value={text} maxLength={10000} onChange={event=>setText(event.target.value)}/></label><p>{t("im.removePersonal")}</p><button type="button" className="fw-primary" disabled={!text.trim()} onClick={()=>onReviewed(text)}>{t("im.shot.use")}</button></>}
+  {text&&<><ExtractionQualityNote text={text} source="ocr"/><label className="fw-field">{t("im.review")}<textarea value={text} maxLength={10000} onChange={event=>setText(event.target.value)}/></label><p>{t("im.removePersonal")}</p><button type="button" className="fw-primary" disabled={!text.trim()} onClick={()=>onReviewed(text)}>{t("im.shot.use")}</button></>}
  </section>;
 }

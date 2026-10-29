@@ -60,6 +60,7 @@ import { GuidanceScreen } from "./guidance";
 import { OfferHistoryPanel } from "./offer-history";
 import { RuleAnalysis } from "./rule-analysis";
 import { OfferFindings } from "./offer-findings";
+import { ClauseFindings } from "./offer-intelligence";
 import { OfferAssessment } from "./offer-assessment";
 import { CompanyProfiles } from "./company-profiles";
 import { RecruiterVerification } from "./recruiter-verification";
@@ -749,6 +750,7 @@ function CheckScreen() {
       </div>
       {/* The rules read English field names from this text, so it is deliberately not translated. */}
       <div id="check-risks"><RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} /></div>
+      <ClauseFindings includeMissing={false} text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
       <section className="fw-list-card" aria-label={t("sum.button")}>
         <p>{t("sum.note")}</p>
         <button type="button" className="fw-secondary" onClick={() => {

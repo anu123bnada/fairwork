@@ -6,7 +6,8 @@ export const PDF_LIMITS = { maxBytes: 5 * 1024 * 1024, maxPages: 20, maxChars: 1
 export class PdfTextError extends Error {
   constructor(readonly kind: "type" | "size" | "encrypted" | "unreadable" | "no_text", message: string) { super(message); }
 }
-export type PdfTextResult = { text: string; pages: number; pagesRead: number; truncated: boolean };
+// pageTexts[i] is the text of page i+1 ("" when it has none). When more than one page is read, text carries "[Page N]" markers so a finding can say where it was found.
+export type PdfTextResult = { text: string; pages: number; pagesRead: number; truncated: boolean; pageTexts: string[] };
 
 type TextItem = { str?: string; hasEOL?: boolean };
 type Doc = { numPages: number; getPage(n: number): Promise<{ getTextContent(): Promise<{ items: TextItem[] }> }>; destroy(): Promise<void> };
@@ -38,9 +39,10 @@ export async function extractPdfText(bytes: Uint8Array, loader: PdfLoader = brow
       const content = await (await doc.getPage(n)).getTextContent();
       parts.push(content.items.map(item => (item.str ?? "") + (item.hasEOL ? "\n" : " ")).join("").replace(/[ \t]+\n/g, "\n").replace(/[ \t]{2,}/g, " ").trim());
     }
-    const joined = parts.filter(Boolean).join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
+    const marked = pagesRead > 1 ? parts.map((part, index) => part ? `[Page ${index + 1}]\n${part}` : "") : parts;
+    const joined = marked.filter(Boolean).join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
     if (!joined) throw new PdfTextError("no_text", "This PDF has no readable text (it may be a scan). Use the Screenshot reader or paste the text.");
     const truncated = doc.numPages > PDF_LIMITS.maxPages || joined.length > PDF_LIMITS.maxChars;
-    return { text: joined.slice(0, PDF_LIMITS.maxChars), pages: doc.numPages, pagesRead, truncated };
+    return { text: joined.slice(0, PDF_LIMITS.maxChars), pages: doc.numPages, pagesRead, truncated, pageTexts: parts };
   } finally { await doc.destroy().catch(() => {}); }
 }

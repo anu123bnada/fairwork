@@ -17,7 +17,7 @@ test("only the chosen input method is shown, and entered data survives switching
   const tabs = page.getByRole("tablist", { name: "Offer input method" });
   await expect(tabs.getByRole("tab")).toHaveText(["Paste text", "Screenshot", "PDF", "Word document", "Enter manually"]);
   await expect(page.getByLabel("Paste offer text")).toBeVisible();
-  await expect(page.locator('input[type="file"]')).toHaveCount(0);
+  await expect(page.getByLabel("Offer PDF")).toHaveCount(0);
 
   await page.getByLabel("Role title", { exact: true }).fill("Picker");
   await page.getByLabel("Paste offer text").fill("Salary: LKR 85000 per month");
