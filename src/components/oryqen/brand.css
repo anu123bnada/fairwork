@@ -1,30 +1,34 @@
 /* ORYQEN identity. Original Figma assets and styles remain available as history.
    The root scope deliberately wins over the legacy screen-specific palette. */
+/* ORYQEN palette, one place. Every value is taken from the existing visual references: blue #1e4fff (Figma link/accent, visual.css), navy #0b1b33 and muted slate #5a6882
+   (product.css), soft blue #e9efff, page tint #e5ebf7 (product.css), and the cyan #12c6ff / violet #7755ff pair used in the landing page gradients. The slate border and the dark
+   scheme values are tints and shades of those same colours (marked "derived"), pending the owner's review. Logo geometry is not touched. */
 html[data-brand="oryqen"] {
-  --oq-bg: #f5f4ee; --oq-surface: #fffefa; --oq-soft: #e9eee8;
-  --oq-text: #182e2c; --oq-muted: #526461; --oq-border: #c5ceca;
-  --oq-accent: #176653; --oq-on-accent: #ffffff; --oq-focus: #21745e;
-  --oq-danger: #a12f32; --oq-warning: #75530e;
+  --oq-cyan: #12c6ff; --oq-violet: #7755ff; --oq-ink: #0b1b33; --oq-on-ink: #eef3ff; --oq-on-ink-muted: #c3d1ec;
+  --oq-bg: #e5ebf7; --oq-surface: #ffffff; --oq-soft: #e9efff;
+  --oq-text: #0b1b33; --oq-muted: #5a6882; --oq-border: #b3c0da; /* border: derived */
+  --oq-accent: #1e4fff; --oq-on-accent: #ffffff; --oq-focus: #1e4fff;
+  --oq-danger: #b3261e; --oq-warning: #7a5200;
   --fw-blue: var(--oq-accent); --fw-blue-soft: var(--oq-soft);
   --fw-navy: var(--oq-text); --fw-text: var(--oq-text);
   --fw-muted: var(--oq-muted); --fw-text-secondary: var(--oq-muted);
-  --fw-link: var(--oq-accent); --fw-green: var(--oq-accent);
+  --fw-link: var(--oq-accent); --fw-green: #0da174;
   --fw-card: var(--oq-surface); --fw-line: var(--oq-border);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   html[data-brand="oryqen"]:not([data-theme="light"]) {
-    --oq-bg: #101d1c; --oq-surface: #1b2b29; --oq-soft: #243a35;
-    --oq-text: #f0f3ed; --oq-muted: #b4c4be; --oq-border: #4b625b;
-    --oq-accent: #9cdec6; --oq-on-accent: #122e25; --oq-focus: #b3ead7;
-    --oq-danger: #ffacb0; --oq-warning: #f0d08a; color-scheme: dark;
+    --oq-bg: #0b1b33; --oq-surface: #12264a; --oq-soft: #1b3463; --oq-ink: #1b3463; /* derived from the navy */
+    --oq-text: #eef3ff; --oq-muted: #b4c2de; --oq-border: #3c5483;
+    --oq-accent: #8fb0ff; --oq-on-accent: #0b1b33; --oq-focus: #b3c9ff;
+    --oq-danger: #ffb0aa; --oq-warning: #f2d28b; color-scheme: dark;
   }
 }
 html[data-brand="oryqen"][data-theme="dark"] {
-  --oq-bg: #101d1c; --oq-surface: #1b2b29; --oq-soft: #243a35;
-  --oq-text: #f0f3ed; --oq-muted: #b4c4be; --oq-border: #4b625b;
-  --oq-accent: #9cdec6; --oq-on-accent: #122e25; --oq-focus: #b3ead7;
-  --oq-danger: #ffacb0; --oq-warning: #f0d08a; color-scheme: dark;
+  --oq-ink: #1b3463; --oq-bg: #0b1b33; --oq-surface: #12264a; --oq-soft: #1b3463;
+  --oq-text: #eef3ff; --oq-muted: #b4c2de; --oq-border: #3c5483;
+  --oq-accent: #8fb0ff; --oq-on-accent: #0b1b33; --oq-focus: #b3c9ff;
+  --oq-danger: #ffb0aa; --oq-warning: #f2d28b; color-scheme: dark;
 }
 html[data-brand="oryqen"] body { margin: 0; background: var(--oq-bg); color: var(--oq-text); }
 html[data-brand="oryqen"] :is(button,input,textarea,select) { font: inherit; }
@@ -62,9 +66,9 @@ html[data-brand="oryqen"] .fw-bottom-nav { border: 1px solid var(--oq-border); b
 html[data-brand="oryqen"] .fw-fixed-action { left: 50%; transform: translateX(-50%); }
 html[data-brand="oryqen"] .fw-bottom-nav a { color: var(--oq-muted); }
 html[data-brand="oryqen"] .fw-bottom-nav a.active { color: var(--oq-accent); background: var(--oq-soft); }
-html[data-brand="oryqen"] :is(.fw-work-summary,.fw-demo-passport-card,.fw-passport-card) { background: #142c2b; color: #f5f4ee; box-shadow: none; }
-html[data-brand="oryqen"] :is(.fw-work-summary,.fw-demo-passport-card,.fw-passport-card) :is(p,small,.fw-eyebrow,.fw-passport-private-note) { color: #bdd9cc; }
-html[data-brand="oryqen"] :is(.fw-avatar,.fw-signature-avatar,.fw-welcome-brand .mark) { background: #142c2b; color: #f5f4ee; }
+html[data-brand="oryqen"] :is(.fw-work-summary,.fw-demo-passport-card,.fw-passport-card) { background: var(--oq-ink); color: var(--oq-on-ink); box-shadow: none; }
+html[data-brand="oryqen"] :is(.fw-work-summary,.fw-demo-passport-card,.fw-passport-card) :is(p,small,.fw-eyebrow,.fw-passport-private-note) { color: var(--oq-on-ink-muted); }
+html[data-brand="oryqen"] :is(.fw-avatar,.fw-signature-avatar,.fw-welcome-brand .mark) { background: var(--oq-ink); color: var(--oq-on-ink); }
 html[data-brand="oryqen"] .fw-welcome-brand .mark { padding: 0; background: none; box-shadow: none; }
 html[data-brand="oryqen"] :is(.fw-intro-logo,.fw-onboarding-art,.fw-onboarding-art-icon,.fw-auth-brand) { background: none; box-shadow: none; border: 0; backdrop-filter: none; }
 html[data-brand="oryqen"] .fw-intro-logo::before, html[data-brand="oryqen"] .fw-intro-logo::after { display: none; }
