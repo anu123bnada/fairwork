@@ -12,8 +12,8 @@ Every value below was produced by a command in this session; none is estimated.
 | Path | `test-results/windows-artifacts/ORYQEN-Preview-0.1.0-x64-Setup.exe` |
 | Type | NSIS per-user installer, Windows 10/11 x64 (unsigned preview) |
 | Version | 0.1.0 (`ORYQEN Preview`) |
-| Size | 121,260,469 bytes (115.6 MiB) |
-| SHA-256 | `8f09c36a41c62d622dbb1ed58c2978dca481b8154b3dc4b4d4380d9a140d3819` |
+| Size | 121,261,243 bytes (115.6 MiB) |
+| SHA-256 | `bd27ed2fec1c6c15e32929de57db89bac6f758c73d6da3f318c206e02eb393e3` |
 | Built | Rebuilt 2026-10-26 by an earlier `release:verify:full` run via `npm --prefix desktop run build:windows`; the 24 Oct build (SHA-256 `64925b35...fae7`, 121,260,491 bytes) was overwritten. Electron builds are not byte-reproducible, so the hash differs for identical source. `release:verify` now builds into `test-results/windows-verify` so it can no longer overwrite this file |
 | Signing | **Not signed.** `Get-AuthenticodeSignature` reports `NotSigned`; SmartScreen will warn |
 | Shell | Electron 45.0.0, `app.enableSandbox()`, context isolation on, node integration off, no preload bridge |
@@ -34,8 +34,8 @@ Unpacked runtime used for smoke acceptance: `test-results/windows-artifacts/win-
 | Application ID | `org.fairwork.localpoc.online` |
 | Version | versionCode 1, versionName `1.0-online-preview` |
 | Label | `ORYQEN Online Preview` |
-| Size | 4,121,000 bytes (3.9 MiB) |
-| SHA-256 | `03e650b4242fc524be5585d56d96247e6c6c2c061fe59d7e08e4baa619c07446` |
+| Size | 4,121,028 bytes (3.9 MiB) |
+| SHA-256 | `8d4a1e1bda942d74940824695d4ab85629813dc3b7def6974cd586057053cc8f` |
 | Built | 2026-10-24 13:35 (+05:30) via `gradlew assembleOnline` |
 | SDK | minSdk 24 (Android 7.0), targetSdk 36, compileSdk 36, build-tools 36.0.0, JDK 21 |
 | Signing | **Debug certificate only** (`CN=Android Debug`, APK Signature Scheme v2). Internal testing artifact; not a production-signed release |

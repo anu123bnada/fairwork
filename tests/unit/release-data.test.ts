@@ -14,12 +14,19 @@ it.each([windowsRelease, androidRelease])("$name release data matches the releas
 });
 
 it.each([
-  [windowsRelease, "test-results/windows-artifacts/ORYQEN-Preview-0.1.0-x64-Setup.exe"],
-  [androidRelease, "test-results/android-artifacts/ORYQEN-Online-Preview-1.0-universal.apk"],
+  [windowsRelease, "release-artifacts/windows-staging/ORYQEN-Preview-0.1.0-x64-Setup.exe"],
+  [androidRelease, "release-artifacts/android-staging/ORYQEN-Online-Preview-1.0.0-staging-debug.apk"],
 ] as const)("$0.name figures match the built file when it is present locally", (release, path) => {
   if (!existsSync(path)) return; // artifacts are git-ignored; verified wherever they exist
   expect(statSync(path).size).toBe(bytes(release.size));
   expect(createHash("sha256").update(readFileSync(path)).digest("hex")).toBe(release.sha256);
+});
+
+it("the APK served with the site is the same file the manifest describes", () => {
+  const served = "public/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk";
+  expect(existsSync(served)).toBe(true);
+  expect(statSync(served).size).toBe(bytes(androidRelease.size));
+  expect(createHash("sha256").update(readFileSync(served)).digest("hex")).toBe(androidRelease.sha256);
 });
 
 it("only accepts https download URLs", () => {

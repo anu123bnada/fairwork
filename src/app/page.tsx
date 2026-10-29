@@ -564,7 +564,7 @@ export default function Home() {
   }, [toast]);
   const unavailable = (kind: string) =>
     setToast(
-      `${kind} isn't available yet. Add its official URL in .env.local to enable downloads.`,
+      `${kind} download is not published yet. Check back soon or use ORYQEN in your browser.`,
     );
   return (
     <main id="top" className="oryqen-landing">

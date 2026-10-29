@@ -20,8 +20,8 @@ export const windowsRelease: Release = {
   version: "0.1.0 (preview)",
   platform: "Windows 10 / 11, x64",
   type: "EXE installer (NSIS, per-user)",
-  size: "121,260,469 bytes (115.6 MiB)",
-  sha256: "8f09c36a41c62d622dbb1ed58c2978dca481b8154b3dc4b4d4380d9a140d3819",
+  size: "121,261,243 bytes (115.6 MiB)",
+  sha256: "bd27ed2fec1c6c15e32929de57db89bac6f758c73d6da3f318c206e02eb393e3",
   signing: "Unsigned — Windows SmartScreen will warn.",
   signed: false,
 };
@@ -32,8 +32,8 @@ export const androidRelease: Release = {
   version: "1.0-online-preview (build 1)",
   platform: "Android 7.0 (API 24) or newer",
   type: "APK, universal, Capacitor shell",
-  size: "4,121,000 bytes (3.9 MiB)",
-  sha256: "03e650b4242fc524be5585d56d96247e6c6c2c061fe59d7e08e4baa619c07446",
+  size: "4,121,028 bytes (3.9 MiB)",
+  sha256: "8d4a1e1bda942d74940824695d4ab85629813dc3b7def6974cd586057053cc8f",
   signing: "Debug certificate only — internal testing artifact, not production-signed.",
   signed: false,
 };
@@ -51,5 +51,7 @@ export function httpsUrl(value: string | undefined): string | null {
 // NEXT_PUBLIC values are inlined at build time, so each must be referenced literally.
 export const releaseUrls: Record<Release["key"], string | null> = {
   windows: httpsUrl(process.env.NEXT_PUBLIC_WINDOWS_URL),
-  android: httpsUrl(process.env.NEXT_PUBLIC_APK_URL),
+  // The APK is small enough to ship with the site, so its link is served from this origin (verified after each deploy). The Windows installer is too large for that and
+  // stays unpublished until a release host URL is configured.
+  android: httpsUrl(process.env.NEXT_PUBLIC_APK_URL) ?? "/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk",
 };

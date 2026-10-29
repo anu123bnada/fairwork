@@ -10,8 +10,8 @@ for(const [name,width] of [["desktop",1440],["mobile",390]] as const){
    await expect(card).toContainText(release.name);await expect(card).toContainText(release.version);
    await expect(card).toContainText(release.size.split(" (")[0]!);await expect(card).toContainText("PREVIEW · UNSIGNED");
    await expect(card.locator("code")).toHaveAttribute("title",release.sha256);
-   await expect(card.getByRole("button",{name:new RegExp(`${release.name} release pending`,"i")})).toBeDisabled();
-   await expect(card.locator("a[href]")).toHaveCount(0);
+   if(release.key==="android"){await expect(card.locator("a[href$='.apk']")).toHaveAttribute("href","/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk");}
+   else{await expect(card.getByRole("button",{name:new RegExp(`${release.name} release pending`,"i")})).toBeDisabled();await expect(card.locator("a[href]")).toHaveCount(0);}
   }
   await expect(page.getByRole("link",{name:/Release details/i})).toHaveAttribute("href","/downloads");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth)).toBe(0);
@@ -19,6 +19,8 @@ for(const [name,width] of [["desktop",1440],["mobile",390]] as const){
 }
 test("downloads page uses the same facts and offers no binary link without a configured URL",async({page})=>{
  await page.goto("/downloads");
- for(const release of [windowsRelease,androidRelease]){await expect(page.getByText(release.sha256)).toBeVisible();await expect(page.getByRole("button",{name:new RegExp(`${release.name} download — release pending`)})).toBeDisabled();}
- await expect(page.locator('a[href$=".exe"],a[href$=".apk"],a[href$=".msi"]')).toHaveCount(0);
+ for(const release of [windowsRelease,androidRelease]){await expect(page.getByText(release.sha256)).toBeVisible();}
+ await expect(page.getByRole("button",{name:/Windows download — release pending/})).toBeDisabled();
+ await expect(page.locator('a[href$=".exe"],a[href$=".msi"]')).toHaveCount(0);
+ await expect(page.locator('a[href$=".apk"]')).toHaveAttribute("href","/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk");
 });
