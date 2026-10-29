@@ -138,3 +138,70 @@ test("the offer workbench shows the selected offer and switches on selection",as
   await expect(wb.getByRole("button",{name:/Warehouse Assistant/})).toHaveAttribute("aria-pressed","true");
  }finally{await context.close();}
 });
+
+test("the dashboard work area is a keyboard-operable tab set that keeps each panel's state",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const tabs=page.getByRole("tablist",{name:"Manage"});
+  await expect(tabs.getByRole("tab")).toHaveText(["Saved offers","Work records","Research an employer"]);
+  await expect(tabs.getByRole("tab",{name:"Saved offers"})).toHaveAttribute("aria-selected","true");
+  await tabs.getByRole("tab",{name:"Research an employer"}).click();
+  const panel=page.getByRole("region",{name:"Research an employer"});
+  await panel.getByLabel("Company name").fill("Draft query");
+  await tabs.getByRole("tab",{name:"Saved offers"}).focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(tabs.getByRole("tab",{name:"Work records"})).toBeFocused();
+  await expect(tabs.getByRole("tab",{name:"Work records"})).toHaveAttribute("aria-selected","true");
+  await page.keyboard.press("End");
+  await expect(tabs.getByRole("tab",{name:"Research an employer"})).toHaveAttribute("aria-selected","true");
+  await expect(panel.getByLabel("Company name")).toHaveValue("Draft query");
+  await page.keyboard.press("Home");
+  await expect(tabs.getByRole("tab",{name:"Saved offers"})).toHaveAttribute("aria-selected","true");
+  await expect(page.getByRole("tabpanel",{name:"Research an employer"})).toBeHidden();
+ }finally{await context.close();}
+});
+
+test("the dashboard agreements card counts open proposals with an expiry date and links to agreements",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const soon=new Date(Date.now()+5*86_400_000).toISOString(),past=new Date(Date.now()-2*86_400_000).toISOString();
+  await context.route("**/api/v1/agreement-expiries",r=>r.fulfill({json:{data:{items:[{agreementId:id,version:1,expiresAt:soon,expired:false,role:"worker"},{agreementId:"40000000-0000-4000-8000-0000000000b2",version:1,expiresAt:past,expired:true,role:"worker"}]}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const card=page.locator(".fw-sum-card").filter({hasText:"Agreements"});
+  await expect(card).toContainText("2");
+  await expect(card).toContainText("1 expired");
+  await expect(card).toContainText("Next expiry");
+  await expect(card.getByRole("link",{name:/Open agreements/})).toHaveAttribute("href","/app/agreement-workflow");
+ }finally{await context.close();}
+});
+
+const researchRecord={provider:"gleif",providerName:"GLEIF Global LEI Index",identifier:{scheme:"LEI",value:"254900XV5B725ZG6RS07"},legalName:"Commercial Bank of Ceylon PLC",otherNames:[],country:"LK",jurisdiction:"LK",legalForm:"Public Limited Company",entityStatus:"ACTIVE",registrationStatus:"ISSUED",corroboration:"FULLY_CORROBORATED",registrationAuthority:{id:"RA000540",entityId:"PQ116"},legalAddress:"21, Bristol Street, Colombo, 00100, LK",sourceLastUpdated:"2026-09-01T18:13:29Z",nextRenewal:"2027-09-04T19:37:18Z",sourceUrl:"https://api.gleif.org/api/v1/lei-records/254900XV5B725ZG6RS07",retrievedAt:"2026-10-26T09:00:00Z"};
+for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
+for(const scheme of ["light","dark"] as const)
+test(`research results show a facts grid and badged findings, never a score (${name} ${scheme})`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height},colorScheme:scheme});
+ try{
+  await signedIn(context);
+  await context.route("**/api/v1/organizations",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await context.route("**/api/v1/research/companies?*",r=>r.fulfill({json:{data:{query:{name:"Commercial Bank of Ceylon",country:"LK"},totalMatches:1,source:{provider:"gleif",name:"GLEIF Global LEI Index",url:"https://www.gleif.org/en/lei-data/gleif-api",kind:"third_party_registry"},limitations:["Data comes from a third-party registry. It is not complete."],results:[{record:researchRecord,nameMatch:"close",freshness:{status:"current",sourceAgeDays:55,verifyAgainBy:"2026-11-25T09:00:00.000Z"},findings:[{id:"a",kind:"supports",title:"Registered name matches apart from the legal-form suffix",detail:"A matching name does not prove that a job offer belongs to this entity."},{id:"b",kind:"outdated",title:"Record may be outdated",detail:"Check the source date."},{id:"c",kind:"limitation",title:"What this research does not establish",detail:"It does not verify that this entity made a specific offer."}]}]}}}));
+  const page=await context.newPage();
+  await page.goto("/app/employer");
+  const panel=page.getByRole("region",{name:"Research an employer"});
+  await panel.getByLabel("Company name").fill("Commercial Bank of Ceylon");
+  await panel.getByLabel("Country").selectOption("LK");
+  await panel.getByRole("button",{name:"Search registry"}).click();
+  const card=panel.getByRole("article",{name:/Registry record: Commercial Bank/});
+  await expect(card).toContainText("Registry record, not verified by ORYQEN");
+  await expect(card).toContainText("Supports:");
+  await expect(card.locator(".oq-badge")).toHaveCount(4);
+  await expect(panel).not.toContainText(/trust score|\d+\s*\/\s*100|\d+\s*%/i);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
+  mkdirSync("test-results/design",{recursive:true});
+  await card.screenshot({path:`test-results/design/research-${name}-${scheme}.png`});
+ }finally{await context.close();}
+});

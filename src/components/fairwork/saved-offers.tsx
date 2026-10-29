@@ -100,7 +100,7 @@ export function EmployerWorkspace() {
         <Link className="oq-emp-secondary" href="/app/work-record">Review work records</Link>
         <Link className="oq-emp-secondary" href="/app/cases">Case review</Link>
       </div>
-      <p className="oq-emp-note">Creating an offer needs approved organization membership. Selecting the employer view does not grant access.</p>
+      <p className="oq-emp-note">Approved organization membership is required. Selecting employer does not grant access.</p>
     </section>
     <section className="oq-emp-steps fw-list-card" aria-label="Employer onboarding"><h3>Set up your organization</h3>
       <ol><li><span className="oq-emp-n" aria-hidden="true">1</span>Request a new organization or join an existing one below.</li><li><span className="oq-emp-n" aria-hidden="true">2</span>Check your request status after independent review.</li><li><span className="oq-emp-n" aria-hidden="true">3</span>Once authorized, complete company information and manage your offers.</li></ol>

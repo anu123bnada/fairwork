@@ -52,6 +52,7 @@ import type { MessageKey } from "@/i18n";
 import { LOCALES } from "@/i18n";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
+import { DashboardManage } from "./dashboard-manage";
 import { AddOfferScreen } from "./offer-intake";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
 import { OpportunitiesScreen } from "./opportunities";
@@ -612,10 +613,8 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-dash-columns">
         <div className="fw-dash-main">
           <RecentOffers data={dashboard} />
-          <SavedOffers />
-          <DashboardRecords />
+          <DashboardManage offers={<SavedOffers />} records={<DashboardRecords />} research={<CompanyResearch />} />
           <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>
-          <CompanyResearch />
           <details className="fw-list-card fw-advanced"><summary>{t("home.advanced")}</summary>
             <p className="fw-notice">{t("home.advancedNote")}</p>
             <OpenSavedAgreement />

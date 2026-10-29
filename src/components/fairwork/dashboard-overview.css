@@ -29,7 +29,7 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i { flex:
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i.is-verified { border: 0; background: var(--oq-gradient); box-shadow: 0 8px 14px -8px rgba(38, 103, 255, .8); }
 @media (prefers-reduced-motion: no-preference) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i { animation: oq-grow .7s var(--oq-ease) both; } html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i:nth-child(2) { animation-delay: .05s; } html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i:nth-child(3) { animation-delay: .1s; } html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars i:nth-child(n+4) { animation-delay: .15s; } }
 @keyframes oq-grow { from { transform: scaleY(.05); opacity: .2; } }
-@media (min-width: 900px) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-sum-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 900px) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-sum-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); } }
 
 /* ---- Offer workbench: a navy panel with a selectable list and a violet detail pane ---- */
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-recent.oq-wb { background: linear-gradient(160deg, #141f3d 0%, #0e1630 100%); border: 1px solid rgba(143, 176, 255, .18); border-radius: 28px; padding: 20px; color: #f3f6ff;
@@ -96,3 +96,9 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-bars-cap { mar
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-gs-steps li { display: block; grid-template-columns: none; padding: 0; border: 0; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-gs-steps a { grid-column: auto; grid-row: auto; min-height: 0; justify-content: normal; border-radius: 18px; padding: 14px; font-size: 15px; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-gs-steps ol, html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash ol.oq-gs-steps { display: grid; }
+@media (max-width: 767px) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-sum-card:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-wb-add { display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 16px; border: 1.5px dashed rgba(255, 255, 255, .35); color: #f3f6ff; font-weight: 700; text-decoration: none; transition: background var(--oq-dur) var(--oq-ease), border-color var(--oq-dur) var(--oq-ease); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-wb-add:hover { background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .6); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-wb-add:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+/* The older .fw-recent li > a pill (pale background, blue text) must not reach the dashed add-offer tile. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .oq-wb-list li > a.oq-wb-add { background: transparent; color: #f3f6ff; padding: 0 16px; border-radius: 16px; min-height: 56px; font-size: 14px; grid-column: auto; grid-row: auto; }

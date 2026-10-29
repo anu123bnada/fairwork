@@ -5,6 +5,7 @@ import { useLiveRefresh } from "@/features/live/use-live-refresh";
 import { appRequest } from "@/features/authority/client";
 import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { workListSchema, type WorkList } from "@/features/work/schema";
+import { expiryList } from "@/features/offer/expiry";
 import { bcp47 } from "@/i18n";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
@@ -30,12 +31,14 @@ const parseRecords = (raw: unknown): WorkList => workListSchema.parse(raw);
 export function useDashboardData() {
   const offers = useRead("/api/v1/offers?context=WORKER&view=active", parseOffers);
   const records = useRead("/api/v1/work-records", parseRecords);
-  return { offers, records };
+  // Open agreement proposals that carry an expiry date: the one agreement list the API offers without a record id.
+  const agreements = useRead("/api/v1/agreement-expiries", (raw: unknown) => expiryList.parse(raw));
+  return { offers, records, agreements };
 }
 type Data = ReturnType<typeof useDashboardData>;
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
-const ICONS = { offer: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6", record: "M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", passport: "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4", clock: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" };
+const ICONS = { offer: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6", record: "M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", passport: "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4", agreement: "M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h5", clock: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" };
 
 // Where the person is in the employment journey, shown only from what their records prove.
 export function JourneyStrip({ data }: { data: Data }) {
@@ -105,6 +108,17 @@ export function SummaryCards({ data }: { data: Data }) {
           <p className="fw-sum-note">{verified === 0 ? t("dash.hoursNone") : t("dash.hoursNote", { count: verified })}</p>
           <HoursChart items={records} /></>}
     </Card>
+    <Card icon="agreement" title={t("dash.agreements")} label={t("dash.cardAgreements")}>
+      {data.agreements.state === "failed" ? unavailable : data.agreements.state === "loading" ? <p className="fw-sum-note" role="status">…</p> : (() => {
+        const items = data.agreements.data.items;
+        const expired = items.filter(item => item.expired).length;
+        const soonest = items.filter(item => !item.expired).sort((a, b) => Date.parse(a.expiresAt) - Date.parse(b.expiresAt))[0];
+        return <><p className="fw-sum-value">{items.length}</p>
+          <p className="fw-sum-note">{items.length === 0 ? t("dash.agreementsNone") : soonest ? t("dash.agreementsNext", { date: new Date(soonest.expiresAt).toLocaleDateString() }) : t("dash.agreementsAllExpired")}</p>
+          {expired > 0 && <p className="fw-sum-chip">{t("dash.agreementsExpired", { count: expired })}</p>}
+          <Link className="fw-sum-link" href="/app/agreement-workflow">{t("dash.openAgreements")} →</Link></>;
+      })()}
+    </Card>
     <Card icon="passport" title={t("dash.passport")} label={t("dash.cardPassport")}>
       {data.records.state === "failed" ? unavailable : records === null ? <p className="fw-sum-note" role="status">…</p>
         : <><p className="fw-sum-value">{verified}</p><p className="fw-sum-note">{verified === 0 ? t("dash.passportNone") : t("dash.passportSome", { count: verified })}</p><Link className="fw-sum-link" href="/app/passport">{t("dash.openPassport")} →</Link></>}
@@ -140,6 +154,7 @@ export function RecentOffers({ data }: { data: Data }) {
             <span className="fw-recent-pill">{item.questions > 0 ? t("dash.questionsOpen", { count: item.questions }) : t("dash.noQuestions")}</span>
           </button>
         </li>)}
+        <li><Link className="oq-wb-add" href="/app/add-offer">+ {t("dash.addAnother")}</Link></li>
       </ul>
       <article className="oq-wb-detail" key={selected.offerId} aria-label={t("dash.wbDetail")}>
         <p className="oq-wb-kicker">{t("dash.wbDetail")}</p>
