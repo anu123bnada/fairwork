@@ -67,6 +67,7 @@ import { WorkPassportScreen } from "./work-passport";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
 import "./visual.css";
+import "./dark-contrast.css";
 import { ProfileEditor } from "@/components/oryqen/profile-editor";
 import { meSchema } from "@/features/identity/schema";
 import type { z } from "zod";

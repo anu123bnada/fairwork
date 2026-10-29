@@ -4,6 +4,7 @@ import type { AgreementVersion } from "@/features/offer/workflow-schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./agreement-progress.css";
+import "./feature-tokens.css";
 
 export function AgreementProgress({ status }: { status: AgreementVersion["status"] }) {
   const { t } = useI18n();

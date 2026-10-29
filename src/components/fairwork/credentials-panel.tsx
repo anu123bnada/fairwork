@@ -6,6 +6,7 @@ import type { TrustClaim } from "@/features/trust/schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./credentials-experience.css";
+import "./feature-tokens.css";
 
 export type CredentialItem = { credentialId: string; sourceId: string; sourceVersion: number; assurance: string; issuedAt: string; expiresAt: string; token: string; status: "valid" | "revoked" | "expired" | "unknown"; reason: string | null };
 export type CredentialAllowance = { planName: string; limit: number; used: number; remaining: number };

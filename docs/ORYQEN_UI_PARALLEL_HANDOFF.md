@@ -39,3 +39,6 @@ Changed shared files: `src/i18n/messages.ts` (English keys appended after `pp.pr
 
 ## Update (second pass)
 Tests after the second pass: full unit suite 114 files / 647 tests pass; eslint . and tsc clean; browser specs day4 (10), day5 (7), day7 (12), notification-preferences/localization (8), accessibility (30) pass, all against mocked APIs. Specs `day4-workflow` and `day5-work` were edited because the raw reference field is now behind a disclosure. Not done: organizations/research screens (English-only, tied to the representative-only model), a glass/blur visual treatment (left to the global design system owner), hosted verification.
+
+## Final QA correction (29 Oct)
+`src/components/oryqen/brand.css`, which defines `--oq-*`, is not imported by the application, so every screen style written against `--oq-*` rendered without backgrounds, borders or colours in the integrated build. `feature-tokens.css` now defines those tokens scoped to the feature classes only (the shell's own blue/navy and dark-surface values), and fixes the work-record row grid. Delete it once the shared design system defines `--oq-*` globally.
