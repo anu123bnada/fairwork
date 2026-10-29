@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { useI18n } from "@/i18n/use-i18n";
 import { extractDocxText, DocxTextError, DOCX_LIMITS, type DocxTextResult } from "@/features/offer/docx-text";
 import type { MessageKey } from "@/i18n";
+import { ExtractionQualityNote } from "./extraction-quality-note";
 
 // Reads a Word (.docx) offer on this device. The file is never uploaded or saved; the person reviews and edits the text before it is used.
 export function OfferDocx({ onReviewed }: { onReviewed: (text: string) => void }) {
@@ -28,6 +29,7 @@ export function OfferDocx({ onReviewed }: { onReviewed: (text: string) => void }
     {error && <p role="alert">{error}</p>}
     {result && <>
       {result.truncated && <p role="status">{t("im.docx.truncated", { chars: DOCX_LIMITS.maxChars.toLocaleString() })}</p>}
+      <ExtractionQualityNote text={text} source="docx" truncated={result.truncated} />
       <label className="fw-field">{t("im.review")}<textarea value={text} maxLength={DOCX_LIMITS.maxChars} onChange={event => setText(event.target.value)} /></label>
       <p>{t("im.removePersonal")}</p>
       <button type="button" className="fw-primary" disabled={!text.trim()} onClick={() => onReviewed(text)}>{t("im.pdf.use")}</button>

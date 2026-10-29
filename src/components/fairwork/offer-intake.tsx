@@ -15,6 +15,7 @@ import { OfferPdf } from "./offer-pdf";
 import { OfferScreenshot } from "./offer-screenshot";
 import { DraftOfferAssessment } from "./offer-assessment";
 import { RuleAnalysis } from "./rule-analysis";
+import { ClauseFindings, QualificationPanel } from "./offer-intelligence";
 import { ErrorMessage, Icon, routeFor, useProduct, type OfferResult, type Role } from "./product-app";
 import "./offer-intake.css";
 
@@ -182,7 +183,8 @@ export function AddOfferScreen() {
                   setExtraction({ text: sourceText, filled: blankFields.length, preserved: Object.keys(detectedTerms).length - blankFields.length });
                   setReviewed(false);
                 }}>{t("add.suggest")}</button>
-                {extraction && extraction.text === sourceText && <><p role="status">{extraction.filled ? t("add.filled", { count: extraction.filled }) : t("add.nothingFilled")} {extraction.preserved ? t("add.preserved", { count: extraction.preserved }) : !extraction.filled ? t("add.noneDetected") : ""} {t("add.reviewEvery")}</p><RuleAnalysis text={extraction.text} /></>}
+                {extraction && extraction.text === sourceText && <><p role="status">{extraction.filled ? t("add.filled", { count: extraction.filled }) : t("add.nothingFilled")} {extraction.preserved ? t("add.preserved", { count: extraction.preserved }) : !extraction.filled ? t("add.noneDetected") : ""} {t("add.reviewEvery")}</p><RuleAnalysis text={extraction.text} /><ClauseFindings text={extraction.text} /></>}
+                <QualificationPanel jobText={sourceText} />
                 <AiAnalysis text={sourceText} role={role} />
               </section>
             )}
