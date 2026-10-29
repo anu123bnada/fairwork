@@ -1,0 +1,87 @@
+/* ORYQEN component layer: surfaces, controls and primitives, all from the semantic tokens in tokens.css.
+   Visual properties only (colour, depth, radius, motion); layout stays with the existing screen styles.
+   The repeated :not(.oN) in each selector raises specificity so these rules win regardless of stylesheet order. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) body:has(.fw-product .fw-bottom-nav) { background-color: var(--oq-canvas); background-image: var(--oq-canvas-glow); background-repeat: no-repeat; background-attachment: fixed; color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) { background: transparent; color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-card, .fw-list-card, .fw-profile-card, .fw-offer-detail-card) {
+  background: var(--oq-glass); border: 1px solid var(--oq-glass-border); border-radius: var(--oq-r-lg); box-shadow: var(--oq-shadow-md);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2); backdrop-filter: blur(14px) saturate(1.2); color: var(--oq-text);
+}
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-card, .fw-profile-card):not(:has(input, textarea, select)) { transition: transform var(--oq-dur) var(--oq-ease), box-shadow var(--oq-dur) var(--oq-ease); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav { background: var(--oq-glass); border: 1px solid var(--oq-glass-border); box-shadow: var(--oq-shadow-lg); -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3); border-radius: var(--oq-r-lg); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav a { color: var(--oq-text-2); transition: background var(--oq-dur) var(--oq-ease), color var(--oq-dur) var(--oq-ease), transform var(--oq-dur) var(--oq-spring); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav a.active { color: var(--oq-link); background: var(--oq-soft); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav a:hover { transform: translateY(-1px); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-primary, .fw-dark-button):not(:disabled) { background: var(--oq-gradient); color: #fff; border: 0; border-radius: var(--oq-r-md); box-shadow: 0 10px 24px -12px rgba(38, 103, 255, .7); transition: transform var(--oq-dur) var(--oq-spring), box-shadow var(--oq-dur) var(--oq-ease), filter var(--oq-dur) var(--oq-ease); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-primary, .fw-dark-button):not(:disabled):hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 30px -12px rgba(109, 69, 245, .65); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-primary, .fw-dark-button):not(:disabled):active { transform: translateY(0) scale(.985); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-secondary { background: var(--oq-surface); color: var(--oq-text); border: 1px solid var(--oq-border); border-radius: var(--oq-r-md); box-shadow: var(--oq-shadow-sm); transition: transform var(--oq-dur) var(--oq-spring), border-color var(--oq-dur) var(--oq-ease), background var(--oq-dur) var(--oq-ease); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-secondary:not(:disabled):hover { border-color: var(--oq-accent); transform: translateY(-1px); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-primary, .fw-secondary, .fw-dark-button):disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-field input, .fw-field textarea, .fw-field select, .fw-source-label textarea) { background: var(--oq-surface); color: var(--oq-text); border: 1px solid var(--oq-border); border-radius: var(--oq-r-sm); box-shadow: inset 0 1px 2px rgba(24, 36, 66, .06); transition: border-color var(--oq-dur) var(--oq-ease), box-shadow var(--oq-dur) var(--oq-ease); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-field input, .fw-field textarea, .fw-field select, .fw-source-label textarea)::placeholder { color: var(--oq-text-2); opacity: .8; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(a, button, input, select, textarea, summary):focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 3px; border-radius: var(--oq-r-sm); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-field { color: var(--oq-text-2); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-page-title, .fw-product-header h1) { color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-page-subtitle, .fw-disclaimer, .fw-demo-work-note, .fw-section-label) { color: var(--oq-text-2); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-notice { background: var(--oq-soft); color: var(--oq-text); border: 1px solid var(--oq-border); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-success { background: var(--oq-success-soft); color: var(--oq-success); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-error { background: var(--oq-danger-soft); color: var(--oq-danger); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) a:not([class]):not([aria-current]):not(.fw-hero a) { color: var(--oq-link); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-header-icon, .fw-back) { background: var(--oq-glass); border: 1px solid var(--oq-glass-border); box-shadow: var(--oq-shadow-sm); color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-question-card, .fw-signature, .fw-term-card, .fw-source-panel, .fw-findings-tile) { background: var(--oq-surface); color: var(--oq-text); border: 1px solid var(--oq-border); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-term-row span:first-child { color: var(--oq-text-2); }
+@media (hover: hover) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-card, .fw-profile-card):not(:has(input, textarea, select)):hover { transform: translateY(-2px); box-shadow: var(--oq-shadow-lg); } }
+@media (prefers-reduced-motion: reduce) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) * { transition: none !important; animation: none !important; transform: none !important; } }
+@media (prefers-reduced-transparency: reduce), (update: slow) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-card, .fw-list-card, .fw-profile-card, .fw-offer-detail-card, .fw-bottom-nav) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--oq-surface); } }
+
+/* ---- Primitives (src/components/ui) ---- */
+.oq-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--oq-r-pill); border: 1px solid var(--oq-border); background: var(--oq-soft); color: var(--oq-text-2); font-size: 12px; font-weight: 700; line-height: 1.4; white-space: nowrap; }
+.oq-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.oq-badge[data-tone="success"] { background: var(--oq-success-soft); color: var(--oq-success); border-color: transparent; }
+.oq-badge[data-tone="warning"] { background: var(--oq-warning-soft); color: var(--oq-warning); border-color: transparent; }
+.oq-badge[data-tone="danger"] { background: var(--oq-danger-soft); color: var(--oq-danger); border-color: transparent; }
+.oq-badge[data-tone="info"] { background: var(--oq-soft); color: var(--oq-link); border-color: transparent; }
+.oq-badge[data-tone="violet"] { background: var(--oq-violet-soft); color: var(--oq-link); border-color: transparent; }
+.oq-empty { display: grid; justify-items: start; gap: 10px; padding: 22px; border: 1px dashed var(--oq-border); border-radius: var(--oq-r-lg); background: var(--oq-glass); color: var(--oq-text-2); }
+.oq-empty h3 { margin: 0; color: var(--oq-text); font-size: 17px; }
+.oq-empty p { margin: 0; line-height: 1.5; }
+.oq-empty a, .oq-empty button { margin-top: 4px; }
+.oq-skel { display: block; border-radius: var(--oq-r-sm); background: linear-gradient(90deg, var(--oq-soft) 25%, var(--oq-border) 50%, var(--oq-soft) 75%); background-size: 200% 100%; min-height: 14px; }
+@media (prefers-reduced-motion: no-preference) { .oq-skel { animation: oq-shimmer 1.4s linear infinite; } }
+@keyframes oq-shimmer { to { background-position: -200% 0; } }
+.oq-ring { position: relative; display: inline-grid; place-items: center; }
+.oq-ring svg { transform: rotate(-90deg); }
+.oq-ring-track { stroke: var(--oq-border); }
+.oq-ring-fill { stroke-linecap: round; transition: stroke-dashoffset .6s var(--oq-ease); }
+.oq-ring-label { position: absolute; display: grid; place-items: center; text-align: center; font-weight: 800; color: var(--oq-text); line-height: 1.1; }
+.oq-ring-label small { font-weight: 600; font-size: 11px; color: var(--oq-text-2); }
+.oq-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: var(--oq-r-pill); border: 1px solid var(--oq-border); background: var(--oq-surface); box-shadow: var(--oq-shadow-sm); }
+.oq-seg button { min-width: 36px; min-height: 32px; padding: 0 10px; border: 0; border-radius: var(--oq-r-pill); background: transparent; color: var(--oq-text-2); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-grid; place-items: center; transition: background var(--oq-dur) var(--oq-ease), color var(--oq-dur) var(--oq-ease); }
+.oq-seg button[aria-pressed="true"] { background: var(--oq-gradient); color: #fff; }
+.oq-seg button:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 2px; }
+.oq-toasts { position: fixed; inset-inline: 16px; bottom: calc(96px + env(safe-area-inset-bottom)); display: grid; gap: 8px; justify-items: center; pointer-events: none; z-index: 50; }
+.oq-toast { pointer-events: auto; max-width: 420px; padding: 12px 16px; border-radius: var(--oq-r-md); background: var(--oq-elevated); color: var(--oq-text); border: 1px solid var(--oq-border); box-shadow: var(--oq-shadow-lg); font-size: 14px; }
+.oq-toast[data-tone="success"] { border-color: var(--oq-success); }
+.oq-toast[data-tone="danger"] { border-color: var(--oq-danger); }
+@media (prefers-reduced-motion: no-preference) { .oq-toast { animation: oq-pop .26s var(--oq-spring); } }
+@keyframes oq-pop { from { opacity: 0; transform: translateY(10px) scale(.96); } }
+
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product-header { grid-template-columns: minmax(40px, 1fr) auto minmax(40px, 1fr); gap: 8px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product-header .fw-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-intake-heading, .fw-intake-progress, .fw-check-label, .fw-offer-employer, .fw-source-label) { color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-method-hint, .fw-findings-sources li, .fw-check-value, .fw-check-status) { color: var(--oq-text-2); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-demo-week-card, .fw-demo-passport-card) { background: var(--oq-glass); border: 1px solid var(--oq-glass-border); border-radius: var(--oq-r-lg); box-shadow: var(--oq-shadow-md); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-live-work .fw-work-row :is(small, .fw-work-row-status, .fw-demo-day-label strong, .fw-demo-hours) { color: var(--oq-text-2); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-live-work .fw-work-row .fw-demo-day-label strong { color: var(--oq-text); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav a:not(.active) { color: var(--oq-text-2); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-fixed-action, .fw-demo-passport-action) { background: linear-gradient(to bottom, transparent, var(--oq-canvas) 38%); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-demo-header-link { background: var(--oq-soft); color: var(--oq-text); border: 1px solid var(--oq-border); border-radius: var(--oq-r-pill); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-findings-tile :is(a, span, strong) { color: var(--oq-text); }
+/* Legacy shell variables follow the semantic tokens inside the signed-in shell only. Public and sign-in pages keep their own values.
+   --fw-navy stays a constant dark navy because older styles use it as a dark surface, not as text. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) { --fw-blue: var(--oq-blue); --fw-blue-soft: var(--oq-soft); --fw-navy: #182442; --fw-text: var(--oq-text); --fw-muted: var(--oq-text-2); --fw-text-secondary: var(--oq-text-2); --fw-link: var(--oq-link); --fw-card: var(--oq-glass); --fw-line: var(--oq-border); }
+/* Native controls and scrollbars follow the theme only on the signed-in shell. Sign-in and public pages keep their own light design even if a dark preference is saved. */
+html[data-brand="oryqen"]:has(.fw-product .fw-bottom-nav) { color-scheme: light; }
+html[data-brand="oryqen"][data-theme="dark"]:has(.fw-product .fw-bottom-nav) { color-scheme: dark; }
+@media (prefers-color-scheme: dark) { html[data-brand="oryqen"]:not([data-theme="light"]):not([data-theme="dark"]):has(.fw-product .fw-bottom-nav) { color-scheme: dark; } }

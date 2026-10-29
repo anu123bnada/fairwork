@@ -6,6 +6,7 @@ import { passportSchema,passportReceiptSchema,type Passport } from "@/features/w
 import { collectPrivatePassportExport } from "@/features/work/passport-export";
 import { groupPassportByYear,summarizePassport } from "@/features/work/passport-summary";
 import { useI18n } from "@/i18n/use-i18n";
+import { toast } from "@/components/ui/toast";
 import "./passport-experience.css";
 import "./feature-tokens.css";
 
@@ -42,7 +43,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
   try{
    const signed=await appRequest("/api/v1/passport/signed",{}) as {jws:string;payload:unknown;keyId:string;issuer:string};
    const url=URL.createObjectURL(new Blob([JSON.stringify({format:"oryqen-signed-passport-file.v1",keyId:signed.keyId,issuer:signed.issuer,jws:signed.jws,payload:signed.payload},null,2)],{type:"application/json"}));
-   const link=document.createElement("a");link.href=url;link.download="oryqen-signed-passport.json";link.click();
+   const link=document.createElement("a");link.href=url;link.download="oryqen-signed-passport.json";link.click();toast(t("pp.downloaded"));
    setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(caught){setError(caught instanceof ApiRequestError&&caught.status===503?new Error(t("pp.signedUnavailable")):caught instanceof Error?caught:new Error(t("pp.downloadError")));}
   finally{setBusy(false);}
@@ -53,7 +54,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    // Always recheck current authorization and suppression; never export cached rows.
    const file=await collectPrivatePassportExport(cursor=>appRequest("/api/v1/passport"+(cursor?`?cursor=${cursor}`:"")),new Date().toISOString());
    const url=URL.createObjectURL(new Blob([JSON.stringify(file,null,2)],{type:"application/json"}));
-   const link=document.createElement("a");link.href=url;link.download="oryqen-private-passport.json";link.click();
+   const link=document.createElement("a");link.href=url;link.download="oryqen-private-passport.json";link.click();toast(t("pp.downloaded"));
    setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(caught){setPassport(null);setError(caught instanceof Error?caught:new Error(t("pp.downloadError")));}
   finally{setBusy(false);}
