@@ -94,3 +94,47 @@ test("the chosen theme applies on every route before paint, persists across relo
   expect(await canvas()).toBe("#090f24");
  }finally{await context.close();}
 });
+
+for(const [name,width,height] of [["desktop",1440,900],["mobile",390,844]] as const)
+for(const scheme of ["light","dark"] as const)
+test(`a new account sees a guided start, not an empty dashboard (${name} ${scheme})`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height},colorScheme:scheme});
+ try{
+  await signedIn(context);
+  await context.route("**/api/v1/offers?*",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  await context.route("**/api/v1/work-records",r=>r.fulfill({json:{data:{items:[],nextCursor:null}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const start=page.getByRole("region",{name:"Recent offers"});
+  await expect(start).toContainText("Your first offer starts here");
+  const steps=start.getByRole("list").getByRole("link");
+  await expect(steps).toHaveCount(3);
+  await expect(steps.nth(0)).toHaveAttribute("href","/app/add-offer");
+  await expect(steps.nth(1)).toHaveAttribute("href","/app/check");
+  await expect(steps.nth(2)).toHaveAttribute("href","/app/work-record");
+  await expect(page.getByRole("region",{name:"Welcome and next step"}).getByRole("link",{name:/Add offer/}).first()).toHaveAttribute("href","/app/add-offer");
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
+  mkdirSync("test-results/design",{recursive:true});
+  await page.screenshot({path:`test-results/design/newuser-${name}-${scheme}.png`,fullPage:true});
+ }finally{await context.close();}
+});
+
+test("the offer workbench shows the selected offer and switches on selection",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const second={offerId:"40000000-0000-4000-8000-000000000099",companyId:company,version:1,role:"Warehouse Assistant",createdAt:"2026-10-20T09:00:00Z",questions:0,archived:false,decision:"considering",lifecycleRevision:0};
+  await context.route("**/api/v1/offers?*",r=>r.fulfill({json:{data:{items:[...offers,second],nextCursor:null}}}));
+  const page=await context.newPage();
+  await page.goto("/app/home");
+  const wb=page.getByRole("region",{name:"Recent offers"});
+  const detail=wb.getByRole("article",{name:"Selected offer"});
+  await expect(detail).toContainText("Motorcycle Technician");
+  await expect(detail.getByRole("link",{name:"Review offer: Motorcycle Technician"})).toHaveAttribute("href",`/app/agreement?offerId=${id}`);
+  await wb.getByRole("button",{name:/Warehouse Assistant/}).click();
+  await expect(detail).toContainText("Warehouse Assistant");
+  await expect(detail).toContainText("Considering");
+  await expect(detail.getByRole("link",{name:"See findings"})).toHaveAttribute("href",`/app/check?offerId=${second.offerId}`);
+  await expect(wb.getByRole("button",{name:/Warehouse Assistant/})).toHaveAttribute("aria-pressed","true");
+ }finally{await context.close();}
+});
