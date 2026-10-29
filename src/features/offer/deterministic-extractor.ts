@@ -37,7 +37,9 @@ export function extractOfferTermsRuleBased(text: string): {
     const rawCurrency = salaryMatch[1] || salaryMatch[4] || "";
     const rawAmount = salaryMatch[2] || salaryMatch[3] || "";
 
-    const num = parseFloat(rawAmount.replace(/[,\s]/g, "")) * (/k\s*$/i.test(rawAmount) ? 1000 : 1);
+    // "2.400" with exactly three digits after each dot is a thousands separator (European style), not 2.4.
+    const grouped = /^\d{1,3}(?:\.\d{3})+$/.test(rawAmount.trim());
+    const num = parseFloat((grouped ? rawAmount.replace(/\./g, "") : rawAmount).replace(/[,\s]/g, "")) * (/k\s*$/i.test(rawAmount) ? 1000 : 1);
     if (Number.isFinite(num) && num > 0) {
       amount = num;
       detectedTerms.salary = num;
