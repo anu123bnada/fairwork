@@ -226,7 +226,8 @@ test("captures all prototype screen routes at Figma and recording viewport sizes
     for (const [path, heading] of routes) {
       await page.setViewportSize({ width: viewport.width, height: viewport.height });
       await page.goto(path);
-      await expect(page.getByText(heading).first(), `${path} did not render its expected content`).toBeVisible();
+      // The splash shows the owner-approved symbol (its accessible name is the product name) instead of typeset text.
+      await expect(path === "/intro/splash" ? page.getByAltText("ORYQEN").first() : page.getByText(heading).first(), `${path} did not render its expected content`).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${path} overflows at ${viewport.width}px`).toBe(true);
       const file = path.slice(1).replaceAll("/", "-");
       await page.screenshot({ path: `test-results/fairwork-${viewport.label}-${file}.png`, fullPage: true, animations: "disabled" });

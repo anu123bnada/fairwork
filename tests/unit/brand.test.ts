@@ -13,9 +13,23 @@ afterEach(() => { vi.doUnmock("@/lib/brand/identity"); vi.resetModules(); });
 const fixtureAsset = { src: "/oryqen/approved/test-only.svg", width: 240, height: 60, sha256: "a".repeat(64) };
 const fixtureIdentity = { approvalReference: "unit test fixture only", logo: { light: fixtureAsset, dark: { ...fixtureAsset, src: "/oryqen/approved/test-only-dark.svg" } }, mark: { light: { ...fixtureAsset, width: 60 }, dark: { ...fixtureAsset, width: 60 } } };
 
+describe("the installed identity", () => {
+  it("is the owner's supplied symbol, approved in the manifest with a verified hash and a recorded reference", () => {
+    const manifest = brandManifestSchema.parse(assets);
+    expect(manifest.status).toBe("approved");
+    const identity = manifest.identity!;
+    expect(identity.approvalReference).toMatch(/Owner supplied the ORYQEN logo/);
+    for (const kind of ["logo", "mark"] as const) for (const theme of ["light", "dark"] as const) {
+      const asset = identity[kind][theme];
+      expect(createHash("sha256").update(readFileSync(resolve("public" + asset.src))).digest("hex"), `${kind}/${theme}`).toBe(asset.sha256);
+    }
+  });
+});
+
 describe("official brand gate", () => {
   it("does not silently approve an existing asset or reserve any header space", async () => {
-    expect(brandManifestSchema.parse(assets).status).toBe("awaiting-approved-assets");
+    // The gate itself: with no approved identity configured, nothing renders and no space is reserved.
+    vi.doMock("@/lib/brand/identity", () => ({ approvedBrand: null }));
     const { BrandLogo, BrandMark, AppBrandHeader } = await import("@/components/brand/brand");
     for (const Component of [BrandLogo, BrandMark, AppBrandHeader]) expect(renderToStaticMarkup(createElement(Component))).toBe("");
     const existing = createElement("span", { className: "existing-ui" }, "Existing UI");

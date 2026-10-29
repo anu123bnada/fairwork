@@ -83,3 +83,7 @@ html:has(.oryqen-landing){scroll-behavior:smooth} .scroll-meter{position:fixed;t
 .oryqen-landing p a,.oryqen-landing li a,.oryqen-landing .faq-grid a{display:inline-block;min-height:24px;line-height:24px}
 .oryqen-landing .cinema-caption a,.oryqen-landing .footer-top a{display:inline-flex;align-items:center;gap:6px;min-height:32px}
 .oryqen-landing :is(.account-note,.auth-note) a{display:inline-block;min-height:24px;line-height:24px}
+
+.brand>span.brand-word:not(.brand-mark){color:#071b33}
+.brand>span.brand-word>span{color:#1e4fff}
+.brand .brand-symbol{margin-right:2px}

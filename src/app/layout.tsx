@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: { default: "ORYQEN — Your work, clearly recorded", template: "%s | ORYQEN" },
   applicationName: "ORYQEN",
   description: "Understand offers, clarify agreements and keep a private record of your work.",
-  icons: { icon: "/figma/auth/shield.svg", apple: "/oryqen/restored-icon-180.png" },
+  icons: { icon: "/oryqen/approved/oryqen-symbol.png", apple: "/oryqen/approved/oryqen-symbol.png" },
   openGraph: { type: "website", siteName: "ORYQEN", title: "ORYQEN — Your work, clearly recorded", description: "Understand offers. Clarify agreements. Keep your work record private." },
   robots: { index: false, follow: false },
 };

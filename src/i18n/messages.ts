@@ -1643,6 +1643,11 @@ export const en = {
   "flow.questions": "Questions to ask",
   "flow.save": "Save and continue",
   "add.moreTerms": "More terms (all optional)",
+  "check.howTitle": "How the offer check works",
+  "check.how1": "Add the offer: paste its text, or read a screenshot, PDF or Word file on this device, or type the terms.",
+  "check.how2": "See what is stated and what is missing, with the questions worth asking before you decide.",
+  "check.how3": "Save it and continue to the agreement, so what was agreed stays on record.",
+  "check.howAi": "This check uses local rules. Live AI analysis is off and nothing is sent to an AI provider.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -3276,6 +3281,11 @@ export const si: Partial<Messages> = {
   "flow.questions": "ඇසිය යුතු ප්‍රශ්න",
   "flow.save": "සුරකින්න සහ ඉදිරියට යන්න",
   "add.moreTerms": "තවත් කොන්දේසි (සියල්ල විකල්ප)",
+  "check.howTitle": "දීමනා පරීක්ෂාව ක්‍රියා කරන ආකාරය",
+  "check.how1": "දීමනාව එක් කරන්න: එහි පෙළ අලවන්න, නැතහොත් මෙම උපාංගයේ තිර රුවක්, PDF හෝ Word ගොනුවක් කියවන්න, නැතහොත් කොන්දේසි ටයිප් කරන්න.",
+  "check.how2": "සඳහන් කර ඇති දේ සහ අතුරුදන් දේ, තීරණය කිරීමට පෙර ඇසිය යුතු ප්‍රශ්න සමඟ බලන්න.",
+  "check.how3": "එය සුරකින්න සහ ගිවිසුම වෙත ඉදිරියට යන්න; එවිට එකඟ වූ දේ වාර්තාවේ පවතී.",
+  "check.howAi": "මෙම පරීක්ෂාව දේශීය රීති භාවිතා කරයි. සජීවී AI විශ්ලේෂණය ක්‍රියා විරහිතයි; කිසිවක් AI සපයන්නෙකුට නොයවයි.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4906,6 +4916,11 @@ export const ta: Partial<Messages> = {
   "flow.questions": "கேட்க வேண்டிய கேள்விகள்",
   "flow.save": "சேமித்து தொடர்",
   "add.moreTerms": "மேலும் விதிமுறைகள் (அனைத்தும் விருப்பம்)",
+  "check.howTitle": "சலுகைச் சரிபார்ப்பு எப்படி வேலை செய்கிறது",
+  "check.how1": "சலுகையைச் சேர்க்கவும்: உரையை ஒட்டவும், அல்லது இந்தச் சாதனத்தில் ஸ்கிரீன்ஷாட், PDF அல்லது Word கோப்பைப் படிக்கவும், அல்லது விதிமுறைகளை தட்டச்சு செய்யவும்.",
+  "check.how2": "குறிப்பிடப்பட்டவை மற்றும் விடுபட்டவற்றைப் பாருங்கள்; முடிவெடுக்கும் முன் கேட்க வேண்டிய கேள்விகளுடன்.",
+  "check.how3": "அதைச் சேமித்து ஒப்பந்தத்துக்குத் தொடருங்கள்; ஒப்புக்கொண்டவை பதிவில் இருக்கும்.",
+  "check.howAi": "இந்தச் சரிபார்ப்பு உள்ளூர் விதிகளைப் பயன்படுத்துகிறது. நேரடி AI பகுப்பாய்வு அணைக்கப்பட்டுள்ளது; எதுவும் AI வழங்குநருக்கு அனுப்பப்படாது.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -6536,4 +6551,9 @@ export const de: Partial<Messages> = {
   "flow.questions": "Fragen an den Arbeitgeber",
   "flow.save": "Speichern und fortfahren",
   "add.moreTerms": "Weitere Bedingungen (alle optional)",
+  "check.howTitle": "So funktioniert die Angebotsprüfung",
+  "check.how1": "Angebot hinzufügen: Text einfügen, einen Screenshot, ein PDF oder ein Word-Dokument auf diesem Gerät auslesen oder die Bedingungen eintippen.",
+  "check.how2": "Sehen Sie, was angegeben ist und was fehlt, mit den Fragen, die Sie vor einer Entscheidung stellen sollten.",
+  "check.how3": "Speichern und zur Vereinbarung weitergehen, damit das Vereinbarte dokumentiert bleibt.",
+  "check.howAi": "Diese Prüfung nutzt lokale Regeln. Die KI-Analyse ist aus, und nichts wird an einen KI-Anbieter gesendet.",
 };

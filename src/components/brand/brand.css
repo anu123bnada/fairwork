@@ -1,8 +1,13 @@
 /* These selectors have no rendered targets until approved masters are installed.
    Never tint, filter, stretch, animate or reconstruct approved artwork. */
 .oq-brand-art { display: block; object-fit: contain; height: auto; max-width: 100%; }
-.oq-brand-logo { width: 180px; }
+/* The supplied master has a white ground, so it sits on a white tile; the artwork itself is never tinted or altered. */
+.oq-brand-art { background: #fff; border-radius: 24%; box-shadow: 0 6px 18px rgba(30, 79, 255, .22); }
+.oq-brand-logo { width: 40px; }
+.oq-brand-prominent .oq-brand-logo { width: 88px; }
 .oq-brand-mark { width: 32px; }
+.brand { display: inline-flex; align-items: center; gap: 10px; }
+.brand .brand-symbol { width: 34px; }
 .oq-brand-header {
   display: flex; align-items: center; min-height: 48px; box-sizing: border-box;
   padding: 8px max(20px, env(safe-area-inset-right)) 8px max(20px, env(safe-area-inset-left));
@@ -10,7 +15,7 @@
 }
 .oq-brand-header .oq-brand-mobile { display: none; }
 .oq-brand-prominent { justify-content: center; padding-block: 20px; }
-.oq-brand-auth { margin: 0 auto 24px; }
+.oq-brand-auth { margin: 0 auto 24px; width: 88px; }
 .oq-brand-splash { position: absolute; top: calc(50dvh - 70px); left: 50%; transform: translateX(-50%); width: min(240px, 80vw); }
 @media (max-width: 767px) {
   .oq-brand-header .oq-brand-desktop { display: none; }

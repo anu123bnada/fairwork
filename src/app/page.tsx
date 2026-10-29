@@ -9,7 +9,7 @@ import "@fontsource/space-grotesk/500.css";
 import "@fontsource/space-grotesk/700.css";
 import CinematicCore from "@/components/oryqen/cinematic-core";
 import { AuthLinkForwarder } from "@/components/fairwork/auth-link-forwarder";
-import { BrandLogo } from "@/components/brand/brand";
+import { BrandMark } from "@/components/brand/brand";
 import { androidRelease, windowsRelease, releaseUrls, type Release } from "@/features/releases/releases";
 import { motion, useReducedMotion } from "framer-motion";
 import {
@@ -144,14 +144,9 @@ function Brand() {
     <a className="brand" href="#top" aria-label="ORYQEN home">
       {/* The approved identity gate replaces this preserved V6 wordmark only
           once official artwork is supplied; until then the artwork renders as-is. */}
-      <BrandLogo
-        existing={
-          <>
-            <span className="brand-mark">◈</span>ORY<span>Q</span>EN
-            <span className="brand-period">.</span>
-          </>
-        }
-      />
+      {/* The owner's logo symbol, unchanged, followed by the product name as text. */}
+      <BrandMark className="brand-symbol" />
+      <span className="brand-word">ORY<span>Q</span>EN<span className="brand-period">.</span></span>
     </a>
   );
 }

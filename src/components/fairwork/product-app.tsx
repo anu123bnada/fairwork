@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { AppBrandHeader, BrandLogo, ExistingBrand } from "@/components/brand/brand";
+import { AppBrandHeader, BrandLogo, BrandMark, ExistingBrand } from "@/components/brand/brand";
 import { useRouter, usePathname } from "next/navigation";
 import {
   createContext,
@@ -405,7 +405,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
-      <span className="fw-nav-brand" aria-hidden="true"><Icon name="shield" size={20} />ORYQEN</span>
+      <span className="fw-nav-brand"><BrandMark className="fw-nav-mark" /><span>ORYQEN</span></span>
       {items.map(([route, label, icon]) => (
         <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
           <Icon name={icon} size={22} />
@@ -898,10 +898,19 @@ function CheckScreen() {
   if (!offer) {
     return <>
       <section className="fw-card fw-check-empty">
-        <span className="fw-check-ring"><Icon name="shield" size={27} /></span>
+        <BrandMark className="fw-check-mark" />
         <strong>{t("check.noOffer")}</strong>
         <p>{t("check.noOfferBody")}</p>
         <Link href={routeFor("add-offer")} className="fw-primary">{t("check.addOffer")}</Link>
+      </section>
+      <section className="fw-card fw-how" aria-label={t("check.howTitle")}>
+        <h3>{t("check.howTitle")}</h3>
+        <ol>
+          <li><strong>{t("check.how1")}</strong></li>
+          <li><strong>{t("check.how2")}</strong></li>
+          <li><strong>{t("check.how3")}</strong></li>
+        </ol>
+        <p className="fw-notice">{t("check.howAi")}</p>
       </section>
     </>;
   }

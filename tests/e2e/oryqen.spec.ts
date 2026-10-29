@@ -29,11 +29,11 @@ test("restored original artwork, glass, mobile proportions and motion survive cl
   // Global CSS persists across Next client navigation: auth must remain blue/glass.
   await page.goto("/sign-in");
   await expect(page.locator(".fw-auth")).toHaveCSS("background-image", /figma\/product\/background.svg/);
-  await expect(page.locator(".fw-auth-brand")).toHaveCSS("width", "113px");
+  await expect(page.locator(".oq-brand-auth")).toHaveCSS("width", "88px");
   await expect(page.getByLabel("Email address")).toHaveCSS("backdrop-filter", "blur(24px)");
   await page.goto("/intro/splash");
-  await expect(page.locator(".fw-intro-logo img")).toHaveAttribute("src", "/figma/product/00-splash-icon.svg");
-  await expect(page.locator(".fw-intro-logo")).toHaveCSS("animation-duration", "1.8s");
+  // The splash now shows the owner-approved symbol (the earlier Figma splash artwork was replaced when the identity was approved).
+  await expect(page.locator(".oq-brand-splash")).toHaveAttribute("src", "/oryqen/approved/oryqen-symbol.png");
   await expect(page).toHaveURL(/\/intro\/onboarding$/);
   await page.route("**/api/v1/me", route => route.fulfill({ json: { data: initial } }));
   await page.goto("/app/notifications");
@@ -101,7 +101,7 @@ test("ORYQEN metadata and restored icons survive reload; rejected dark preferenc
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator(".fw-auth-aside")).toBeHidden();
   await expect(page.locator(".fw-auth")).toHaveCSS("width", "390px");
-  await expect(page.locator(".fw-auth-brand img").first()).toHaveAttribute("src", "/figma/auth/logo-glass.svg");
+  await expect(page.locator(".oq-brand-auth").first()).toHaveAttribute("src", "/oryqen/approved/oryqen-symbol.png");
   // Optional old device preference is preserved, but no unapproved dark theme is applied.
   expect(await page.evaluate(() => localStorage.getItem("oryqen.appearance"))).toBe("dark");
   const manifest = await request.get("/manifest.webmanifest");
