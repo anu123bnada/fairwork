@@ -48,7 +48,7 @@ async function signedIn(context:BrowserContext){
  await context.route("**/api/v1/offers/analyses**",r=>r.fulfill({json:{data:{offerId:id,items:[]}}}));
  await context.route("**/api/v1/agreement-expiries",r=>r.fulfill({json:{data:{items:[{agreementId:id,version:1,expiresAt:"2026-11-20T00:00:00Z",expired:false,role:"worker"}]}}}));
  await context.route("**/api/v1/work-cases**",r=>r.fulfill({json:{data:{items:[{caseId:id,workId:id,workVersion:1,revision:1,status:"open",openedAt:time}],nextCursor:null}}}));
- await context.route("**/api/v1/notifications**",r=>r.fulfill({json:{data:{items:[{eventKey:"a",kind:"work_decision",title:"Work record verified",message:"Your employer verified a record.",href:"/app/work-record",recordedAt:new Date().toISOString(),read:false},{eventKey:"b",kind:"agreement_decision",title:"Agreement confirmed",message:"",href:"/app/agreement-workflow",recordedAt:"2026-10-20T00:00:00Z",read:true}],nextCursor:null}}}));
+ await context.route("**/api/v1/notifications**",r=>r.fulfill({json:{data:{items:[{eventKey:"a",kind:"work_decision",title:"Work record verified",message:"Your employer verified a record.",href:`/app/work-record?workId=${id}`,recordedAt:new Date().toISOString(),read:false},{eventKey:"b",kind:"agreement_decision",title:"Agreement confirmed",message:"",href:`/app/agreement-workflow?workflowId=${id}`,recordedAt:"2026-10-20T00:00:00Z",read:true}],nextCursor:null}}}));
 }
 
 const routes:[string,string][]=[["/app/home","dashboard"],["/app/add-offer","addoffer"],[`/app/check?offerId=${id}`,"check"],["/app/agreement-workflow","agreements"],[`/app/agreement-workflow?workflowId=${id}`,"agreementdetail"],["/app/work-record","workrecords"],[`/app/work-record?workId=${id}`,"workrecorddetail"],["/app/passport","passport"],["/app/cases","cases"],["/app/notifications","notifications"],["/app/settings","settings"],["/app/employer","organizations"]];
@@ -203,5 +203,22 @@ test(`research results show a facts grid and badged findings, never a score (${n
   expect(await page.evaluate(()=>document.documentElement.scrollWidth-innerWidth)).toBeLessThanOrEqual(0);
   mkdirSync("test-results/design",{recursive:true});
   await card.screenshot({path:`test-results/design/research-${name}-${scheme}.png`});
+ }finally{await context.close();}
+});
+
+test("notifications group by day, count unread, filter to unread and link to the real record",async({browser})=>{
+ const context=await browser.newContext({viewport:{width:1440,height:900}});
+ try{
+  await signedIn(context);
+  const page=await context.newPage();
+  await page.goto("/app/notifications");
+  await expect(page.getByRole("heading",{name:"Today"})).toBeVisible();
+  await expect(page.getByRole("heading",{name:"Earlier"})).toBeVisible();
+  await expect(page.getByRole("status").filter({hasText:"1 unread"})).toBeVisible();
+  await expect(page.getByText("Agreement confirmed")).toBeVisible();
+  await page.getByLabel("Show unread only").check();
+  await expect(page.getByText("Agreement confirmed")).toHaveCount(0);
+  await expect(page.getByText("Work record verified")).toBeVisible();
+  await expect(page.getByRole("link",{name:"Open"}).first()).toHaveAttribute("href",`/app/work-record?workId=${id}`);
  }finally{await context.close();}
 });
