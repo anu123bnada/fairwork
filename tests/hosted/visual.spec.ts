@@ -23,7 +23,10 @@ for (const scheme of ["light", "dark"] as const) {
           await page.waitForLoadState("networkidle").catch(() => undefined);
           const dir = `test-results/hosted/screens/${scheme}-${size.name}`;
           mkdirSync(dir, { recursive: true });
-          await page.screenshot({ path: `${dir}/${route}.png`, fullPage: true, animations: "disabled" });
+          // One 1440px light run stalled for 90s inside page.screenshot on a nearly empty page while the same route passed in the other three configurations;
+          // a bounded first attempt plus one retry keeps a harness stall from masking real findings.
+          const shoot = () => page.screenshot({ path: `${dir}/${route}.png`, fullPage: true, animations: "disabled", timeout: 25_000 });
+          await shoot().catch(shoot);
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
           expect(overflow, `${route} overflows horizontally by ${overflow}px at ${size.name}px in ${scheme}`).toBeLessThanOrEqual(0);
           const axe = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
