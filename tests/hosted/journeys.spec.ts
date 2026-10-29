@@ -45,7 +45,12 @@ test.describe("session", () => {
 test.describe("screens", () => {
   test("home dashboard renders from real data without an error banner @mobile", async ({ page }) => {
     await open(page, "home");
-    await expect(page.getByRole("region", { name: "Dashboard work records" })).toBeVisible();
+    // The redesigned dashboard keeps work records in a tabbed work area; the panel is mounted but hidden until its tab is chosen.
+    const records = page.getByRole("region", { name: "Dashboard work records" });
+    await expect(records).toBeHidden();
+    await page.getByRole("tab", { name: "Work records" }).click();
+    await expect(page.getByRole("tab", { name: "Work records" })).toHaveAttribute("aria-selected", "true");
+    await expect(records).toBeVisible();
     await noScreenError(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
