@@ -2,8 +2,9 @@
 // The password is typed at a hidden prompt, passed to the child process through its environment only, and never printed or written to disk.
 // Only the session cookie state goes to .tmp/hosted-auth/ (gitignored); it is deleted when the run ends.
 //
-//   node scripts/run-hosted-browser-journeys.mjs [--origin https://oryqen-staging.vercel.app] [--email you@example.test] [--writes] [--signout]
+//   node scripts/run-hosted-browser-journeys.mjs [--origin https://oryqen-staging.vercel.app] [--email you@example.test] [--writes] [--signout] [--create-profile]
 //
+// --create-profile completes the profile of a brand-new test account (display name only).
 // Defaults are read-only. --writes allows one synthetic private offer draft. --signout adds a sign-in/sign-out journey of its own.
 import { spawnSync } from "node:child_process";
 import { createInterface } from "node:readline";
@@ -26,7 +27,7 @@ const email = arg("email") ?? process.env.ORYQEN_TEST_EMAIL ?? await ask("Stagin
 const password = process.env.ORYQEN_TEST_PASSWORD ?? await ask("Password (hidden)", true);
 const state = path.resolve(".tmp/hosted-auth/state.json");
 const env = { ...process.env, ORYQEN_HOSTED_ORIGIN: origin, ORYQEN_HOSTED_STATE: state, ORYQEN_TEST_EMAIL: email, ORYQEN_TEST_PASSWORD: password,
-  ORYQEN_HOSTED_WRITES: process.argv.includes("--writes") ? "1" : "0", ORYQEN_HOSTED_SIGNOUT: process.argv.includes("--signout") ? "1" : "0" };
+  ORYQEN_HOSTED_WRITES: process.argv.includes("--writes") ? "1" : "0", ORYQEN_HOSTED_PROFILE: process.argv.includes("--create-profile") ? "1" : "0", ORYQEN_HOSTED_SIGNOUT: process.argv.includes("--signout") ? "1" : "0" };
 const result = spawnSync(process.execPath, ["node_modules/@playwright/test/cli.js", "test", "--config", "playwright.hosted.config.ts"], { env, stdio: "inherit" });
 rmSync(path.dirname(state), { recursive: true, force: true });
 process.exit(result.status ?? 1);
