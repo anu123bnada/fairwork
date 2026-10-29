@@ -824,6 +824,7 @@ function AddOfferScreen() {
             <label className="fw-field">{t("add.f.startDate")}<input name="startDate" maxLength={80} value={terms.startDate ?? ""} onChange={(event) => updateTerm("startDate", event.target.value)} /></label>
             <label className="fw-field">{t("add.f.hours")}<input name="hoursPerWeek" type="number" min="0.25" step="0.25" value={terms.hoursPerWeek ?? ""} onChange={(event) => updateTerm("hoursPerWeek", event.target.value)} /></label>
             <label className="fw-field">{t("add.f.responsibilities")}<textarea name="responsibilities" maxLength={500} value={terms.responsibilities ?? ""} onChange={(event) => updateTerm("responsibilities", event.target.value)} /></label>
+            <h4 className="fw-form-group">{t("add.moreTerms")}</h4>
             <label className="fw-field">{t("add.f.location")}<input name="location" value={terms.location ?? ""} onChange={(event) => updateTerm("location", event.target.value)} /></label>
             <label className="fw-field">{t("add.f.overtime")}<input name="overtime" value={terms.overtime ?? ""} onChange={(event) => updateTerm("overtime", event.target.value)} /></label>
             <label className="fw-field">{t("add.f.paymentDate")}<input name="paymentDate" value={terms.paymentDate ?? ""} onChange={(event) => updateTerm("paymentDate", event.target.value)} /></label>

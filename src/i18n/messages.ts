@@ -1642,6 +1642,7 @@ export const en = {
   "flow.review": "Review and findings",
   "flow.questions": "Questions to ask",
   "flow.save": "Save and continue",
+  "add.moreTerms": "More terms (all optional)",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -3274,6 +3275,7 @@ export const si: Partial<Messages> = {
   "flow.review": "සමාලෝචනය සහ සොයාගැනීම්",
   "flow.questions": "ඇසිය යුතු ප්‍රශ්න",
   "flow.save": "සුරකින්න සහ ඉදිරියට යන්න",
+  "add.moreTerms": "තවත් කොන්දේසි (සියල්ල විකල්ප)",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -4903,6 +4905,7 @@ export const ta: Partial<Messages> = {
   "flow.review": "மதிப்பாய்வு மற்றும் கண்டறிதல்கள்",
   "flow.questions": "கேட்க வேண்டிய கேள்விகள்",
   "flow.save": "சேமித்து தொடர்",
+  "add.moreTerms": "மேலும் விதிமுறைகள் (அனைத்தும் விருப்பம்)",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -6532,4 +6535,5 @@ export const de: Partial<Messages> = {
   "flow.review": "Prüfen und Ergebnisse",
   "flow.questions": "Fragen an den Arbeitgeber",
   "flow.save": "Speichern und fortfahren",
+  "add.moreTerms": "Weitere Bedingungen (alle optional)",
 };

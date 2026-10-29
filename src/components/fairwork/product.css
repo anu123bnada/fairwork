@@ -2821,3 +2821,10 @@ body:has(.fw-product) {
 .fw-flow a { display: inline-flex; align-items: center; min-height: 28px; color: inherit; text-decoration: none; }
 .fw-flow a:hover { text-decoration: underline; }
 .fw-advanced > summary { font-weight: 700; }
+
+/* Add-offer: the essential terms first, optional terms under their own heading, two columns on wide screens. Every field stays visible and reachable. */
+.fw-form-group { margin: 14px 0 2px; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--oq-muted, #5a6882); }
+@media (min-width: 900px) {
+  .fw-screen-add-offer .fw-offer-detail-card:has(.fw-field) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; align-items: start; }
+  .fw-screen-add-offer .fw-offer-detail-card > strong, .fw-screen-add-offer .fw-offer-detail-card > .fw-notice, .fw-screen-add-offer .fw-offer-detail-card > .fw-form-group, .fw-screen-add-offer .fw-offer-detail-card > .fw-field:has(textarea), .fw-screen-add-offer .fw-offer-detail-card > p { grid-column: 1 / -1; }
+}
