@@ -2,3 +2,5 @@
 .oq-wr-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .oq-wr-chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--oq-border); background: var(--oq-soft); color: var(--oq-muted); font-size: 13px; }
 .oq-wr-chip strong { color: var(--oq-text); }
+.oq-wr-ring { display: flex; align-items: center; gap: 14px; }
+.oq-wr-ring p { margin: 0; color: var(--oq-text-2); font-size: 14px; }

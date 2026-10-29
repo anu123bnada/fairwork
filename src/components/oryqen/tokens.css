@@ -1,0 +1,45 @@
+/* ORYQEN semantic design tokens: the one place colour, depth, radius and motion are defined.
+   Light and dark are two designed palettes (not an inversion). Components use these names, never raw hex.
+   Selection: data-theme="light" | "dark" on <html> wins; otherwise the device setting decides. */
+html[data-brand="oryqen"] {
+  --oq-canvas: #f5f7ff; --oq-surface: #ffffff; --oq-elevated: #ffffff;
+  --oq-text: #182442; --oq-text-2: #62718f; --oq-border: #e3e9f6;
+  --oq-blue: #2667ff; --oq-violet: #6d45f5; --oq-cyan: #00c8e8;
+  --oq-accent: #2667ff; --oq-on-accent: #ffffff; --oq-link: #1f56e6; --oq-focus: #2667ff;
+  --oq-soft: #f2f6ff; --oq-glass: rgba(255, 255, 255, .78); --oq-glass-border: rgba(255, 255, 255, .9);
+  --oq-success: #0b7a55; --oq-success-soft: #e3f6ee; --oq-warning: #8a5a00; --oq-warning-soft: #fff3d6;
+  --oq-danger: #c0291f; --oq-danger-soft: #ffe8e6; --oq-violet-soft: #efeaff;
+  --oq-shadow-sm: 0 1px 2px rgba(24, 36, 66, .06), 0 4px 12px -6px rgba(24, 36, 66, .12);
+  --oq-shadow-md: 0 1px 2px rgba(24, 36, 66, .05), 0 14px 32px -14px rgba(38, 103, 255, .22);
+  --oq-shadow-lg: 0 2px 4px rgba(24, 36, 66, .05), 0 30px 60px -24px rgba(109, 69, 245, .30);
+  --oq-canvas-glow: radial-gradient(900px 560px at 8% -6%, rgba(0, 200, 232, .16), transparent 62%), radial-gradient(820px 560px at 100% 0%, rgba(109, 69, 245, .14), transparent 62%);
+  --oq-gradient: linear-gradient(135deg, #2667ff 0%, #6d45f5 100%);
+  --oq-r-sm: 12px; --oq-r-md: 16px; --oq-r-lg: 24px; --oq-r-pill: 999px;
+  --oq-ease: cubic-bezier(.22, 1, .36, 1); --oq-spring: cubic-bezier(.34, 1.56, .64, 1); --oq-dur: 180ms;
+}
+html[data-brand="oryqen"][data-theme="dark"] {
+  --oq-canvas: #090f24; --oq-surface: #172342; --oq-elevated: #202e50;
+  --oq-text: #f3f6ff; --oq-text-2: #b3c3e0; --oq-border: #344467;
+  --oq-accent: #7ea4ff; --oq-on-accent: #090f24; --oq-link: #8fb0ff; --oq-focus: #9db9ff;
+  --oq-soft: #202e50; --oq-glass: rgba(23, 35, 66, .74); --oq-glass-border: rgba(143, 176, 255, .18);
+  --oq-success: #4ade9f; --oq-success-soft: rgba(74, 222, 159, .14); --oq-warning: #fbbf4a; --oq-warning-soft: rgba(251, 191, 74, .14);
+  --oq-danger: #ff9a92; --oq-danger-soft: rgba(255, 154, 146, .14); --oq-violet-soft: rgba(109, 69, 245, .22);
+  --oq-shadow-sm: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 6px 16px -8px rgba(0, 0, 0, .6);
+  --oq-shadow-md: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 18px 38px -18px rgba(0, 0, 0, .7);
+  --oq-shadow-lg: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 34px 64px -26px rgba(0, 0, 0, .8), 0 0 0 1px rgba(109, 69, 245, .14);
+  --oq-canvas-glow: radial-gradient(900px 600px at 6% -8%, rgba(0, 200, 232, .20), transparent 60%), radial-gradient(860px 600px at 104% 4%, rgba(109, 69, 245, .26), transparent 60%);
+}
+@media (prefers-color-scheme: dark) {
+  html[data-brand="oryqen"]:not([data-theme="light"]):not([data-theme="dark"]) {
+      --oq-canvas: #090f24; --oq-surface: #172342; --oq-elevated: #202e50;
+    --oq-text: #f3f6ff; --oq-text-2: #b3c3e0; --oq-border: #344467;
+    --oq-accent: #7ea4ff; --oq-on-accent: #090f24; --oq-link: #8fb0ff; --oq-focus: #9db9ff;
+    --oq-soft: #202e50; --oq-glass: rgba(23, 35, 66, .74); --oq-glass-border: rgba(143, 176, 255, .18);
+    --oq-success: #4ade9f; --oq-success-soft: rgba(74, 222, 159, .14); --oq-warning: #fbbf4a; --oq-warning-soft: rgba(251, 191, 74, .14);
+    --oq-danger: #ff9a92; --oq-danger-soft: rgba(255, 154, 146, .14); --oq-violet-soft: rgba(109, 69, 245, .22);
+    --oq-shadow-sm: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 6px 16px -8px rgba(0, 0, 0, .6);
+    --oq-shadow-md: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 18px 38px -18px rgba(0, 0, 0, .7);
+    --oq-shadow-lg: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 34px 64px -26px rgba(0, 0, 0, .8), 0 0 0 1px rgba(109, 69, 245, .14);
+    --oq-canvas-glow: radial-gradient(900px 600px at 6% -8%, rgba(0, 200, 232, .20), transparent 60%), radial-gradient(860px 600px at 104% 4%, rgba(109, 69, 245, .26), transparent 60%);
+  }
+}

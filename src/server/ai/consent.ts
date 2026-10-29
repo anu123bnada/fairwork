@@ -12,7 +12,7 @@ import { z } from "zod";
 export function assertPrimaryConsent(input: AnalyzeOfferInput) {
   const config = aiConfiguration();
   if (!config) return null;
-  if (input.consent?.provider !== config.provider || input.consent.policyHash !== config.policyHash || input.consent.noticeVersion !== "offer-analysis.v1" || !input.consent.transmit) throw new AppError("ACTION_FORBIDDEN", 403);
+  if (input.consent?.provider !== config.provider || input.consent.policyHash !== config.policyHash || input.consent.noticeVersion !== "offer-analysis.v1" || !input.consent.transmit || input.consent.adultConfirmed !== true) throw new AppError("ACTION_FORBIDDEN", 403);
   return config;
 }
 

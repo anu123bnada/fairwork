@@ -7,6 +7,8 @@ import "@fontsource/manrope/800.css";
 import "./globals.css";
 import "@/components/oryqen/recovery.css";
 import "@/components/brand/brand.css";
+import "@/components/oryqen/tokens.css";
+import "@/components/oryqen/design-system.css";
 
 export const metadata: Metadata = {
   title: { default: "ORYQEN — Your work, clearly recorded", template: "%s | ORYQEN" },
@@ -17,5 +19,5 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" data-brand="oryqen"><body>{children}</body></html>;
+  return <html lang="en" data-brand="oryqen" suppressHydrationWarning><head><script src="/oryqen-theme.js" /></head><body>{children}</body></html>;
 }

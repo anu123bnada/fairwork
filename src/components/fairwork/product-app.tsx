@@ -67,7 +67,8 @@ import { WorkPassportScreen } from "./work-passport";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
 import "./visual.css";
-import "./dark-contrast.css";
+import { ThemeToggle } from "@/components/oryqen/theme";
+import { Toaster } from "@/components/ui/toast";
 import { ProfileEditor } from "@/components/oryqen/profile-editor";
 import { meSchema } from "@/features/identity/schema";
 import type { z } from "zod";
@@ -381,11 +382,15 @@ function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: str
     <header className="fw-product-header">
       {back ? <Link className="fw-back" href={routeFor(back)} aria-label="Back"><Icon name="back" /></Link> : <span />}
       {title === "" ? <span aria-hidden="true" /> : <h1>{title ?? screenTitle[screen] ?? "ORYQEN"}</h1>}
-      {screen === "home" ? (
-        <Link className="fw-header-icon" href={routeFor("notifications")} aria-label="Notifications"><Icon name="bell" size={20} /></Link>
-      ) : demoPreviewLink && !REAL_BACKEND ? (
-        <Link className="fw-demo-header-link" href={`${routeFor(screen)}?preview=demo`}>Demo</Link>
-      ) : <span className="fw-header-placeholder" />}
+      <span className="fw-header-actions">
+        <ThemeToggle />
+        {screen === "home" ? (
+          <Link className="fw-header-icon" href={routeFor("notifications")} aria-label="Notifications"><Icon name="bell" size={20} /></Link>
+        ) : demoPreviewLink && !REAL_BACKEND ? (
+          <Link className="fw-demo-header-link" href={`${routeFor(screen)}?preview=demo`}>Demo</Link>
+        ) : null}
+      </span>
+      <Toaster />
     </header>
   );
 }

@@ -64,9 +64,18 @@ test.describe("screens", () => {
     expect(Array.isArray((await feed.json()).data?.items)).toBe(true);
   });
 
-  test("work records, Passport, offers and cases APIs answer without a server error", async ({ page }) => {
+  test("saved offers list answers 200 with the documented query (offerListRequestSchema: context, cursor, view)", async ({ page }) => {
     await open(page, "home");
-    for (const path of ["/api/v1/work-records", "/api/v1/passport", "/api/v1/offers?limit=5", "/api/v1/work-cases"]) {
+    const response = await page.request.get("/api/v1/offers?context=WORKER&view=active");
+    expect(response.status()).toBe(200);
+    expect(Array.isArray((await response.json()).data?.items)).toBe(true);
+    // The schema is strict: an unknown parameter must be refused, which proves the contract is enforced rather than ignored.
+    expect((await page.request.get("/api/v1/offers?context=WORKER&limit=5")).status()).toBe(422);
+  });
+
+  test("work records, Passport and cases APIs answer without a server error", async ({ page }) => {
+    await open(page, "home");
+    for (const path of ["/api/v1/work-records", "/api/v1/passport", "/api/v1/work-cases"]) {
       const response = await page.request.get(path);
       expect([200, 403, 404], `${path} should succeed or fail closed, got ${response.status()}`).toContain(response.status());
     }

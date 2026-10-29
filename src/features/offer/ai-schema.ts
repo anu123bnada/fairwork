@@ -6,7 +6,9 @@ export const analyzeOfferInputSchema = z.strictObject({
   text: z.string().trim().min(10, "Offer text must contain at least 10 characters").max(10000, "Offer text exceeds maximum length of 10,000 characters"),
   role: offerRoleInputSchema.default("WORKER"),
   consent: z.strictObject({
-    provider: z.enum(["openai", "gemini", "selfhosted"]), noticeVersion: z.literal("offer-analysis.v1"), transmit: z.literal(true), policyHash: z.string().regex(/^[0-9a-f]{64}$/),
+    provider: z.enum(["openai", "gemini", "selfhosted"]), noticeVersion: z.literal("offer-analysis.v1"), transmit: z.literal(true),
+    // The person confirms they are an adult. Provider terms restrict use to adults and ORYQEN holds no verified age, so this self-confirmation is required and checked on the server before anything is sent.
+    adultConfirmed: z.literal(true).optional(), policyHash: z.string().regex(/^[0-9a-f]{64}$/),
     // Optional fallbacks the person also accepts, each bound to that provider's own policy hash. Text goes to a fallback only if it is named here.
     fallbacks: z.array(z.strictObject({ provider: z.enum(["openai", "gemini", "selfhosted"]), policyHash: z.string().regex(/^[0-9a-f]{64}$/) })).max(2).optional(),
   }).optional(),
