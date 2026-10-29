@@ -58,3 +58,10 @@ it("does not resolve contradictory hours or repeated clauses silently",()=>{
  expect(extract("Leave: 10 days\nLeave: 20 days").detectedTerms.leave).toBeUndefined();
  expect(extract("40 hours per week\n40 hrs/week").detectedTerms.hoursPerWeek).toBe(40);
 });
+
+it("reads a dot-grouped amount such as EUR 2.400 as 2400, not 2.4, and still reads plain decimals", async () => {
+  const { extractOfferTermsRuleBased } = await import("@/features/offer/deterministic-extractor");
+  expect(extractOfferTermsRuleBased("Salary: EUR 2.400 per month").detectedTerms).toMatchObject({ salary: 2400, currency: "EUR" });
+  expect(extractOfferTermsRuleBased("Salary: EUR 12.000 per year").detectedTerms).toMatchObject({ salary: 12000 });
+  expect(extractOfferTermsRuleBased("Salary: USD 18.50 per hour").detectedTerms).toMatchObject({ salary: 18.5 });
+});
