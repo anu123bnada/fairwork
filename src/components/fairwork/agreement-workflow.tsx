@@ -35,8 +35,8 @@ export function CreateVersionedAgreement({ offerId, version, termHash, represent
   return <details className="fw-card fw-offer-detail-card"><summary>{t("ag.create.summary")}</summary>
     <p>{t("ag.create.intro")}</p>
     <form onSubmit={event=>void create(event)}>
-      <label className="fw-field">{t("ag.create.rep")}<input required value={representative} onChange={event=>setRepresentative(event.target.value)} pattern={"[0-9a-fA-F\\-]{36}"} /></label>
-      <p className="fw-notice">{t("ag.create.repNote")}</p>
+      {representativeId?<p className="fw-notice">{t("agp.repLinked")}</p>:<><label className="fw-field">{t("ag.create.rep")}<input required value={representative} onChange={event=>setRepresentative(event.target.value)} pattern={"[0-9a-fA-F\\-]{36}"} /></label>
+      <p className="fw-notice">{t("ag.create.repNote")}</p></>}
       <button className="fw-secondary" disabled={busy}>{busy?t("ag.create.saving"):t("ag.create.button")}</button>
       {error&&<p role="alert" className="fw-error">{error}</p>}
     </form>

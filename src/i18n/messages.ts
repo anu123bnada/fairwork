@@ -1360,6 +1360,7 @@ export const en = {
   "sh.qrNote": "Scanning this opens the link, but only the named signed-in account can read the record. The QR code itself grants nothing.",
   "sh.qrFail": "The QR code could not be drawn. Use the copied link instead.",
   "pp.print": "Print or save as PDF",
+  "agp.repLinked": "The employer representative designated on this offer will be asked to review the agreement. You do not need to enter anyone.",
   "cws.loading": "Loading your work records…",
   "cws.none": "You have no submitted work records to raise a concern about yet.",
   "cws.label": "Work record",
