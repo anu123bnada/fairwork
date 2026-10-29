@@ -38,6 +38,9 @@ import * as notificationsRoute from "@/app/api/v1/notifications/route";
 import * as workRecordsRoute from "@/app/api/v1/work-records/route";
 import * as passportRoute from "@/app/api/v1/passport/route";
 import * as casesRoute from "@/app/api/v1/work-cases/route";
+import * as workflowRoute from "@/app/api/v1/agreement-workflows/route";
+import { caseListSchema, caseReadSchema, caseReceiptSchema } from "@/features/cases/schema";
+import { twoAccountFlow } from "../../scripts/hosted-two-account-flow.mjs";
 import { meSchema } from "@/features/identity/schema";
 import { offerListSchema } from "@/features/offer/list-schema";
 import { draftPage, draftReceipt } from "@/features/offer/draft-schema";
@@ -205,4 +208,56 @@ describe("read sweep over the routes the frontend calls", () => {
     expect([200, 401, 403, 404], `${path} anonymous -> ${anonymous.status}`).toContain(anonymous.status);
     if (anonymous.status === 200) expect(["platform notices"], `${path} must not answer anonymous callers`).toContain(_name);
   });
+});
+
+// The shared two-account journey (employer offer -> agreement proposal -> both parties confirm -> work record -> submission -> independent verification -> Passport), run
+// through the real route handlers and persisted in the database, then re-read from fresh requests as each party.
+let journey: { offerId: string; agreementId: string; workId: string };
+describe("two-account journey through the real routes", () => {
+  it("persists an agreement, a verified work record and the Passport, and denies self-verification and a client-chosen Passport owner", async () => {
+    const handlers: Record<string, { GET: (request: Request) => Promise<Response>; POST: (request: Request) => Promise<Response> }> = {
+      "/api/v1/offers": offersRoute as never, "/api/v1/agreements": agreementsRoute as never, "/api/v1/agreement-workflows": workflowRoute as never,
+      "/api/v1/work-records": workRecordsRoute as never, "/api/v1/passport": passportRoute as never,
+    };
+    const evidence: string[] = [];
+    journey = await twoAccountFlow({
+      worker: { id: worker }, employer: { id: representative }, companyId: company, record: (label: string) => evidence.push(label),
+      request: async (who: { id: string }, path: string, body?: unknown, statuses: number[] = [200]) => {
+        const url = new URL(path, ORIGIN);
+        const handler = handlers[url.pathname];
+        if (!handler) throw new Error(`Unmapped route ${url.pathname}`);
+        const response = await call(body === undefined ? handler.GET : handler.POST, body === undefined ? "GET" : "POST", url.pathname + url.search, body, who.id);
+        expect(statuses, `${url.pathname} answered ${response.status}`).toContain(response.status);
+        return response.status === 200 ? await data(response) : undefined;
+      },
+    });
+    expect(evidence).toEqual(expect.arrayContaining(["Exact work revision independently verified", "Private worker Passport contains eligible verified record", "Client-selected Passport owner denied"]));
+    // A new session as each party still sees the persisted result; a stranger sees none of it.
+    const mine = workListSchema.parse(await data(await call(workRecordsRoute.GET, "GET", "/api/v1/work-records", undefined, worker)));
+    expect(mine.items.map(item => item.workId)).toContain(journey.workId);
+    expect(passportSchema.parse(await data(await call(passportRoute.GET, "GET", "/api/v1/passport", undefined, worker))).entries.map(entry => entry.workId)).toContain(journey.workId);
+    expect(workListSchema.parse(await data(await call(workRecordsRoute.GET, "GET", "/api/v1/work-records", undefined, other))).items).toEqual([]);
+    expect((await call(workRecordsRoute.GET, "GET", `/api/v1/work-records?workId=${journey.workId}`, undefined, other)).status).toBe(404);
+    expect(passportSchema.parse(await data(await call(passportRoute.GET, "GET", "/api/v1/passport", undefined, other))).entries).toEqual([]);
+    expect((await call(agreementsRoute.GET, "GET", `/api/v1/agreements?offerId=${journey.offerId}`, undefined, other)).status).toBe(404);
+  }, 120000);
+
+  it("opens a dispute on the verified record with an extended category, persists it for both parties and hides it from strangers", async () => {
+    const work = (await data(await call(workRecordsRoute.GET, "GET", `/api/v1/work-records?workId=${journey.workId}`, undefined, worker))).versions.at(-1);
+    const open = (overrides: Record<string, unknown> = {}) => ({ operation: "open", caseId: randomUUID(), idempotencyKey: randomUUID(), workId: journey.workId, expectedVersion: work.version, expectedHash: work.contentHash, expectedEvidenceHash: work.evidenceHash, expectedState: work.state, reasonCode: "incorrect_pay", reason: "Synthetic pay concern raised through the route", ...overrides });
+    for (const bad of ["made_up", "INCORRECT_PAY", ""]) expect((await call(casesRoute.POST, "POST", "/api/v1/work-cases", open({ reasonCode: bad }))).status, bad).toBe(422);
+    expect((await call(casesRoute.POST, "POST", "/api/v1/work-cases", open({ workerId: other }))).status).toBe(422);
+    expect((await call(casesRoute.POST, "POST", "/api/v1/work-cases", open(), other)).status).toBeGreaterThanOrEqual(403);
+    const body = open();
+    const receipt = await call(casesRoute.POST, "POST", "/api/v1/work-cases", body);
+    expect(receipt.status).toBe(200);
+    caseReceiptSchema.parse(await data(receipt));
+    expect((await call(casesRoute.POST, "POST", "/api/v1/work-cases", body)).status, "an exact retry replays").toBe(200);
+    expect((await call(casesRoute.POST, "POST", "/api/v1/work-cases", open())).status, "a second concurrent case on the same record").toBeGreaterThanOrEqual(409);
+    const view = caseReadSchema.parse(await data(await call(casesRoute.GET, "GET", `/api/v1/work-cases?caseId=${body.caseId}`)));
+    expect(view).toMatchObject({ caseId: body.caseId, status: "open", reasonCode: "incorrect_pay" });
+    expect(caseListSchema.parse(await data(await call(casesRoute.GET, "GET", "/api/v1/work-cases"))).items.map(item => item.caseId)).toContain(body.caseId);
+    expect((await call(casesRoute.GET, "GET", `/api/v1/work-cases?caseId=${body.caseId}`, undefined, other)).status).toBe(404);
+    expect(caseListSchema.parse(await data(await call(casesRoute.GET, "GET", "/api/v1/work-cases", undefined, other))).items).toEqual([]);
+  }, 120000);
 });

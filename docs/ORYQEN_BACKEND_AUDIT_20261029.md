@@ -10,7 +10,7 @@ The call comes from `tests/hosted/journeys.spec.ts` (Agent 5), which also lists 
 
 ## What was added
 
-`tests/integration/api-routes-persistence-db.test.ts` (34 tests; PGlite and disposable real PostgreSQL via `scripts/test-routes-postgres.mjs`). The real route handlers, server modules and browser schemas run against the fully migrated database with RLS in force; only the Supabase transport is a shim that runs `api.<rpc>` as role `authenticated` with the caller's claims. Every response is parsed with the schema the browser uses.
+`tests/integration/api-routes-persistence-db.test.ts` (36 tests; PGlite and disposable real PostgreSQL via `scripts/test-routes-postgres.mjs`). The real route handlers, server modules and browser schemas run against the fully migrated database with RLS in force; only the Supabase transport is a shim that runs `api.<rpc>` as role `authenticated` with the caller's claims. Every response is parsed with the schema the browser uses.
 
 | Area | Endpoints | Result |
 |---|---|---|
@@ -18,6 +18,8 @@ The call comes from `tests/hosted/journeys.spec.ts` (Agent 5), which also lists 
 | Identity | `GET/POST/PATCH /me` | create, idempotent replay, new-session read, update persisted, stale revision 409, foreign origin 403, unknown field 422, query string 422 |
 | Offers | `GET/POST /offers`, `/offers/lifecycle`, `/offers/drafts`, `/agreements` | list contract (`limit`, `workerId`, duplicate/invalid params 422), worker vs employer context, unrelated account sees nothing, archive/decision persisted and survives a new request, stale revision 409, stranger refused, drafts persist, versioned and isolated per owner, agreement readable by participants only (stranger 404) |
 | Records | `/work-records`, `/passport`, `/work-cases`, `/notifications` | empty schema-valid lists for a new account, unexpected parameters 422, unknown record 404 |
+| Two-account journey | `/offers` -> `/agreement-workflows` (create, propose, both confirm) -> `/work-records` (create, submit, worker self-verification 403, employer verifies) -> `/passport` (initialize, read) -> `/work-cases` | persisted and re-read from fresh requests; Passport lists the verified record for its owner only; client-chosen Passport owner 422; stranger gets 404 on the agreement and work record and empty lists |
+| Disputes | `POST/GET /work-cases` | extended category `incorrect_pay` accepted; unknown/lower-case/empty category 422; extra field 422; stranger refused; exact retry replays; second open case on the same record refused; case readable by its opener, absent for a stranger |
 | Read sweep | 24 further GET routes (entitlements, guidance, opportunities, organizations, vault, privacy requests, reports, credentials, sharing, expiries, employment history, developer keys, notices, workflows, offer history/analyses/assessment/notes, case evidence/follow-ups, attachments, agreement expiry) | all answer 200/403/404 as a worker, none 5xx, anonymous refused |
 
 Also (previous commits): complete-schema security invariants (`schema-security-invariants-db.test.ts`, 6 tests, both engines), migration 27 pre-flight (10/10, both engines), reviewer evidence read path, audit chain tests.
@@ -37,7 +39,7 @@ Not implemented, and nothing pretends otherwise. The app has no Realtime client,
 ## Endpoint status (93 routes)
 
 - **Route-level tested on a real migrated database this round:** the endpoints in the table above.
-- **Covered by database-level suites (RPC, RLS, two accounts) and the browser fixtures, not route-level:** agreement workflow writes, work-record commands and integrity, Passport sharing writes, disputes and follow-ups, Evidence Vault writes, organization and team writes, recruiter verification, operator queues, admin console, audit export and audit chain, developer keys and webhooks, credentials writes.
+- **Covered by database-level suites (RPC, RLS, two accounts) and the browser fixtures, not route-level:** Passport sharing writes, case follow-ups and reviewer decisions, work-record integrity corrections, Evidence Vault writes, organization and team writes, recruiter verification, operator queues, admin console, audit export and audit chain, developer keys and webhooks, credentials writes.
 - **Not verifiable without hosted credentials:** everything on staging with real accounts; Storage upload; email; AI (off by design).
 
 ## Remaining incomplete functionality (unchanged by this pass)
