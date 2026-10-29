@@ -9,6 +9,10 @@ Worktree `C:\Users\vehiv\Desktop\fairwork-ui`, branch `feature/oryqen-ui-paralle
 | 2b7ff80 | Agreements: pick a known agreement instead of typing a UUID; party labels |
 | 5b6f733 | Disputes: choose the work record from your own submitted records; dates instead of ids |
 | e96db1c | Agreements: no representative-id field when the offer designates one; credential cards |
+| 9156bae | Work records: choose the agreement from your own, status summary, date-range rows |
+| 7582380 | Agreements: progress path and plain-language stopped states |
+| f80fa29 | Cases: plain-language activity labels, status badges |
+| 2d4d0ac | Notifications: unread count, unread-only filter, Today/Earlier grouping |
 
 ## Brand
 Every new stylesheet uses only the shared `--oq-*` tokens (`passport-experience.css`, `agreement-picker.css`, `credentials-experience.css`), with no hex values, so they adopt whatever palette the shared brand file defines. The committed `brand.css` is still green; the owner decided the intended identity is blue/cyan/violet. That change belongs to the global CSS owner.
@@ -32,3 +36,6 @@ No new routes. Existing routes improved: `/app/passport`, `/app/agreement-workfl
 
 ## Merge notes
 Changed shared files: `src/i18n/messages.ts` (English keys appended after `pp.print`; other locales fall back to English), `src/components/fairwork/{work-passport,agreement-workflow,case-review,credentials-panel}.tsx`, `tests/e2e/{day4-workflow,day7-cases}.spec.ts`. Likeliest conflict: `messages.ts` if the other branch adds keys at the same spot; resolve by keeping both. Merge order: independent of the dashboard/shell work; after it is fine. Suggested: `git cherry-pick 9b24c20 2b7ff80 5b6f733 e96db1c` onto the integration branch.
+
+## Update (second pass)
+Tests after the second pass: full unit suite 114 files / 647 tests pass; eslint . and tsc clean; browser specs day4 (10), day5 (7), day7 (12), notification-preferences/localization (8), accessibility (30) pass, all against mocked APIs. Specs `day4-workflow` and `day5-work` were edited because the raw reference field is now behind a disclosure. Not done: organizations/research screens (English-only, tied to the representative-only model), a glass/blur visual treatment (left to the global design system owner), hosted verification.
