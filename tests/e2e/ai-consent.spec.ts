@@ -49,3 +49,33 @@ test("structured AI response exposes terms and missing details without changing 
  await expect(page.getByRole("region",{name:"AI missing details"})).toContainText("hoursPerWeek");
  await expect(page.getByLabel("Pay amount")).toHaveValue("");
 });
+
+test("AI results separate quoted facts, AI inferences and the not-legal-advice limit, and the request confirms adulthood", async ({ page }) => {
+ // Fixture provider only: this proves how a validated response is shown, not that any provider is live.
+ const base = extractOfferTermsRuleBased("Role: Technician\nSalary: LKR 85000 monthly\nA security deposit of LKR 5000 is payable before starting.").data;
+ const data = { ...base, warningSigns: [
+  { id: "w1", severity: "high" as const, title: "Upfront payment requested", description: "A payment is asked for before work starts.", quote: "A security deposit of LKR 5000 is payable before starting.", recommendation: "Ask what the deposit is for and when it is returned." },
+  { id: "w2", severity: "low" as const, title: "Vague duties", description: "Duties are not described.", quote: null, recommendation: "Ask for a written list of duties." },
+ ] };
+ let sent: Record<string, unknown> | undefined;
+ await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: "40000000-0000-4000-8000-000000000001", displayName: "Synthetic", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+ await page.route("**/api/v1/offers/analyze", route => {
+  if (route.request().method() !== "GET") sent = route.request().postDataJSON();
+  return route.fulfill({ json: { data: route.request().method() === "GET"
+   ? { configured: true, provider: "gemini", model: "gemini-synthetic-test", noticeVersion: "offer-analysis.v1", processingRegion: "Fixture only", dataUse: "Fixture only", policyHash: "a".repeat(64) }
+   : { configured: true, provider: "gemini", status: "SUCCESS", message: "Fixture advisory response", isAdvisory: true, extractedAt: "2026-10-22T00:00:00Z", data } } });
+ });
+ await page.goto("/app/add-offer");
+ await page.getByLabel("Paste offer text").fill("Role: Technician\nSalary: LKR 85000 monthly\nA security deposit of LKR 5000 is payable before starting.");
+ await expect(page.getByText("you also confirm that you are 18 or older")).toBeVisible();
+ await page.getByRole("checkbox", { name: /I reviewed this text/ }).check();
+ await page.getByRole("button", { name: "Send for AI analysis" }).click();
+ expect((sent?.consent as Record<string, unknown>).adultConfirmed).toBe(true);
+ const inferences = page.getByRole("region", { name: "AI inferences" });
+ await expect(inferences).toContainText("Upfront payment requested");
+ await expect(inferences).toContainText("high concern");
+ await expect(inferences.getByText("A security deposit of LKR 5000 is payable before starting.")).toBeVisible();
+ await expect(inferences).toContainText("No quote from your text supports this note.");
+ await expect(page.getByRole("region", { name: "AI extracted terms" })).toContainText("Taken from your text");
+ await expect(page.getByText("This is not legal advice")).toBeVisible();
+});

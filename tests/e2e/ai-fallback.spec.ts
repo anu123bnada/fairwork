@@ -28,7 +28,7 @@ test("a backup provider is used only when the person ticks it, and the answer sa
   await page.getByRole("checkbox", { name: /I reviewed this text/ }).check();
   await page.getByRole("button", { name: "Send for AI analysis" }).click();
   await expect(page.getByText("Providers tried: Google Gemini (quota reached), OpenAI (answered).")).toBeVisible();
-  expect(bodies[0]!.consent).toEqual({ provider: "gemini", noticeVersion: "offer-analysis.v1", policyHash: "a".repeat(64), transmit: true }); // no fallback key without a tick
+  expect(bodies[0]!.consent).toEqual({ provider: "gemini", noticeVersion: "offer-analysis.v1", policyHash: "a".repeat(64), transmit: true, adultConfirmed: true }); // no fallback key without a tick
   await group.getByRole("checkbox", { name: /Also allow OpenAI/ }).check();
   await page.getByRole("checkbox", { name: /I reviewed this text/ }).check();
   await page.getByRole("button", { name: "Send for AI analysis" }).click();
