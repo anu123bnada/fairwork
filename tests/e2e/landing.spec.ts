@@ -15,9 +15,10 @@ test("cinematic landing page is the public entry point with truthful release con
   // Release controls are truthful: no fabricated binary URLs are exposed.
   const download = page.locator("#download");
   await expect(download.getByRole("link", { name: /RELEASE DETAILS & CHECKSUMS/ })).toHaveAttribute("href", "/downloads");
-  await expect(download.getByRole("button", { name: /ANDROID RELEASE PENDING/ })).toBeDisabled();
+  // The APK ships with the site; the Windows installer is not published yet.
+  await expect(download.locator("a[href$='.apk']")).toHaveAttribute("href", "/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk");
   await expect(download.getByRole("button", { name: /WINDOWS RELEASE PENDING/ })).toBeDisabled();
-  await expect(page.locator('a[href$=".apk"], a[href$=".exe"], a[href$=".msi"]')).toHaveCount(0);
+  await expect(page.locator('a[href$=".exe"], a[href$=".msi"]')).toHaveCount(0);
 });
 
 test("landing page is responsive without horizontal overflow", async ({ page }) => {

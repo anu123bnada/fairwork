@@ -4,7 +4,7 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-hero { posi
   background: radial-gradient(420px 260px at 96% -10%, rgba(0, 200, 232, .5), transparent 62%), radial-gradient(420px 300px at 60% 130%, rgba(109, 69, 245, .7), transparent 60%), linear-gradient(135deg, #0d1736 0%, #14308f 55%, #3f3fe0 100%);
   box-shadow: 0 1px 0 rgba(255, 255, 255, .18) inset, 0 36px 70px -34px rgba(38, 103, 255, .7); border: 1px solid rgba(255, 255, 255, .14); }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-bar a { color: #fff; font-weight: 700; text-underline-offset: 3px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-bar a { display: inline-flex; align-items: center; min-height: 32px; color: #fff; font-weight: 700; text-underline-offset: 3px; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-hero .fw-employer-pill { background: rgba(255, 255, 255, .16); color: #fff; border: 1px solid rgba(255, 255, 255, .3); }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-hero .fw-employer-heading { margin: 0; }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .oq-emp .oq-emp-hero h2 { margin: 0 0 6px; font-size: clamp(26px, 3vw, 36px); line-height: 1.1; letter-spacing: -.02em; color: #fff; }
