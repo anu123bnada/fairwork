@@ -76,7 +76,7 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-live-work .fw-work-row .fw-demo-day-label strong { color: var(--oq-text); }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-bottom-nav a:not(.active) { color: var(--oq-text-2); }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) :is(.fw-fixed-action, .fw-demo-passport-action) { background: linear-gradient(to bottom, transparent, var(--oq-canvas) 38%); }
-html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-demo-header-link { background: var(--oq-soft); color: var(--oq-text); border: 1px solid var(--oq-border); border-radius: var(--oq-r-pill); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-demo-header-link { flex: 0 0 auto; min-width: 40px; min-height: 28px; background: var(--oq-soft); color: var(--oq-text); border: 1px solid var(--oq-border); border-radius: var(--oq-r-pill); }
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-bottom-nav) .fw-findings-tile :is(a, span, strong) { color: var(--oq-text); }
 /* Legacy shell variables follow the semantic tokens inside the signed-in shell only. Public and sign-in pages keep their own values.
    --fw-navy stays a constant dark navy because older styles use it as a dark surface, not as text. */
