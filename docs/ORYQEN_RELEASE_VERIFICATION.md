@@ -65,3 +65,14 @@ Share the printed PASS/FAIL lines only. The selectors in `tests/hosted` were tak
 
 ## Integration instructions for Agent 1
 Merge only new files: `playwright.hosted.config.ts`, `tests/hosted/*`, `scripts/run-hosted-browser-journeys.mjs`, and the two docs. No product, CSS, migration or dependency changes; `npm run test:e2e` and lint are unaffected (`tests/hosted` is outside `tests/e2e`). Do not run the hosted suite in CI without a secret store for the test password.
+
+## Windows installer rebuild and test (29 Oct, this machine)
+Built with `ORYQEN_DESKTOP_ORIGIN=https://oryqen-staging.vercel.app npm --prefix desktop run build:windows` from branch `feature/oryqen-release-parallel` (the installer is a hosted-web wrapper of the staging site; it contains no application code from the web build, so the deployed staging commit does not change it).
+- File: `test-results/windows-artifacts/ORYQEN-Preview-0.1.0-x64-Setup.exe`, 121,261,259 bytes, SHA-256 `37d0bab5afda5a3edbcbcd44290e2fbc2a48409211377b7dc3b5f8f8fa579ea6`.
+- Authenticode status: **NotSigned**. Default Electron icon. Preview product name.
+- Silent per-user install: exit 0, `resources/app.asar` present. Installed copy launched: 5 of 5 checks PASS (staging host in title, staging sign-in form, wrong synthetic credentials answered by the real staging auth service, external link not opened in the window, register and forgot-password open). Silent uninstall: exit 0, files and registry entry gone.
+- NOT TESTED: real sign-in, session persistence across restart (needs the owner's password), clean second machine.
+- Native or offline behaviour: none claimed or observed; it is a web wrapper with an offline notice page.
+
+## Android APK rebuild: BLOCKED (29 Oct)
+`assembleOnline` could not run. Android Studio's bundled JDK at `C:\Program Files\Android\Android Studio\jbr` is damaged (`lib\jvm.cfg` missing, `lib` empty). The second install `Android Studio1\jbr` is JDK 25, which this project's Gradle cannot run on ("Unsupported class file major version 69"). A JDK 17 or 21 is required. The previous APK (28 Oct, SHA-256 `8d4a1e1b…053cc8f`, debug-signed) is unchanged and still the latest tested one.
