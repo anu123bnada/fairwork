@@ -4,7 +4,9 @@ import { useEffect,useRef,useState } from "react";
 import { appRequest,ApiRequestError } from "@/features/authority/client";
 import { passportSchema,passportReceiptSchema,type Passport } from "@/features/work/passport-schema";
 import { collectPrivatePassportExport } from "@/features/work/passport-export";
+import { groupPassportByYear,summarizePassport } from "@/features/work/passport-summary";
 import { useI18n } from "@/i18n/use-i18n";
+import "./passport-experience.css";
 
 export function WorkPassportScreen({displayName}:{displayName:string}) {
  const { t } = useI18n();
@@ -55,27 +57,49 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
   }catch(caught){setPassport(null);setError(caught instanceof Error?caught:new Error(t("pp.downloadError")));}
   finally{setBusy(false);}
  }
- return <div className="fw-demo-passport fw-live-passport">
-  <section className="fw-progress-card fw-passport-card fw-demo-passport-card">
-   <div className="fw-passport-person"><span className="fw-avatar">{displayName.slice(0,1)}</span><span><strong>{displayName}</strong><br/><span>{t("pp.title")}</span></span></div>
-   <p className="fw-demo-role">{t("pp.tagline")}</p>
-   <div className="fw-demo-passport-meta"><span>{t("pp.private")}</span><span>{busy?t("pp.loadingShort"):error?t("pp.unavailable"):t("pp.loadedCount",{count:passport?.entries.length??0})}</span></div>
-   <p className="fw-passport-private-note">{t("pp.onlyYou")}</p>
+ const summary=summarizePassport(passport?.entries??[]);
+ const groups=groupPassportByYear(passport?.entries??[]);
+ const hasPassport=Boolean(passport?.passportId)&&!error;
+ const fmt=(iso:string)=>new Date(iso+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});
+ return <div className="fw-demo-passport fw-live-passport oq-passport">
+  <section className="oq-pp-hero" aria-label={t("pp.title")}>
+   <div className="oq-pp-person"><span className="oq-pp-avatar" aria-hidden>{displayName.slice(0,1).toUpperCase()}</span><span><strong>{displayName}</strong><span className="oq-pp-sub">{t("pp.tagline")}</span></span></div>
+   <div className="oq-pp-badges"><span className="oq-pp-badge">{t("pp.private")}</span>{hasPassport&&<span className="oq-pp-badge oq-pp-badge-ok">{t("pp.badge.verified")}</span>}</div>
+   {hasPassport&&<dl className="oq-pp-stats">
+    <div><dt>{t("pp.stat.records")}</dt><dd>{summary.records}{passport?.nextCursor?"+":""}</dd></div>
+    <div><dt>{t("pp.stat.hours")}</dt><dd>{summary.hours}</dd></div>
+    <div><dt>{t("pp.stat.employers")}</dt><dd>{summary.employers}</dd></div>
+    <div><dt>{t("pp.stat.evidence")}</dt><dd>{summary.evidenceStatements}</dd></div>
+   </dl>}
+   {hasPassport&&summary.earliest&&summary.latest&&<p className="oq-pp-span">{t("pp.span",{start:fmt(summary.earliest),end:fmt(summary.latest)})}</p>}
+   <p className="oq-pp-note">{busy?t("pp.loadingShort"):t("pp.onlyYou")}</p>
   </section>
   {busy&&<p role="status">{t("pp.loading")}</p>}
   {error&&<section className="fw-card fw-offer-detail-card"><p className="fw-error" role="alert">{error.message}</p>{error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"&&<Link href="/sign-in">{t("pp.signIn")}</Link>}</section>}
-  {!busy&&!error&&passport&&!passport.passportId&&<section className="fw-demo-previous-role"><strong>{t("pp.createTitle")}</strong><span>{t("pp.createSub")}</span><button className="fw-primary" onClick={()=>void initialize()}>{t("pp.create")}</button></section>}
+  {!busy&&!error&&passport&&!passport.passportId&&<section className="oq-pp-empty"><strong>{t("pp.createTitle")}</strong><span>{t("pp.createSub")}</span><button className="fw-primary" onClick={()=>void initialize()}>{t("pp.create")}</button></section>}
   {!busy&&!error&&passport?.passportId&&<>
+   <p className="oq-pp-trust">{t("pp.trustNote")}</p>
    <h3 className="fw-section-label">{t("pp.history")}</h3>
-   {!passport.entries.length?<div className="fw-demo-previous-role"><strong>{t("pp.noneTitle")}</strong><span>{t("pp.noneSub")}</span><Link href="/app/work-record">{t("pp.viewRecords")}</Link></div>:<div className="fw-demo-skill-list" aria-label={t("pp.history")}>{passport.entries.map(entry=><article className="fw-passport-entry" key={entry.workId}>
-    <Link className="fw-demo-skill" href={`/app/work-record?workId=${entry.workId}`}><span className="fw-passport-check" aria-hidden>✓</span><strong>{entry.role}</strong><span>{entry.companyName??t("pp.employerRef")}</span></Link>
-    <div className="fw-passport-entry-detail"><p>{t("pp.period",{start:entry.periodStart,end:entry.periodEnd,hours:entry.hours})}</p><p>{entry.summary}</p><p>{t("pp.verified",{date:new Date(entry.verifiedAt).toLocaleDateString(),version:entry.version})}</p><p>{t("pp.evidence",{count:entry.evidenceCount})}</p><Link href={`/app/agreement-workflow?workflowId=${entry.agreementId}`}>{t("pp.agreementRev",{version:entry.agreementVersion})}</Link><details><summary>{t("pp.verifyRef")}</summary><p>{entry.verificationId}</p><p>{t("pp.employerRefLine",{id:entry.companyId})}</p><p>{t("pp.verifier",{id:entry.verifierId})}</p></details></div>
-   </article>)}</div>}
+   {!passport.entries.length?<div className="oq-pp-empty"><strong>{t("pp.noneTitle")}</strong><span>{t("pp.noneSub")}</span><Link href="/app/work-record">{t("pp.viewRecords")}</Link></div>:<div className="oq-pp-timeline" aria-label={t("pp.history")}>{groups.map(group=><section key={group.year} aria-label={group.year}>
+    <h4 className="oq-pp-year">{group.year}</h4>
+    <ol>{group.entries.map(entry=><li className="oq-pp-entry" key={entry.workId}>
+     <span className="oq-pp-dot" aria-hidden>✓</span>
+     <div className="oq-pp-card">
+      <div className="oq-pp-card-head"><Link href={`/app/work-record?workId=${entry.workId}`}><strong>{entry.role}</strong></Link><span className="oq-pp-badge oq-pp-badge-ok">{t("pp.badge.verified")}</span></div>
+      <p className="oq-pp-employer">{entry.companyName??t("pp.employerRef")}</p>
+      <p>{t("pp.period",{start:entry.periodStart,end:entry.periodEnd,hours:entry.hours})}</p>
+      {entry.summary&&<p>{entry.summary}</p>}
+      <p className="oq-pp-meta">{t("pp.verified",{date:new Date(entry.verifiedAt).toLocaleDateString(),version:entry.version})} · {t("pp.evidence",{count:entry.evidenceCount})}</p>
+      <p><Link href={`/app/agreement-workflow?workflowId=${entry.agreementId}`}>{t("pp.agreementRev",{version:entry.agreementVersion})}</Link></p>
+      <details><summary>{t("pp.verifyRef")}</summary><p>{entry.verificationId}</p><p>{t("pp.employerRefLine",{id:entry.companyId})}</p><p>{t("pp.verifier",{id:entry.verifierId})}</p></details>
+     </div>
+    </li>)}</ol>
+   </section>)}</div>}
    {passport.nextCursor&&<button className="fw-secondary" disabled={busy} onClick={()=>void more()}>{t("pp.more")}</button>}
-   <h3 className="fw-section-label">{t("pp.skills")}</h3><div className="fw-demo-previous-role"><span>{t("pp.skillsNote")}</span></div>
+   <h3 className="fw-section-label">{t("pp.skills")}</h3><div className="oq-pp-empty"><span>{t("pp.skillsNote")}</span></div>
   </>}
   <button className="fw-secondary" disabled={busy} onClick={()=>void reload()}>{t("pp.reload")}</button>
-  {passport?.passportId&&!error&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" disabled={busy} onClick={()=>void downloadSigned()}>{t("pp.signedButton")}</button><p>{t("pp.signedNote")}</p><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
+  {hasPassport&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" disabled={busy} onClick={()=>void downloadSigned()}>{t("pp.signedButton")}</button><p>{t("pp.signedNote")}</p><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
   <div className="fw-demo-passport-action"><p className="fw-disclaimer">{t("pp.preview")}</p><Link className="fw-primary" href="/app/share">{t("pp.share")}</Link></div>
  </div>;
 }

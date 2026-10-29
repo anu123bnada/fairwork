@@ -83,3 +83,25 @@ test("the opener attaches a vault document as an evidence reference, and the ref
  await expect(region).toContainText("Payslip March");await expect(region).toContainText(`checksum ${sha.slice(0,12)}`);
  expect(attaches).toEqual([{caseId:id,documentId:doc}]);
 });
+
+test("a concern is raised by choosing one of your own submitted work records, never by pasting an id",async({context,page})=>{
+ const state=model(),requests:Record<string,unknown>[]=[];
+ await session(context,state,worker,requests,false);
+ await page.route("**/api/v1/work-records",route=>route.fulfill({json:{data:{items:[
+  {workId:id,version:1,state:"verified",hours:"40",periodStart:"2026-01-01",periodEnd:"2026-01-31"},
+  {workId:"11111111-1111-4111-8111-111111111111",version:1,state:"draft",hours:"8",periodStart:"2026-02-01",periodEnd:"2026-02-02"},
+ ],nextCursor:null}}}));
+ await page.goto("/app/cases");
+ const choice=page.getByRole("combobox",{name:"Work record",exact:true});
+ await expect(choice).toBeVisible({timeout:20000});
+ await expect(page.getByLabel("Work record ID")).toHaveCount(0);
+ const labels=await choice.locator("option").allInnerTexts();
+ expect(labels.some(label=>label.includes("2026-01-01")&&label.includes("verified"))).toBe(true);
+ expect(labels.some(label=>label.includes("2026-02-01"))).toBe(false);
+ await choice.selectOption({index:1});
+ await page.getByRole("button",{name:"Load record for review"}).click();
+ await page.getByLabel("Concern details").fill("Hours do not match my log");
+ await page.getByRole("button",{name:"Submit concern"}).click();
+ await expect(page.getByRole("region",{name:"Case details"})).toBeVisible();
+ expect(requests.find(request=>request.operation==="open")).toMatchObject({workId:id});
+});

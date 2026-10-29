@@ -5,6 +5,7 @@ import { appRequest } from "@/features/authority/client";
 import type { TrustClaim } from "@/features/trust/schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import "./credentials-experience.css";
 
 export type CredentialItem = { credentialId: string; sourceId: string; sourceVersion: number; assurance: string; issuedAt: string; expiresAt: string; token: string; status: "valid" | "revoked" | "expired" | "unknown"; reason: string | null };
 export type CredentialAllowance = { planName: string; limit: number; used: number; remaining: number };
@@ -78,12 +79,12 @@ export function MyCredentials({ data, onChanged }: { data: CredentialsData; onCh
     catch { setError(t("cr.revokeFail")); }
     finally { setBusy(false); }
   }
-  return <section aria-label={t("cr.mine")}>
+  return <section aria-label={t("cr.mine")} className="oq-creds">
     <h4>{t("cr.mine")}</h4>
     {error && <p role="alert">{error}</p>}
     <ul>{data.items.map(item => {
       let statement = t("cr.generic"); try { statement = String((decodeJwt(item.token) as { claim?: { statement?: string } }).claim?.statement ?? statement); } catch { /* shown generically */ }
-      return <li key={item.credentialId}>
+      return <li key={item.credentialId} className="oq-cred" data-status={item.status}>
         <strong>{statement}</strong> · {t(`cr.s.${item.status}` as MessageKey)}{item.reason === "source_changed" ? t("cr.recordChanged") : item.reason === "holder_requested" ? t("cr.byYou") : ""} · {t("cr.expiresLine", { date: when(item.expiresAt) })}
         {item.status === "valid" && <> <button type="button" className="fw-secondary" onClick={() => setShown(shown === item.credentialId ? null : item.credentialId)}>{shown === item.credentialId ? t("cr.hideQr") : t("cr.showQr")}</button>
           {confirm === item.credentialId

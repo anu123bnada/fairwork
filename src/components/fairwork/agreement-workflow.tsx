@@ -10,6 +10,9 @@ import { participantWorkflowId } from "@/features/offer/participant-path";
 import { agreementReadSchema } from "@/features/offer/read-schema";
 import { useI18n } from "@/i18n/use-i18n";
 import { AgreementCompare } from "./agreement-compare";
+import { AgreementPicker } from "./agreement-picker";
+import { AgreementProgress } from "./agreement-progress";
+import { rememberAgreement } from "@/features/offer/agreement-choices";
 import type { MessageKey } from "@/i18n";
 
 export function CreateVersionedAgreement({ offerId, version, termHash, representativeId }: { offerId:string;version:number;termHash:string;representativeId?:string|null }) {
@@ -33,8 +36,8 @@ export function CreateVersionedAgreement({ offerId, version, termHash, represent
   return <details className="fw-card fw-offer-detail-card"><summary>{t("ag.create.summary")}</summary>
     <p>{t("ag.create.intro")}</p>
     <form onSubmit={event=>void create(event)}>
-      <label className="fw-field">{t("ag.create.rep")}<input required value={representative} onChange={event=>setRepresentative(event.target.value)} pattern={"[0-9a-fA-F\\-]{36}"} /></label>
-      <p className="fw-notice">{t("ag.create.repNote")}</p>
+      {representativeId?<p className="fw-notice">{t("agp.repLinked")}</p>:<><label className="fw-field">{t("ag.create.rep")}<input required value={representative} onChange={event=>setRepresentative(event.target.value)} pattern={"[0-9a-fA-F\\-]{36}"} /></label>
+      <p className="fw-notice">{t("ag.create.repNote")}</p></>}
       <button className="fw-secondary" disabled={busy}>{busy?t("ag.create.saving"):t("ag.create.button")}</button>
       {error&&<p role="alert" className="fw-error">{error}</p>}
     </form>
@@ -59,7 +62,7 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
     try {
       const next=workflowReadSchema.parse(await appRequest(`/api/v1/agreement-workflows?agreementId=${encodeURIComponent(id)}`));
       if(token===generation.current){
-        setWorkflow(next);setSelectedId(next.agreementId);
+        setWorkflow(next);setSelectedId(next.agreementId);rememberAgreement(next.agreementId);
         // Keep an authorized manual lookup recoverable after refresh or sign-in.
         window.history.replaceState(null,"",`/app/agreement-workflow?workflowId=${next.agreementId}`);
       }
@@ -107,15 +110,21 @@ export function AgreementWorkflowScreen({ actorId }: { actorId:string }) {
     {error&&<div className="fw-error" role="alert"><p>{error instanceof ApiRequestError?error.message:t("ag.loadFailed")}</p>
       {error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"?<Link href={`/sign-in?workflowId=${selectedId}`}>{t("ag.signIn")}</Link>:<button className="fw-secondary" disabled={busy||!selectedId} onClick={()=>void load(selectedId)}>{t("ag.reloadAuth")}</button>}
     </div>}
-    {!workflow&&!busy&&<form className="fw-card fw-offer-detail-card" onSubmit={event=>{event.preventDefault();setSelectedId(openId);void load(openId);}}>
-      <label className="fw-field">{t("ag.idLabel")}<input value={openId} onChange={event=>setOpenId(event.target.value)} required pattern={"[0-9a-fA-F\\-]{36}"} /></label><button className="fw-secondary">{t("ag.openById")}</button>
-    </form>}
+    {!workflow&&!busy&&<>
+      <AgreementPicker busy={busy} onOpen={id=>{setSelectedId(id);void load(id);}}/>
+      <details className="fw-card fw-offer-detail-card"><summary>{t("agp.byRef")}</summary>
+        <form onSubmit={event=>{event.preventDefault();setSelectedId(openId);void load(openId);}}>
+          <label className="fw-field">{t("ag.idLabel")}<input value={openId} onChange={event=>setOpenId(event.target.value)} required pattern={"[0-9a-fA-F\\-]{36}"} /></label><button className="fw-secondary">{t("ag.openById")}</button>
+        </form>
+      </details>
+    </>}
     {workflow&&<>
-      <p className="fw-notice">{t("ag.designated")}: {workflow.workerId}<br/>{t("ag.employerRep")}: {workflow.representativeId}</p>
+      <p className="fw-notice">{t("ag.designated")}: {workflow.workerId===actorId?t("agp.you"):t("ag.worker")}<br/>{t("ag.employerRep")}: {workflow.representativeId===actorId?t("agp.you"):t("ag.employer")}</p>
       {!current&&<p className="fw-notice">{t("ag.preparing")}</p>}
       {effective&&effective.version!==current?.version&&<section className="fw-card fw-offer-detail-card" aria-label={t("ag.effectiveAria")}><strong>{t("ag.lastConfirmed",{version:effective.version})}</strong><p>{t("ag.lastConfirmedNote")}</p><TermSummary version={effective}/></section>}
       {current&&<>
         <p className={current.status==="effective"?"fw-success":"fw-notice"} role="status">{t("ag.versionLine",{version:current.version,status:t(statusKey(current.status))})}</p>
+        <AgreementProgress status={current.status}/>
         <AgreementExpiry agreementId={workflow.agreementId} version={current.version} state={current.state}/>
         <div className="fw-signatures">{[{id:workflow.workerId,label:t("ag.worker")},{id:workflow.representativeId,label:t("ag.employer")}].map(party=><div className="fw-signature" key={party.id}><span className="fw-signature-avatar" aria-hidden="true">{party.label[0]}</span><span><strong>{party.label}</strong><br/>{current.decisions.find(d=>d.actorId===party.id)?.decision==="confirm"?t("ag.confirmed"):current.decisions.find(d=>d.actorId===party.id)?.decision==="decline"?t("ag.declinedParty"):current.acknowledgements.some(a=>a.actorId===party.id)?t("ag.ackedNotConfirmed"):t("ag.awaitingAck")}</span></div>)}</div>
         <TermSummary version={current}/>
