@@ -1,12 +1,14 @@
 // Notification preferences (module 20). Preferences choose which kinds of activity the in-app feed shows on this device. They never
 // stop an event from being recorded, never delete anything, and cannot hide the essential kinds below, which affect a person's rights.
-export const notificationKinds = ["offer_revision", "organization_decision", "agreement_decision", "work_decision", "work_integrity", "case_followup"] as const;
+export const notificationKinds = ["offer_revision", "organization_decision", "agreement_decision", "work_decision", "work_integrity", "case_followup", "passport_share", "passport_view"] as const;
 export type NotificationKind = (typeof notificationKinds)[number];
 export const categories = ["offers", "agreements", "work", "organization", "cases"] as const;
 export type NotificationCategory = (typeof categories)[number];
 
 export const categoryOf: Record<NotificationKind, NotificationCategory> = {
   offer_revision: "offers", agreement_decision: "agreements", work_decision: "work", work_integrity: "work", organization_decision: "organization", case_followup: "cases",
+  // Passport sharing activity is shown with work activity.
+  passport_share: "work", passport_view: "work",
 };
 // Dispute activity and decisions about a person's own work record are never hideable: missing them could cost someone a deadline or a right.
 export const essentialCategories: readonly NotificationCategory[] = ["cases"];

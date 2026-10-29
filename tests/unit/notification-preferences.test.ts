@@ -11,7 +11,7 @@ describe("notification preferences", () => {
     const items = notificationKinds.map(item);
     const { shown, hiddenCount } = filterNotifications(items, ["offers", "work", "cases"]);
     expect(shown.map(entry => entry.kind).sort()).toEqual(["agreement_decision", "case_followup", "organization_decision"]);
-    expect(hiddenCount).toBe(3);
+    expect(hiddenCount).toBe(5); // offer_revision, work_decision, work_integrity and the two Passport kinds (shown with work)
     expect(filterNotifications(items, []).hiddenCount).toBe(0);
   });
   it("toggles categories and refuses to hide case responses", () => {
