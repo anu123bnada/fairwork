@@ -53,3 +53,6 @@ mobile/poc/android/app/src/online/assets/capacitor.config.json
 release-artifacts/**/*.exe
 release-artifacts/**/*.blockmap
 release-artifacts/**/*.apk
+
+# The preview APK served with the site (see src/features/releases/releases.ts) is deliberately tracked.
+!public/downloads/*.apk
