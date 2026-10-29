@@ -74,5 +74,9 @@ Built with `ORYQEN_DESKTOP_ORIGIN=https://oryqen-staging.vercel.app npm --prefix
 - NOT TESTED: real sign-in, session persistence across restart (needs the owner's password), clean second machine.
 - Native or offline behaviour: none claimed or observed; it is a web wrapper with an offline notice page.
 
-## Android APK rebuild: BLOCKED (29 Oct)
-`assembleOnline` could not run. Android Studio's bundled JDK at `C:\Program Files\Android\Android Studio\jbr` is damaged (`lib\jvm.cfg` missing, `lib` empty). The second install `Android Studio1\jbr` is JDK 25, which this project's Gradle cannot run on ("Unsupported class file major version 69"). A JDK 17 or 21 is required. The previous APK (28 Oct, SHA-256 `8d4a1e1b…053cc8f`, debug-signed) is unchanged and still the latest tested one.
+## Android APK rebuild and test (29 Oct, this machine)
+First attempt was blocked: Android Studio's bundled JDK is damaged and the second install is JDK 25 (unsupported by this Gradle). With the owner's approval a Temurin JDK 21.0.12.1 was downloaded (checksum matched the vendor value `f9d6e191...8b4e`) and `assembleOnline -PoryqenOnlineOrigin=https://oryqen-staging.vercel.app` succeeded (6m 01s).
+- File: `test-results/ORYQEN-Online-Preview-staging-debug.apk` (copy of `mobile/poc/android/app/build/outputs/apk/online/app-online.apk`), 4,121,032 bytes, SHA-256 `0efabbcf8ab6a8fa6b446253edd133ed61e512ac0e6e4cb4200d384fee21d6e5`.
+- Package `org.fairwork.localpoc.online`, 1.0.0-online-preview, targetSdk 36, permission INTERNET only, **debuggable, signed with the "Android Debug" certificate** (SHA-256 `c7015c75...140e6`). Not a release build. Embedded origin `https://oryqen-staging.vercel.app/sign-in`, cleartext off.
+- Emulator `Medium_Phone_API_37.0` (not a physical device): installed (Success), launched. In-app checks: the first run on a cold emulator passed 2 of 3 (the wrong-password message check timed out); after a restart of the app the identical script passed **3 of 3**, and a direct probe showed the plain "That email and password do not match" message. The first failure is recorded as a cold-start timing flake, not explained further.
+- NOT TESTED: real sign-in, session persistence after restart, physical device, file upload/download. It is a hosted-web wrapper; no native or offline functionality was observed or claimed.
