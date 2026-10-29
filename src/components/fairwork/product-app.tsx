@@ -52,21 +52,16 @@ import type { MessageKey } from "@/i18n";
 import { LOCALES } from "@/i18n";
 import { WorkRecordScreen } from "./work-record";
 import { DashboardRecords } from "./dashboard-records";
-import { OfferDrafts } from "./offer-drafts";
+import { AddOfferScreen } from "./offer-intake";
 import { SavedOffers, EmployerWorkspace } from "./saved-offers";
 import { OpportunitiesScreen } from "./opportunities";
 import { GuidanceScreen } from "./guidance";
 import { OfferHistoryPanel } from "./offer-history";
-import { OfferScreenshot } from "./offer-screenshot";
-import { OfferPdf } from "./offer-pdf";
-import { OfferDocx } from "./offer-docx";
 import { RuleAnalysis } from "./rule-analysis";
-import { AiAnalysis } from "./ai-analysis";
-import { DraftOfferAssessment, OfferAssessment } from "./offer-assessment";
+import { OfferFindings } from "./offer-findings";
+import { OfferAssessment } from "./offer-assessment";
 import { CompanyProfiles } from "./company-profiles";
 import { RecruiterVerification } from "./recruiter-verification";
-import { OfferCompanySelector } from "./offer-company-selector";
-import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
 import { CaseReviewScreen } from "./case-review";
 import { WorkPassportScreen } from "./work-passport";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
@@ -76,9 +71,9 @@ import { ProfileEditor } from "@/components/oryqen/profile-editor";
 import { meSchema } from "@/features/identity/schema";
 import type { z } from "zod";
 
-type Role = "EMPLOYER" | "WORKER";
+export type Role = "EMPLOYER" | "WORKER";
 type FieldQuestion = { id: string; field: string; question: string; required: boolean };
-type OfferResult = {
+export type OfferResult = {
   offerId: string;
   companyId: string;
   workerId: string;
@@ -299,13 +294,13 @@ function rememberedOffer() {
   try { return window.sessionStorage.getItem("fairwork.offer-selection"); } catch { return null; }
 }
 
-function useProduct() {
+export function useProduct() {
   const context = useContext(ProductContext);
   if (!context) throw new Error("ProductProvider is missing");
   return context;
 }
 
-function Icon({ name, size = 22 }: { name: string; size?: number }) {
+export function Icon({ name, size = 22 }: { name: string; size?: number }) {
   const common = {
     width: size,
     height: size,
@@ -369,7 +364,7 @@ const backTarget: Record<string, string> = {
   share: "passport",
 };
 
-function routeFor(screen: string) {
+export function routeFor(screen: string) {
   return `/app/${screen}`;
 }
 
@@ -425,7 +420,7 @@ function DeviceStatus() {
   return <div className="fw-device-status" aria-hidden="true"><span>9:41</span><span className="fw-device-icons"><span className="fw-signal" /><span className="fw-battery" /></span></div>;
 }
 
-function ErrorMessage({ error }: { error: Error | null }) {
+export function ErrorMessage({ error }: { error: Error | null }) {
   if (!error) return null;
   const copy: Partial<Record<ErrorCode, string>> = {
     VALIDATION_FAILED: "Check the offer fields and try again.",
@@ -670,179 +665,6 @@ function AuthenticatedWelcome({ profile }: { profile: Profile | null }) {
   );
 }
 
-function AddOfferScreen() {
-  const { t } = useI18n();
-  const router = useRouter();
-  const { profile, offer, setOffer, terms, setTerms, companyId, setCompanyId, workerId, setWorkerId, role, setRole, sourceText, setSourceText, ensureOfferId, startSeparateOffer } = useProduct();
-  const [tab, setTab] = useState<"paste" | "screenshot" | "pdf" | "manual">("paste");
-  const [extraction, setExtraction] = useState<{ text: string; filled: number; preserved: number } | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [busy, setBusy] = useState(false);
-  const requestKeys = useRef(new Map<string, string>());
-
-  useEffect(() => {
-    if (role === "WORKER" && profile?.id && !workerId) setWorkerId(profile.id);
-  }, [profile?.id, workerId, role, setWorkerId]);
-
-  function updateTerm(field: string, value: string) {
-    setTerms({ ...terms, [field]: value });
-  }
-
-  async function analyze(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    const formElement = event.currentTarget;
-    const invalid = Array.from(formElement.elements).find(element =>
-      (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement) && !element.validity.valid,
-    ) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | undefined;
-    if (invalid) {
-      const label = invalid.labels?.[0]?.textContent?.trim() ?? "Offer field";
-      setError(new Error(invalid.name === "companyId" ? "Select a linked organization before saving. If none are available, use the participant-link or organization-approval steps below." : `${label}: ${invalid.validationMessage}`));
-      invalid.focus();
-      return;
-    }
-    const form = new FormData(event.currentTarget);
-    if (!String(form.get("role") ?? "").trim()) {
-      setError(new Error("Enter a role title. Pasted text must be reviewed in the offer fields before saving."));
-      formElement.querySelector<HTMLInputElement>('[name="role"]')?.focus();
-      return;
-    }
-    setBusy(true);
-    const normalizedTerms: Record<string, string | number> = {
-      // Keep persisted extension fields that this editor does not render.
-      // A rendered field is removed only when the user explicitly clears it.
-      ...(offer?.snapshot ?? {}),
-      role: String(form.get("role") ?? "").trim(),
-    };
-    // Omit unknown terms so the database can generate its missing-field questions.
-    // Supplied numeric values still pass native and strict API validation.
-    for (const field of ["salary", "currency", "startDate", "hoursPerWeek", "responsibilities", "location", "overtime", "paymentDate", "safety", "benefits", "employmentType", "probation", "notice", "deductions", "contractConditions", "payPeriod", "taxBasis", "schedule", "leave", "contractDuration", "trainingDeposit", "documentRetention", "employerName"]) {
-      const value = String(form.get(field) ?? "").trim();
-      if (value) normalizedTerms[field] = field === "salary" || field === "hoursPerWeek" ? Number(value) : value;
-      else delete normalizedTerms[field];
-    }
-    const requestBody = {
-      offerId: offer?.offerId ?? ensureOfferId(),
-      companyId: String(form.get("companyId") ?? "").trim(),
-      workerId: String(form.get("workerId") ?? "").trim(),
-      requesterRole: role,
-      terms: normalizedTerms,
-      expectedVersion: (offer?.version ?? 0) + 1,
-    };
-    const fingerprint = JSON.stringify(requestBody);
-    let key = requestKeys.current.get(fingerprint);
-    if (!key) {
-      key = crypto.randomUUID();
-      requestKeys.current.set(fingerprint, key);
-    }
-    try {
-      const result = await appRequest("/api/v1/offers", {
-        ...requestBody,
-        idempotencyKey: key,
-      }) as OfferResult;
-      setOffer(result);
-      setCompanyId(requestBody.companyId);
-      setWorkerId(requestBody.workerId);
-      setTerms(Object.fromEntries(Object.entries(normalizedTerms).map(([name, value]) => [name, String(value)])));
-      if (!offer) {
-        // The source text is retained only for this in-memory display. The current
-        // backend contract persists typed terms, not pasted source content.
-        setSourceText(sourceText);
-      }
-      router.push(routeFor("analyzing"));
-    } catch (caught) {
-      setError(caught instanceof Error ? caught : new Error("The offer could not be checked."));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <>
-      <h2 className="fw-page-title">{t("add.title")}</h2>
-      <p className="fw-page-subtitle">{t("add.subtitle")}</p>
-      <OfferDrafts onUse={draft=>{startSeparateOffer();setTerms({role:draft.role,employerName:draft.employer});setSourceText(draft.text);setExtraction(null);setError(null);requestKeys.current.clear();router.replace("/app/add-offer");}} />
-      {offer && <section className="fw-card fw-offer-detail-card" aria-label="Selected offer">
-        <p>{t("add.editing", { version: offer.version })}</p>
-        <button type="button" className="fw-secondary" disabled={busy} onClick={() => {
-          startSeparateOffer(); setExtraction(null); setError(null); requestKeys.current.clear();
-          router.replace("/app/add-offer");
-        }}>{t("add.separate")}</button>
-      </section>}
-      <div className="fw-mode-tabs" role="tablist" aria-label={t("add.methodAria")}>
-        <button type="button" role="tab" aria-selected={tab === "paste"} className={tab === "paste" ? "active" : ""} onClick={() => setTab("paste")}>{t("add.tabPaste")}</button>
-        <button type="button" role="tab" aria-selected={tab === "screenshot"} className={tab === "screenshot" ? "active" : ""} onClick={() => setTab("screenshot")}>{t("add.tabScreenshot")}</button>
-        <button type="button" role="tab" aria-selected={tab === "pdf"} className={tab === "pdf" ? "active" : ""} onClick={() => setTab("pdf")}>{t("add.tabPdf")}</button>
-        <button type="button" role="tab" aria-selected={tab === "manual"} className={tab === "manual" ? "active" : ""} onClick={() => setTab("manual")}>{t("add.tabManual")}</button>
-      </div>
-      {tab === "screenshot" ? (
-        <OfferScreenshot onReviewed={text=>{setSourceText(text);setTab("paste");}}/>
-      ) : tab === "pdf" ? (
-        <><OfferPdf onReviewed={text=>{setSourceText(text);setTab("paste");}}/><OfferDocx onReviewed={text=>{setSourceText(text);setTab("paste");}}/></>
-      ) : (
-        <form noValidate onSubmit={(event) => void analyze(event)}>
-          {error && <ErrorMessage error={error} />}
-          {tab === "paste" && (
-            <section className="fw-source-panel">
-              <label className="fw-source-label">{t("add.pasteLabel")}
-                <textarea value={sourceText} onChange={(event) => setSourceText(event.target.value)} placeholder={t("add.pastePlaceholder")} maxLength={10000} />
-              </label>
-              <p className="fw-disclaimer">{t("add.pasteNote")}</p>
-              <button type="button" className="fw-secondary" disabled={!sourceText.trim()} onClick={() => {
-                const { detectedTerms } = extractOfferTermsRuleBased(sourceText);
-                const blankFields = Object.entries(detectedTerms).filter(([field]) => !terms[field]?.trim());
-                setTerms({ ...terms, ...Object.fromEntries(blankFields.map(([field, value]) => [field, String(value)])) });
-                setExtraction({ text: sourceText, filled: blankFields.length, preserved: Object.keys(detectedTerms).length - blankFields.length });
-              }}>{t("add.suggest")}</button>
-              {extraction && extraction.text === sourceText && <><p role="status">{extraction.filled ? t("add.filled", { count: extraction.filled }) : t("add.nothingFilled")} {extraction.preserved ? t("add.preserved", { count: extraction.preserved }) : !extraction.filled ? t("add.noneDetected") : ""} {t("add.reviewEvery")}</p><RuleAnalysis text={extraction.text} /></>}
-              <AiAnalysis text={sourceText} role={role} />
-            </section>
-          )}
-          <section className="fw-card fw-offer-detail-card" aria-label={t("add.termsAria")}>
-            <strong>{t("add.details")}</strong>
-            <p className="fw-notice">{t("add.leaveBlank")}</p>
-            <label className="fw-field">{t("add.f.role")}<input name="role" required maxLength={120} value={terms.role ?? ""} onChange={(event) => updateTerm("role", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.salary")}<input name="salary" type="number" min="0.01" step="0.01" value={terms.salary ?? ""} onChange={(event) => updateTerm("salary", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.currency")}<input name="currency" maxLength={10} value={terms.currency ?? ""} onChange={(event) => updateTerm("currency", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.startDate")}<input name="startDate" maxLength={80} value={terms.startDate ?? ""} onChange={(event) => updateTerm("startDate", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.hours")}<input name="hoursPerWeek" type="number" min="0.25" step="0.25" value={terms.hoursPerWeek ?? ""} onChange={(event) => updateTerm("hoursPerWeek", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.responsibilities")}<textarea name="responsibilities" maxLength={500} value={terms.responsibilities ?? ""} onChange={(event) => updateTerm("responsibilities", event.target.value)} /></label>
-            <h4 className="fw-form-group">{t("add.moreTerms")}</h4>
-            <label className="fw-field">{t("add.f.location")}<input name="location" value={terms.location ?? ""} onChange={(event) => updateTerm("location", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.overtime")}<input name="overtime" value={terms.overtime ?? ""} onChange={(event) => updateTerm("overtime", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.paymentDate")}<input name="paymentDate" value={terms.paymentDate ?? ""} onChange={(event) => updateTerm("paymentDate", event.target.value)} /></label>
-            <label className="fw-field">{t("add.f.safety")}<input name="safety" value={terms.safety ?? ""} onChange={(event) => updateTerm("safety", event.target.value)} /></label>
-            {(["benefits", "employmentType", "probation", "notice", "deductions", "contractConditions", "payPeriod", "taxBasis", "schedule", "leave", "contractDuration", "trainingDeposit", "documentRetention", "employerName"] as const).map(field => <label className="fw-field" key={field}>{t("add.optional", { label: t(`add.o.${field}` as MessageKey) })}<textarea name={field} maxLength={500} value={terms[field] ?? ""} onChange={event => updateTerm(field, event.target.value)} /></label>)}
-          </section>
-          <DraftOfferAssessment terms={terms} />
-          <section className="fw-card fw-offer-detail-card">
-            <strong>{t("add.participants")}</strong>
-            {!offer && role === "WORKER" && <p className="fw-notice">{t("add.privateDraft")}</p>}
-            <label className="fw-field">{t("add.partyRole")}
-              <select value={role} disabled={Boolean(offer)} onChange={(event) => {
-                const nextRole = event.target.value as Role;
-                setRole(nextRole);
-                setWorkerId(nextRole === "WORKER" ? profile?.id ?? "" : "");
-              }}>
-                <option value="WORKER">{t("add.roleWorker")}</option>
-                <option value="EMPLOYER">{t("add.roleEmployer")}</option>
-              </select>
-            </label>
-            {offer ? <label className="fw-field">{t("add.companyId")}<input name="companyId" readOnly value={offer.companyId} /></label> : <OfferCompanySelector value={companyId} onChange={setCompanyId} />}
-            <label className="fw-field">{t("add.workerId")}<input name="workerId" required readOnly={role === "WORKER" || Boolean(offer)} pattern={"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"} title={t("add.workerIdTitle")} value={offer?.workerId ?? (role === "WORKER" ? profile?.id ?? "" : workerId)} onChange={(event) => setWorkerId(event.target.value)} /></label>
-            <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
-            <p className="fw-notice">{t("add.idsNote")}</p>
-          </section>
-          <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
-          <div className="fw-fixed-action">
-            <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
-          </div>
-        </form>
-      )}
-    </>
-  );
-}
-
 function AnalyzingScreen() {
   const { t } = useI18n();
   const { offer } = useProduct();
@@ -909,7 +731,8 @@ function CheckScreen() {
         <span className="fw-check-ring fw-check-count">{statedCount}<small>/{requiredFields.length}</small></span>
         <span><strong>{missingCount ? t("check.someClarify") : t("check.requiredStated")}</strong><br /><span className="fw-offer-employer">{t("check.statedCount", { stated: statedCount, total: requiredFields.length, missing: missingCount })}</span><span className="fw-check-basis">{t("check.basis")}</span></span>
       </section>
-      <div className="fw-check-details" aria-label={t("check.completenessAria")}>
+      <OfferFindings stated={entries.filter(([key]) => !missingFields.has(key)).length} missing={missingCount} text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
+      <div className="fw-check-details" id="check-stated" aria-label={t("check.completenessAria")}>
         {entries.map(([key, value]) => (
           <div className="fw-check-row" key={key}>
             <span className="fw-check-label">{labelFor(key, t)}</span>
@@ -920,7 +743,7 @@ function CheckScreen() {
         ))}
       </div>
       {/* The rules read English field names from this text, so it is deliberately not translated. */}
-      <RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
+      <div id="check-risks"><RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} /></div>
       <section className="fw-list-card" aria-label={t("sum.button")}>
         <p>{t("sum.note")}</p>
         <button type="button" className="fw-secondary" onClick={() => {
@@ -934,7 +757,7 @@ function CheckScreen() {
       <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       <RecruiterVerification defaultEmployer={terms.employer ?? terms.company ?? ""} defaultRole={terms.jobTitle ?? terms.role ?? ""} />
       {missing.length ? (
-        <section aria-label={t("check.needsClarification")}>
+        <section id="check-missing" aria-label={t("check.needsClarification")}>
           <p className="fw-check-explainer">{t("check.foundFew")}</p>
           {missing.map((question) => <Link href={routeFor("questions")} key={question.id} className="fw-question-card fw-check-question fw-question-link"><strong>{labelFor(question.field, t)}</strong><p>{question.question}</p><span className="fw-question-badge">{t("check.needsClarification")}</span></Link>)}
         </section>
