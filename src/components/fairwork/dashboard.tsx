@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useLiveRefresh } from "@/features/live/use-live-refresh";
 import { appRequest } from "@/features/authority/client";
 import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { workListSchema, type WorkList } from "@/features/work/schema";
@@ -16,6 +17,9 @@ function useRead<T>(path: string, parse: (raw: unknown) => T): Loaded<T> {
     appRequest(path).then(raw => { if (active) setValue({ state: "ready", data: parse(raw) }); }).catch(() => { if (active) setValue({ state: "failed" }); });
     return () => { active = false; };
   }, [path]); // eslint-disable-line react-hooks/exhaustive-deps -- parse is a module-level function
+  // Later refreshes replace the data only on success; a failed background refresh keeps what is shown instead of blanking the card.
+  const refresh = useCallback(async () => { setValue({ state: "ready", data: parse(await appRequest(path)) }); }, [path]); // eslint-disable-line react-hooks/exhaustive-deps -- parse is a module-level function
+  useLiveRefresh(refresh, value.state === "ready");
   return value;
 }
 const parseOffers = (raw: unknown): OfferList => offerListSchema.parse(raw);

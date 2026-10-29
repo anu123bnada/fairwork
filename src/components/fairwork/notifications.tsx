@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useEffect,useState } from "react";
+import { useCallback,useEffect,useState } from "react";
+import { useLiveRefresh } from "@/features/live/use-live-refresh";
 import { appRequest } from "@/features/authority/client";
 import { notificationList,notificationReceipt,type Notifications } from "@/features/identity/notifications-schema";
 import { useI18n } from "@/i18n/use-i18n";
@@ -18,6 +19,9 @@ export function NotificationFeed(){
  useEffect(()=>{let active=true;appRequest("/api/v1/notifications").then(raw=>{if(active)setData(notificationList.parse(raw));}).catch(()=>{if(active)setError(t("nf.loadError"));}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[t]);
  async function load(more=false){setBusy(true);setError("");try{const cursor=more?data?.nextCursor:null;const query=cursor?`?${new URLSearchParams({cursorAt:cursor.cursorAt!,cursorKey:cursor.cursorKey!})}`:"";const next=notificationList.parse(await appRequest(`/api/v1/notifications${query}`));setData(old=>more&&old?{...next,items:[...old.items,...next.items]}:next);}catch{setData(null);setError("Activity could not be loaded. Retry when signed in and connected.");}finally{setBusy(false);}}
  async function mark(eventKey:string){setBusy(true);setError("");try{notificationReceipt.parse(await appRequest("/api/v1/notifications",{eventKey}));setData(old=>old?{...old,items:old.items.map(item=>item.eventKey===eventKey?{...item,read:true}:item)}:null);}catch{setData(null);setError(t("nf.readFail"));}finally{setBusy(false);}}
+ // Background refresh of the first page: new items appear without a reload; items already shown keep their place and any older pages already loaded stay.
+ const refreshLive=useCallback(async()=>{const next=notificationList.parse(await appRequest("/api/v1/notifications"));setData(old=>{if(!old)return next;const fresh=new Map(next.items.map(item=>[item.eventKey,item]));const kept=old.items.map(item=>fresh.get(item.eventKey)??item);const added=next.items.filter(item=>!old.items.some(existing=>existing.eventKey===item.eventKey));return{...old,items:[...added,...kept]};});},[]);
+ const live=useLiveRefresh(refreshLive,data!==null);
  const view=data?filterNotifications(data.items,hidden):null;
  const [unreadOnly,setUnreadOnly]=useState(false);
  const unreadCount=view?view.shown.filter(item=>!item.read).length:0;
@@ -27,6 +31,7 @@ export function NotificationFeed(){
   <p>{t("nf.prefsNote")}</p>
   {categories.map(category=><label className="fw-field" key={category}><span><input type="checkbox" checked={!hidden.includes(category)} disabled={essentialCategories.includes(category)} onChange={event=>choose(category,event.target.checked)}/> {t(`nf.c.${category}` as MessageKey)}</span></label>)}
  </details>
+ {data&&live.status!=="live"&&<p role="status" className="oq-nf-live">{t(live.status==="offline"?"nf.offline":"nf.stale")}</p>}
  {busy&&<p role="status">{t("nf.loading")}</p>}{error&&<p role="alert">{error}</p>}
  {data?.items.length===0&&<p>{t("nf.none")}</p>}
  {view&&view.hiddenCount>0&&<p role="status">{view.hiddenCount===1?t("nf.hiddenOne"):t("nf.hiddenMany",{count:view.hiddenCount})}</p>}

@@ -1766,6 +1766,8 @@ export const en = {
   "dash.cardOffers": "Summary of your offers",
   "dash.cardRecords": "Summary of your work history",
   "dash.cardPassport": "Passport status summary",
+  "nf.offline": "You are offline. Showing the last activity loaded; it updates when you reconnect.",
+  "nf.stale": "Could not check for new activity just now. What is shown may be out of date; use Refresh activity to try again.",
 } as const;
 export type MessageKey = keyof typeof en;
 export type Messages = Record<MessageKey, string>;
@@ -3446,6 +3448,8 @@ export const si: Partial<Messages> = {
   "check.ov.srcTerms": "සඳහන් සහ අතුරුදන් කොන්දේසි පැමිණෙන්නේ ඔබ සුරැකි සංශෝධනයෙන් සහ සේවාදායකයේ සම්පූර්ණත්ව පරීක්ෂාවෙනි.",
   "check.ov.srcRules": "විය හැකි අවදානම් පැමිණෙන්නේ දේශීය වාක්‍ය රීතිවලිනි. ඒවා ඇසීමට යෝජනා මිස නීතිමය නිගමන නොවේ.",
   "check.ov.srcAi": "මෙම තිරයේ AI භාවිතා කර නැත. විකල්ප AI විශ්ලේෂණය වෙනම වන අතර දීමනාවක් එක් කිරීමේදී ඔබේ කැමැත්තෙන් පමණක් ක්‍රියාත්මක වේ.",
+  "nf.offline": "ඔබ මාර්ගගතව නොවේ. අවසන් පූරණය කළ ක්‍රියාකාරකම් පෙන්වයි; නැවත සම්බන්ධ වූ විට යාවත්කාලීන වේ.",
+  "nf.stale": "දැන් නව ක්‍රියාකාරකම් පරීක්ෂා කළ නොහැකි විය. පෙන්වන දේ පැරණි විය හැක; නැවත උත්සාහ කිරීමට ක්‍රියාකාරකම් නැවුම් කරන්න භාවිතා කරන්න.",
 };
 export const ta: Partial<Messages> = {
   "nav.home": "முகப்பு", "nav.check": "சரிபார்", "nav.record": "பதிவு", "nav.passport": "கடவுச்சீட்டு",
@@ -5123,6 +5127,8 @@ export const ta: Partial<Messages> = {
   "check.ov.srcTerms": "குறிப்பிடப்பட்ட மற்றும் விடுபட்ட விதிமுறைகள் நீங்கள் சேமித்த திருத்தத்திலிருந்தும் சேவையகத்தின் முழுமைச் சரிபார்ப்பிலிருந்தும் வருகின்றன.",
   "check.ov.srcRules": "சாத்தியமான அபாயங்கள் உள்ளூர் சொற்றொடர் விதிகளிலிருந்து வருகின்றன. அவை கேட்பதற்கான குறிப்புகள், சட்டக் கண்டுபிடிப்பு அல்ல.",
   "check.ov.srcAi": "இந்தத் திரையில் AI பயன்படுத்தப்படவில்லை. விருப்பத் AI பகுப்பாய்வு தனியானது; சலுகையைச் சேர்க்கும்போது உங்கள் சம்மதத்துடன் மட்டுமே இயங்கும்.",
+  "nf.offline": "நீங்கள் ஆஃப்லைனில் உள்ளீர்கள். கடைசியாக ஏற்றிய செயல்பாடு காட்டப்படுகிறது; மீண்டும் இணைந்ததும் புதுப்பிக்கப்படும்.",
+  "nf.stale": "இப்போது புதிய செயல்பாட்டைச் சரிபார்க்க முடியவில்லை. காட்டப்படுவது பழையதாக இருக்கலாம்; மீண்டும் முயல செயல்பாட்டைப் புதுப்பி என்பதைப் பயன்படுத்தவும்.",
 };
 export const de: Partial<Messages> = {
   "nav.home": "Startseite", "nav.check": "Prüfen", "nav.record": "Nachweise", "nav.passport": "Pass",
@@ -6800,4 +6806,6 @@ export const de: Partial<Messages> = {
   "check.ov.srcTerms": "Angegebene und fehlende Bedingungen stammen aus der von Ihnen gespeicherten Fassung und der Vollständigkeitsprüfung des Servers.",
   "check.ov.srcRules": "Mögliche Risiken stammen aus lokalen Formulierungsregeln. Sie sind Anlass zum Nachfragen, keine rechtliche Feststellung.",
   "check.ov.srcAi": "Auf diesem Bildschirm wurde keine KI verwendet. Die optionale KI-Analyse ist getrennt und läuft nur mit Ihrer Zustimmung beim Hinzufügen eines Angebots.",
+  "nf.offline": "Sie sind offline. Es wird die zuletzt geladene Aktivität angezeigt; sie wird nach der Verbindung aktualisiert.",
+  "nf.stale": "Neue Aktivität konnte gerade nicht geprüft werden. Die Anzeige kann veraltet sein; mit „Aktivität aktualisieren“ erneut versuchen.",
 };
