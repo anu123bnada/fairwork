@@ -13,7 +13,7 @@ const rpcShim = async (name: string, args: Record<string, unknown>) => {
   const value = Object.values(args)[0];
   await db.exec("begin; set local role authenticated");
   try {
-    await db.query("select set_config('request.jwt.claims',$1,true)", [JSON.stringify({ sub: actor, role: "authenticated", aal: "aal2", is_anonymous: false })]);
+    await db.query("select set_config('request.jwt.claims',$1,true)", [JSON.stringify({ sub: actor, role: "authenticated", aal: "aal2", is_anonymous: false, amr: [{ method: "totp", timestamp: Math.floor(Date.now() / 1000) }] })]);
     const result = await db.query<{ data: unknown }>(`select api.${name}($1::jsonb) data`, [JSON.stringify(value)]);
     await db.exec("commit");
     return { data: result.rows[0]!.data, error: null };
@@ -40,6 +40,12 @@ import * as passportRoute from "@/app/api/v1/passport/route";
 import * as casesRoute from "@/app/api/v1/work-cases/route";
 import * as workflowRoute from "@/app/api/v1/agreement-workflows/route";
 import { caseListSchema, caseReadSchema, caseReceiptSchema } from "@/features/cases/schema";
+import * as sharingRoute from "@/app/api/v1/passport/sharing/route";
+import { shareList, shareProjection, shareReceipt } from "@/features/work/sharing-schema";
+import * as adminRoute from "@/app/api/v1/admin/route";
+import * as auditChainRoute from "@/app/api/v1/admin/audit-chain/route";
+import * as exportLogRoute from "@/app/api/v1/admin/export-log/route";
+import { auditChainResult } from "@/features/admin/audit-chain";
 import { twoAccountFlow } from "../../scripts/hosted-two-account-flow.mjs";
 import { meSchema } from "@/features/identity/schema";
 import { offerListSchema } from "@/features/offer/list-schema";
@@ -50,7 +56,7 @@ import { workListSchema } from "@/features/work/schema";
 import { passportSchema } from "@/features/work/passport-schema";
 
 const ORIGIN = "http://127.0.0.1:3100";
-const operator = randomUUID(), representative = randomUUID(), worker = randomUUID(), other = randomUUID(), newcomer = randomUUID();
+const admin = randomUUID(), operator = randomUUID(), representative = randomUUID(), worker = randomUUID(), other = randomUUID(), newcomer = randomUUID();
 const offer = randomUUID(), draft = randomUUID();
 let company = "";
 const call = (handler: (request: Request) => Promise<Response>, method: string, path: string, body?: unknown, as: string | null = worker, headers: Record<string, string> = {}) => {
@@ -65,7 +71,9 @@ afterAll(() => db.close());
 beforeAll(async () => {
   await db.exec("create role anon nologin;create role authenticated nologin;create role service_role nologin bypassrls;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select (nullif(current_setting('request.jwt.claims',true),'')::jsonb->>'sub')::uuid$$;create function auth.jwt() returns jsonb language sql stable as $$select nullif(current_setting('request.jwt.claims',true),'')::jsonb$$;");
   for (const file of (await readdir("supabase/migrations")).sort()) await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
-  for (const id of [operator, representative, worker, other, newcomer]) await db.query("insert into auth.users values($1)", [id]);
+  for (const id of [admin, operator, representative, worker, other, newcomer]) await db.query("insert into auth.users values($1)", [id]);
+  await db.query("insert into private.profiles(id,display_name) values($1,'Synthetic admin')", [admin]);
+  await db.query("insert into private.admin_roles(subject_id,role,expires_at,revision) values($1,'owner',now()+interval '1 day',1)", [admin]);
   for (const id of [operator, representative, worker, other]) await db.query("insert into private.profiles(id,display_name) values($1,'Synthetic fixture')", [id]);
   await db.query("insert into private.capability_assignments(subject_id,capability,granted_by,purpose,expires_at) values($1,'authority_operator',$2,'Synthetic test only',now()+interval '1 day')", [operator, other]);
   company = (await rpcAs(operator, "provision_company", { name: "Synthetic route company", idempotencyKey: randomUUID() })).id as string;
@@ -242,6 +250,31 @@ describe("two-account journey through the real routes", () => {
     expect((await call(agreementsRoute.GET, "GET", `/api/v1/agreements?offerId=${journey.offerId}`, undefined, other)).status).toBe(404);
   }, 120000);
 
+  it("shares one verified record with a named recipient, shows only the chosen fields to that account, and stops on revocation", async () => {
+    const passport = passportSchema.parse(await data(await call(passportRoute.GET, "GET", "/api/v1/passport", undefined, worker)));
+    const entry = passport.entries.find(item => item.workId === journey.workId)!;
+    const itemId = randomUUID(), grantId = randomUUID();
+    const post = (body: unknown, who = worker) => call(sharingRoute.POST, "POST", "/api/v1/passport/sharing", body, who);
+    const fields = ["task_summary", "verification_status"];
+    expect(shareReceipt.parse(await data(await post({ operation: "select", itemId, workId: journey.workId, workVersion: entry.version, summary: "Synthetic shared task summary", fields }))).operation).toBe("select");
+    expect((await post({ operation: "select", itemId: randomUUID(), workId: journey.workId, workVersion: entry.version, summary: "Stranger selecting someone else's record", fields }, other)).status).toBeGreaterThanOrEqual(403);
+    const expiresAt = new Date(Date.now() + 3 * 86400000).toISOString();
+    expect((await post({ operation: "prepare", grantId, itemId, recipientId: other, expiresAt, fields })).status).toBe(200);
+    expect((await post({ operation: "activate", grantId })).status).toBe(200);
+    const asRecipient = shareProjection.parse(await data(await call(sharingRoute.GET, "GET", `/api/v1/passport/sharing?grantId=${grantId}&mode=recipient`, undefined, other)));
+    expect(asRecipient).toMatchObject({ grantId, active: true });
+    expect(asRecipient.entries).toHaveLength(1);
+    expect(Object.keys(asRecipient.entries[0]!).sort()).toEqual([...fields].sort());
+    expect((await call(sharingRoute.GET, "GET", `/api/v1/passport/sharing?grantId=${grantId}&mode=recipient`, undefined, newcomer)).status, "an account that is not the named recipient").toBeGreaterThanOrEqual(403);
+    expect((await call(sharingRoute.GET, "GET", `/api/v1/passport/sharing?grantId=${grantId}&mode=recipient`, undefined, representative)).status, "the employer is not the recipient either").toBeGreaterThanOrEqual(403);
+    expect(shareList.parse(await data(await call(sharingRoute.GET, "GET", "/api/v1/passport/sharing", undefined, worker))).items).toMatchObject([{ grantId, owner: true, active: true }]);
+    expect((await post({ operation: "revoke", grantId }, other)).status, "the recipient cannot revoke").toBeGreaterThanOrEqual(403);
+    expect((await post({ operation: "revoke", grantId })).status).toBe(200);
+    const after = await call(sharingRoute.GET, "GET", `/api/v1/passport/sharing?grantId=${grantId}&mode=recipient`, undefined, other);
+    if (after.status === 200) expect(shareProjection.parse(await data(after))).toMatchObject({ active: false, entries: [] }); else expect(after.status).toBeGreaterThanOrEqual(403);
+    expect((await post({ operation: "prepare", grantId: randomUUID(), itemId, recipientId: other, expiresAt, fields: ["task_summary", "task_summary"] })).status, "duplicate fields").toBe(422);
+  }, 120000);
+  // An open dispute blocks a record from the Passport until it is resolved, so sharing is exercised first.
   it("opens a dispute on the verified record with an extended category, persists it for both parties and hides it from strangers", async () => {
     const work = (await data(await call(workRecordsRoute.GET, "GET", `/api/v1/work-records?workId=${journey.workId}`, undefined, worker))).versions.at(-1);
     const open = (overrides: Record<string, unknown> = {}) => ({ operation: "open", caseId: randomUUID(), idempotencyKey: randomUUID(), workId: journey.workId, expectedVersion: work.version, expectedHash: work.contentHash, expectedEvidenceHash: work.evidenceHash, expectedState: work.state, reasonCode: "incorrect_pay", reason: "Synthetic pay concern raised through the route", ...overrides });
@@ -260,4 +293,35 @@ describe("two-account journey through the real routes", () => {
     expect((await call(casesRoute.GET, "GET", `/api/v1/work-cases?caseId=${body.caseId}`, undefined, other)).status).toBe(404);
     expect(caseListSchema.parse(await data(await call(casesRoute.GET, "GET", "/api/v1/work-cases", undefined, other))).items).toEqual([]);
   }, 120000);
+
+});
+
+describe("administration, audit and export through the real routes", () => {
+  const adminRead = (who: string | null) => call(adminRoute.GET, "GET", "/api/v1/admin?resource=audit&from=2026-10-01&to=2026-10-31", undefined, who);
+  it("refuses everyone but an administrator on the console, the chain verifier and the export log", async () => {
+    expect((await adminRead(null)).status).toBe(401);
+    for (const who of [worker, representative, other]) {
+      expect((await adminRead(who)).status, "console").toBe(403);
+      expect((await call(auditChainRoute.GET, "GET", "/api/v1/admin/audit-chain", undefined, who)).status, "verifier").toBe(403);
+      expect((await call(exportLogRoute.POST, "POST", "/api/v1/admin/export-log", { exportId: randomUUID(), resource: "audit", count: 1, complete: true, checksum: "a".repeat(64), filterNames: [] }, who)).status, "export log").toBe(403);
+    }
+    expect((await adminRead(admin)).status).toBe(200);
+  });
+  it("verifies the audit chain, which grows by exactly one link when an account changes its profile, and records an export once", async () => {
+    const verify = async () => auditChainResult.parse(await data(await call(auditChainRoute.GET, "GET", "/api/v1/admin/audit-chain", undefined, admin)));
+    const before = await verify();
+    expect(before).toMatchObject({ ok: true, brokenLinks: 0, alteredOrDeletedRecords: 0, recordsNotInChain: 0 });
+    const me = meSchema.parse(await data(await call(meRoute.GET, "GET", "/api/v1/me", undefined, other)));
+    expect((await call(meRoute.PATCH, "PATCH", "/api/v1/me", { displayName: "Audited rename", locale: "en", timeZone: "UTC", expectedRevision: me.revision }, other, { "idempotency-key": randomUUID() })).status).toBe(200);
+    const after = await verify();
+    expect(after.ok).toBe(true);
+    expect(after.checked).toBe(before.checked + 1);
+    expect(after.head).not.toBe(before.head);
+    const body = { exportId: randomUUID(), resource: "audit", count: 3, complete: true, checksum: "b".repeat(64), filterNames: ["resource", "from"] };
+    expect((await data(await call(exportLogRoute.POST, "POST", "/api/v1/admin/export-log", body, admin)))).toEqual({ exportId: body.exportId, recorded: true, replayed: false });
+    expect((await data(await call(exportLogRoute.POST, "POST", "/api/v1/admin/export-log", body, admin))).replayed).toBe(true);
+    expect((await call(exportLogRoute.POST, "POST", "/api/v1/admin/export-log", { ...body, exportId: randomUUID(), checksum: "xyz" }, admin)).status).toBe(422);
+    expect((await call(exportLogRoute.POST, "POST", "/api/v1/admin/export-log", { ...body, exportId: randomUUID(), records: [{ secret: 1 }] }, admin)).status).toBe(422);
+    expect((await verify()).checked, "the export entry is chained as well").toBeGreaterThan(after.checked);
+  });
 });

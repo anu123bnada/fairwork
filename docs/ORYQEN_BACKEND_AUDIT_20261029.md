@@ -10,7 +10,7 @@ The call comes from `tests/hosted/journeys.spec.ts` (Agent 5), which also lists 
 
 ## What was added
 
-`tests/integration/api-routes-persistence-db.test.ts` (36 tests; PGlite and disposable real PostgreSQL via `scripts/test-routes-postgres.mjs`). The real route handlers, server modules and browser schemas run against the fully migrated database with RLS in force; only the Supabase transport is a shim that runs `api.<rpc>` as role `authenticated` with the caller's claims. Every response is parsed with the schema the browser uses.
+`tests/integration/api-routes-persistence-db.test.ts` (39 tests; PGlite and disposable real PostgreSQL via `scripts/test-routes-postgres.mjs`). The real route handlers, server modules and browser schemas run against the fully migrated database with RLS in force; only the Supabase transport is a shim that runs `api.<rpc>` as role `authenticated` with the caller's claims. Every response is parsed with the schema the browser uses.
 
 | Area | Endpoints | Result |
 |---|---|---|
@@ -20,6 +20,8 @@ The call comes from `tests/hosted/journeys.spec.ts` (Agent 5), which also lists 
 | Records | `/work-records`, `/passport`, `/work-cases`, `/notifications` | empty schema-valid lists for a new account, unexpected parameters 422, unknown record 404 |
 | Two-account journey | `/offers` -> `/agreement-workflows` (create, propose, both confirm) -> `/work-records` (create, submit, worker self-verification 403, employer verifies) -> `/passport` (initialize, read) -> `/work-cases` | persisted and re-read from fresh requests; Passport lists the verified record for its owner only; client-chosen Passport owner 422; stranger gets 404 on the agreement and work record and empty lists |
 | Disputes | `POST/GET /work-cases` | extended category `incorrect_pay` accepted; unknown/lower-case/empty category 422; extra field 422; stranger refused; exact retry replays; second open case on the same record refused; case readable by its opener, absent for a stranger |
+| Passport sharing | `POST/GET /passport/sharing` | select, prepare, activate for a named recipient; recipient sees only the chosen fields; another account and the employer are refused; recipient cannot revoke; owner revokes and access ends; duplicate fields 422. An open dispute removes a record from the Passport until resolved (by design) |
+| Administration | `/admin`, `/admin/audit-chain`, `/admin/export-log` | worker, employer and stranger 403, anonymous 401; administrator verifies the chain (ok), a profile PATCH through `/me` adds exactly one link, an export is recorded once and replays, bad checksum and extra fields 422 |
 | Read sweep | 24 further GET routes (entitlements, guidance, opportunities, organizations, vault, privacy requests, reports, credentials, sharing, expiries, employment history, developer keys, notices, workflows, offer history/analyses/assessment/notes, case evidence/follow-ups, attachments, agreement expiry) | all answer 200/403/404 as a worker, none 5xx, anonymous refused |
 
 Also (previous commits): complete-schema security invariants (`schema-security-invariants-db.test.ts`, 6 tests, both engines), migration 27 pre-flight (10/10, both engines), reviewer evidence read path, audit chain tests.
@@ -39,7 +41,7 @@ Not implemented, and nothing pretends otherwise. The app has no Realtime client,
 ## Endpoint status (93 routes)
 
 - **Route-level tested on a real migrated database this round:** the endpoints in the table above.
-- **Covered by database-level suites (RPC, RLS, two accounts) and the browser fixtures, not route-level:** Passport sharing writes, case follow-ups and reviewer decisions, work-record integrity corrections, Evidence Vault writes, organization and team writes, recruiter verification, operator queues, admin console, audit export and audit chain, developer keys and webhooks, credentials writes.
+- **Covered by database-level suites (RPC, RLS, two accounts) and the browser fixtures, not route-level:** case follow-ups and reviewer decisions, work-record integrity corrections, Evidence Vault writes, organization and team writes, recruiter verification, operator queues, admin console, audit export and audit chain, developer keys and webhooks, credentials writes.
 - **Not verifiable without hosted credentials:** everything on staging with real accounts; Storage upload; email; AI (off by design).
 
 ## Remaining incomplete functionality (unchanged by this pass)
