@@ -98,3 +98,22 @@ html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-term-row sp
    so the last content is never underneath. Measured by the "end of page is not covered" tests. */
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:is(:has(.fw-fixed-action), :has(.fw-demo-passport-action)) .fw-product-body { padding-bottom: calc(244px + env(safe-area-inset-bottom)); }
 @media (min-width: 768px) { html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:is(:has(.fw-fixed-action), :has(.fw-demo-passport-action)) .fw-product-body { padding-bottom: calc(236px + env(safe-area-inset-bottom)); } }
+
+/* ---- Add Offer: a compact, scannable form. Short optional facts no longer get tall text areas, and short fields pair up on wide screens. ---- */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-intake-group textarea { min-height: 56px; height: auto; max-height: 240px; resize: vertical; field-sizing: content; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-intake-group > strong { font-size: 17px; letter-spacing: -.01em; }
+@media (min-width: 900px) {
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-intake-group { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 20px; align-items: start; }
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-intake-group > strong { grid-column: 1 / -1; }
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-intake-group > .fw-field:has(textarea:is([name="responsibilities"], [name="schedule"], [name="notice"], [name="contractConditions"], [name="documentRetention"])) { grid-column: 1 / -1; }
+}
+
+/* ---- Saved offers manager: filters on one row, each offer as its own card ---- */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-card:has(> .fw-field input[type="search"]) { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 14px; }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-card:has(> .fw-field input[type="search"]) > * { grid-column: 1 / -1; }
+@media (min-width: 720px) {
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-card:has(> .fw-field input[type="search"]) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-list-card:has(> .fw-field input[type="search"]) > .fw-field { grid-column: auto; }
+}
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-list-card .fw-list-row { margin: 10px 0; padding: 14px; border-radius: var(--oq-r-md); background: var(--oq-surface); border: 1px solid var(--oq-border); box-shadow: var(--oq-shadow-sm); }
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-list-card .fw-list-row:has(.fw-small-action) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; }
