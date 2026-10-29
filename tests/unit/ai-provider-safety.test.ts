@@ -122,20 +122,27 @@ it.each(["gemini","openai"])("%s reports rejected credentials without exposing p
  expect(result.status).toBe("ERROR");expect(result.message).toContain("credentials");
  expect(JSON.stringify(result)).not.toContain("sensitive diagnostic");expect(fetch).toHaveBeenCalledTimes(1);
 });
+it("refuses to send anything unless the person has confirmed they are an adult", async () => {
+ const consent = { provider: "openai" as const, noticeVersion: "offer-analysis.v1" as const, transmit: true as const, policyHash: aiConfiguration()!.policyHash };
+ await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent })).rejects.toMatchObject({ code: "ACTION_FORBIDDEN" });
+ expect(mocks.rpc).not.toHaveBeenCalled();
+ await authorizeAiTransmission({ text: source, role: "WORKER", consent: { ...consent, adultConfirmed: true } });
+ expect(mocks.rpc).toHaveBeenCalledTimes(1);
+});
 it("requires consent to the selected provider and a durable budget admission", async () => {
  await expect(authorizeAiTransmission({ text: source, role: "WORKER" })).rejects.toMatchObject({ code: "ACTION_FORBIDDEN" });
  await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "gemini", noticeVersion: "offer-analysis.v1", transmit: true, policyHash: aiConfiguration()!.policyHash } })).rejects.toMatchObject({ code: "ACTION_FORBIDDEN" });
  expect(mocks.rpc).not.toHaveBeenCalled();
- await authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, policyHash: aiConfiguration()!.policyHash } });
+ await authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, adultConfirmed: true, policyHash: aiConfiguration()!.policyHash } });
  const transmitted = JSON.stringify(mocks.rpc.mock.calls);
  expect(transmitted).not.toContain(source); expect(transmitted).toContain("inputHash");
  mocks.rpc.mockResolvedValue({ error: { message: "RATE_LIMITED" } });
- await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, policyHash: aiConfiguration()!.policyHash } })).rejects.toMatchObject({ code: "RATE_LIMITED" });
+ await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, adultConfirmed: true, policyHash: aiConfiguration()!.policyHash } })).rejects.toMatchObject({ code: "RATE_LIMITED" });
 });
 it("fails closed for incomplete disclosure or stale consent policy", async () => {
  const oldHash = aiConfiguration()!.policyHash;
  vi.stubEnv("ORYQEN_AI_PROCESSING_REGION", "Changed test region");
- await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, policyHash: oldHash } })).rejects.toMatchObject({ code: "ACTION_FORBIDDEN" });
+ await expect(authorizeAiTransmission({ text: source, role: "WORKER", consent: { provider: "openai", noticeVersion: "offer-analysis.v1", transmit: true, adultConfirmed: true, policyHash: oldHash } })).rejects.toMatchObject({ code: "ACTION_FORBIDDEN" });
  vi.stubEnv("ORYQEN_AI_DATA_USE", "");
  expect((await executeAiOfferAnalysis(source)).status).toBe("UNCONFIGURED");
  expect(fetch).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
@@ -168,7 +175,7 @@ it("records only bounded token counts from validated provider output",async()=>{
 });
 it("rejects a missing durable consent receipt before provider execution",async()=>{
  mocks.rpc.mockResolvedValue({error:null,data:{}});
- await expect(authorizeAiTransmission({text:source,role:"WORKER",consent:{provider:"openai",noticeVersion:"offer-analysis.v1",transmit:true,policyHash:aiConfiguration()!.policyHash}})).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
+ await expect(authorizeAiTransmission({text:source,role:"WORKER",consent:{provider:"openai",noticeVersion:"offer-analysis.v1",transmit:true,adultConfirmed:true,policyHash:aiConfiguration()!.policyHash}})).rejects.toMatchObject({code:"SERVICE_UNAVAILABLE"});
  expect(fetch).not.toHaveBeenCalled();
 });
 
