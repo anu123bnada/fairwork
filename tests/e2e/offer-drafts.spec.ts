@@ -13,6 +13,15 @@ test("private drafts save without an organization, reload and resume in the edit
  await page.getByLabel("Draft role",{exact:true}).fill("Draft technician");await page.getByLabel("Reported employer",{exact:true}).fill("Unverified company");await page.getByLabel("Draft offer text",{exact:true}).fill("Salary: LKR 80000 monthly");
  await page.getByRole("button",{name:"Save private draft",exact:true}).click();await expect(page.getByText("Private draft saved · revision 1",{exact:true})).toBeVisible();
  await page.reload();await page.getByText("Private offer drafts — no organization required",{exact:true}).click();await page.getByRole("button",{name:"Edit draft",exact:true}).click();await expect(page.getByLabel("Draft offer text",{exact:true})).toHaveValue("Salary: LKR 80000 monthly");
+ await page.getByLabel("Draft offer text",{exact:true}).fill("Unsaved edit must not replace saved evidence");
+ await page.getByRole("button",{name:"Review saved draft",exact:true}).click();
+ const review=page.getByRole("region",{name:"Saved private draft review"});
+ await expect(review).toContainText("Draft technician · Revision 1");
+ await expect(review).toContainText("Salary: LKR 80000 monthly");
+ await expect(review).not.toContainText("Unsaved edit must not replace saved evidence");
+ await expect(review.getByRole("region",{name:"Clause check"})).toContainText("missing term");
+ await review.getByRole("button",{name:"Check draft indicators"}).click();
+ await expect(review).toContainText("Employer verification: not assessed");
  await page.getByRole("button",{name:"Use saved draft in a new offer",exact:true}).click();await expect(page.locator('input[name="role"]')).toHaveValue("Draft technician");
 });
 

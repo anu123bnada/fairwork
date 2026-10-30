@@ -3,12 +3,22 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { useI18n } from "@/i18n/use-i18n";
 import { draftContent, draftPage, draftReceipt, type DraftPage } from "@/features/offer/draft-schema";
+import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
+import { DraftOfferAssessment } from "./offer-assessment";
+import { RuleAnalysis } from "./rule-analysis";
+import { ClauseFindings } from "./offer-intelligence";
 
 export function OfferDrafts({ onUse }: { onUse: (draft: DraftPage["items"][number]["content"]) => void }) {
  const { t } = useI18n();
  const [page,setPage]=useState<DraftPage|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState("");
  const [role,setRole]=useState(""),[employer,setEmployer]=useState(""),[text,setText]=useState("");
  const [selected,setSelected]=useState<{id:string;revision:number}|null>(null),[notice,setNotice]=useState("");
+ const [reviewId,setReviewId]=useState<string|null>(null);
+ const reviewed=page?.items.find(item=>item.id===reviewId);
+ const reviewedTerms=reviewed?Object.fromEntries(Object.entries({
+  ...extractOfferTermsRuleBased(reviewed.content.text).detectedTerms,
+  role:reviewed.content.role,employerName:reviewed.content.employer,
+ }).map(([key,value])=>[key,String(value)])):null;
  const pending=useRef<{fingerprint:string;id:string;key:string}|null>(null),saving=useRef(false);
  useEffect(()=>{let active=true;appRequest("/api/v1/offers/drafts").then(raw=>{if(active)setPage(draftPage.parse(raw));}).catch(()=>{if(active)setError(t("dr.loadError"));}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[t]);
  async function load(cursor:string|null=null){setBusy(true);setError("");try{const next=draftPage.parse(await appRequest(`/api/v1/offers/drafts${cursor?`?cursor=${cursor}`:""}`));setPage(old=>({...next,items:cursor?[...(old?.items??[]),...next.items]:next.items}));}catch{setPage(null);setError(t("dr.loadError"));}finally{setBusy(false);}}
@@ -32,7 +42,17 @@ export function OfferDrafts({ onUse }: { onUse: (draft: DraftPage["items"][numbe
   {page?.items.map(item=><article className="fw-question-card" key={item.id}><strong>{item.content.role}</strong><p>{t("dr.itemLine",{employer:item.content.employer||t("dr.noEmployer"),revision:item.revision})}</p>
    <button className="fw-secondary" disabled={busy} onClick={()=>{setSelected(item);setRole(item.content.role);setEmployer(item.content.employer);setText(item.content.text);setNotice("");setError("");}}>{t("dr.edit")}</button>
    <button className="fw-secondary" disabled={busy} onClick={()=>onUse(item.content)}>{t("dr.use")}</button>
+   <button type="button" className="fw-secondary" disabled={busy} onClick={()=>setReviewId(item.id)}>Review saved draft</button>
   </article>)}
+  {reviewed&&reviewedTerms&&<section aria-label="Saved private draft review" className="fw-card">
+   <h3>{reviewed.content.role} · Revision {reviewed.revision}</h3>
+   <p>Checks use the saved text below, not unsaved edits. These local rules do not use AI or verify an employer. No organization is required. Findings are recalculated when you reopen this review; they are not an employer-confirmed agreement.</p>
+   <blockquote style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{reviewed.content.text}</blockquote>
+   <RuleAnalysis text={reviewed.content.text} />
+   <ClauseFindings text={reviewed.content.text} />
+   <DraftOfferAssessment terms={reviewedTerms} />
+   <button type="button" className="fw-secondary" onClick={()=>setReviewId(null)}>Close saved draft review</button>
+  </section>}
   <button className="fw-secondary" disabled={busy} onClick={()=>void load()}>{t("dr.reload")}</button>
   {page?.nextCursor&&<button className="fw-secondary" disabled={busy} onClick={()=>void load(page.nextCursor)}>{t("dr.more")}</button>}
  </details>;
