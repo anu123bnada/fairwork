@@ -15,10 +15,11 @@ test("cinematic landing page is the public entry point with truthful release con
   // Release controls are truthful: no fabricated binary URLs are exposed.
   const download = page.locator("#download");
   await expect(download.getByRole("link", { name: /RELEASE DETAILS & CHECKSUMS/ })).toHaveAttribute("href", "/downloads");
-  // The APK ships with the site; the Windows installer is not published yet.
+  // Both links point to published testing previews; signing disclosures remain visible.
   await expect(download.locator("a[href$='.apk']")).toHaveAttribute("href", "/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk");
-  await expect(download.getByRole("button", { name: /WINDOWS RELEASE PENDING/ })).toBeDisabled();
-  await expect(page.locator('a[href$=".exe"], a[href$=".msi"]')).toHaveCount(0);
+  await expect(download.locator("a[href$='.exe']")).toHaveAttribute("href", "https://github.com/anu123bnada/fairwork/releases/download/oryqen-preview-v0.1.0/ORYQEN-Preview-0.1.0-x64-Setup.exe");
+  await expect(download).toContainText(/unsigned/i);
+  await expect(download).toContainText(/debug/i);
 });
 
 test("landing page is responsive without horizontal overflow", async ({ page }) => {
@@ -38,7 +39,8 @@ test("landing page navigates to downloads and back to sign-in", async ({ page })
   await page.locator("#download").getByRole("link", { name: /RELEASE DETAILS & CHECKSUMS/ }).click();
   await expect(page).toHaveURL(/\/downloads$/);
   await expect(page.getByRole("heading", { name: "ORYQEN applications" })).toBeVisible();
-  await expect(page.getByRole("button", { name: /release pending/ }).first()).toBeDisabled();
+  await expect(page.getByRole("link", { name: "Download Windows", exact: true })).toHaveAttribute("href", /github\.com\/anu123bnada\/fairwork\/releases\/download\//);
+  await expect(page.getByRole("link", { name: "Download Android", exact: true })).toHaveAttribute("href", /\.apk$/);
 
   await page.goto("/");
   await page.getByRole("link", { name: /SIGN IN/ }).click();
