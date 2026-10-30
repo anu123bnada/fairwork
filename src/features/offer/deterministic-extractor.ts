@@ -133,6 +133,22 @@ export function extractOfferTermsRuleBased(text: string): {
     const value = labeled(label, max);
     if (value) detectedTerms[field] = value;
   }
+  // Unlabeled prose: copy a clause verbatim only when exactly one sentence mentions the topic, so the
+  // saved value is the person's own wording (never an inferred value) and ambiguity stays unresolved.
+  const sentences = plain.split(/[\n\r]+|(?<=[.!?])\s+/).map(sentence => sentence.trim().replace(/^[-•]\s*/, "")).filter(Boolean);
+  for (const [field, topic] of [
+    ["leave", /\bleave\b/i], ["notice", /\bnotice\b|\bterminat/i], ["probation", /\bprobation|\btrial\b/i],
+    ["overtime", /\bovertime\b/i], ["trainingDeposit", /\b(?:fees?|deposits?)\b/i], ["deductions", /\bdeduct/i],
+    ["documentRetention", /\bpassport|\boriginal (?:certificates?|documents?|id)|\bidentity documents?/i],
+    ["paymentDate", /\bpaid\s+(?:on|every|weekly|monthly|fortnightly|by|via)\b|\bpayment (?:is )?(?:made|due)\b|\bpay\s?day\b/i],
+    ["schedule", /\b(?:mon(?:day)?|tue(?:sday)?)\b.*\b(?:fri(?:day)?|sat(?:urday)?|sun(?:day)?)\b|\bshifts?\b/i],
+    ["benefits", /\bbenefits?\b|\bEPF\b|\bETF\b|\ballowances?\b/i],
+  ] as const) {
+    if (detectedTerms[field] !== undefined) continue;
+    const matches = [...new Set(sentences.filter(sentence => topic.test(sentence)))];
+    const only = matches.length === 1 ? matches[0]!.replace(/[.!?]+$/, "") : "";
+    if (only && only.length <= 500) detectedTerms[field] = only;
+  }
   // Keep the deposit label: copying an isolated amount into "other conditions"
   // would lose what the payment refers to. Keep distinct stated clauses together.
   const depositLines = plain.split(/[\n\r]+/).map(line => line.trim()).filter(line => /^(?:[-•]\s*)?(?:security |equipment )?deposits?\s*[:–—-]/i.test(line));
