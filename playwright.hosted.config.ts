@@ -15,7 +15,8 @@ export default defineConfig({
   expect: { timeout: 20_000 },
   reporter: [["list"], ["json", { outputFile: "test-results/hosted/report.json" }]],
   outputDir: "test-results/hosted/artifacts",
-  use: { baseURL: hostedOrigin, trace: "retain-on-failure", screenshot: "only-on-failure", serviceWorkers: "block" },
+  // Hosted traces include authentication bodies and cookies. Never record real sessions.
+  use: { baseURL: hostedOrigin, trace: "off", screenshot: "off", video: "off", serviceWorkers: "block" },
   projects: [
     { name: "setup", testMatch: /auth\.setup\.ts/, use: { ...devices["Desktop Chrome"] } },
     { name: "worker", testMatch: /journeys\.spec\.ts/, dependencies: ["setup"], use: { ...devices["Desktop Chrome"], storageState: stateFile } },

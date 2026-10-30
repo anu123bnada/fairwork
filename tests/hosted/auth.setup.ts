@@ -11,7 +11,13 @@ setup("sign in as the dedicated staging test account", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByLabel("Email address").fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Continue securely" }).click();
+  const submit = page.getByRole("button", { name: "Continue securely" });
+  await expect(submit).toBeEnabled();
+  const signedIn = page.waitForResponse(response => response.url().endsWith("/api/v1/auth/sign-in") && response.request().method() === "POST");
+  await submit.click();
+  const response = await signedIn;
+  // Report only the status, never the request body, cookies or session response.
+  expect(response.status(), "Staging sign-in must succeed before any dashboard test runs").toBe(200);
   // A brand-new account has no profile yet and is sent to /register/profile. Creating it is a write to the test account itself, so it is opt-in.
   const needsProfile = await page.waitForURL(/\/(app\/|register\/profile)/, { timeout: 30_000 }).then(() => /register\/profile/.test(page.url()), () => false);
   if (needsProfile) {

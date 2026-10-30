@@ -18,7 +18,9 @@ try {
   if(await fetch("http://127.0.0.1:3100",{signal:AbortSignal.timeout(1000)}).then(()=>true,()=>false))console.warn("NOTE: a development server is running on port 3100. It is left untouched; generated Next files are restored with retries afterward.");
   try {await fetch("http://127.0.0.1:3101",{signal:AbortSignal.timeout(1000)});throw new Error("Port 3101 is occupied; refusing to disturb its server.");}
   catch(error){if(error.message.startsWith("Port 3101"))throw error;}
-  await command(["node_modules/next/dist/bin/next","build"],"test-results/day2-browser-build.log");
+  // Restricted Windows environments cannot create Turbopack's junctions.
+  // Keep the normal compiler by default; opt into Next's supported webpack build locally.
+  await command(["node_modules/next/dist/bin/next","build",...(process.env.ORYQEN_TEST_WEBPACK==="1"?["--webpack"]:[])],"test-results/day2-browser-build.log");
   const server=spawn(process.execPath,["node_modules/next/dist/bin/next","start","--hostname","127.0.0.1","--port","3101"],{env,stdio:["ignore","pipe","pipe"],windowsHide:true});
   let log="";for(const stream of [server.stdout,server.stderr])stream.on("data",data=>{log+=data;});
   try {

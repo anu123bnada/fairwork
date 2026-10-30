@@ -44,6 +44,7 @@ test.describe("session", () => {
 
 test.describe("screens", () => {
   test("home dashboard renders from real data without an error banner @mobile", async ({ page }) => {
+    const loaded = page.waitForResponse(response => new URL(response.url()).pathname === "/api/v1/work-records" && response.request().method() === "GET");
     await open(page, "home");
     // The redesigned dashboard keeps work records in a tabbed work area; the panel is mounted but hidden until its tab is chosen.
     const records = page.getByRole("region", { name: "Dashboard work records" });
@@ -51,6 +52,11 @@ test.describe("screens", () => {
     await page.getByRole("tab", { name: "Work records" }).click();
     await expect(page.getByRole("tab", { name: "Work records" })).toHaveAttribute("aria-selected", "true");
     await expect(records).toBeVisible();
+    const response = await loaded;
+    expect(response.status(), "Dashboard work records must load from the real backend").toBe(200);
+    expect(Array.isArray((await response.json()).data?.items)).toBe(true);
+    await expect(records.getByRole("button", { name: "Refresh work records" })).toBeEnabled();
+    await expect(records.getByRole("alert")).toHaveCount(0);
     await noScreenError(page);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
