@@ -255,6 +255,13 @@ export function AddOfferScreen() {
                 ? <p role="status"><strong>Analysis below is calculated from the terms you entered. It was NOT saved</strong> — the account storage service did not confirm the save. Change any term and press Analyze offer again to see the result change.</p>
                 : <p role="status"><strong>Saved to your account as a private draft (revision {privateResult.revision}).</strong> Reload the page and open “Private offer drafts” to find it. Change any term and press Analyze offer again to see the result change.</p>}
               <AssessmentDetails assessment={privateResult.assessment} basis="your entered terms" />
+              <div className="fw-next-steps">
+                <strong>Questions to ask before you decide</strong>
+                {(() => {
+                  const open = [...privateResult.assessment.items.filter(i => i.status === "concern"), ...privateResult.assessment.items.filter(i => i.status === "uncertain"), ...privateResult.assessment.items.filter(i => i.status === "missing")].slice(0, 8);
+                  return open.length ? <ol>{open.map(i => <li key={i.id}>{i.recommendation}<small>{i.label} · {i.status === "concern" ? "needs attention" : i.status === "uncertain" ? "unclear" : "not stated"}</small></li>)}</ol> : <p>Every checked term is stated. Still confirm each one in the written contract.</p>;
+                })()}
+              </div>
             </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
             <div className="fw-fixed-action">

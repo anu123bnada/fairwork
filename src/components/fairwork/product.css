@@ -1408,6 +1408,15 @@ body:has(.fw-product) {
   border-bottom: 0;
 }
 
+/* Category rows in the offer indicators: label wraps, the "5/20" score and meter never do. */
+.fw-list-row > span:nth-child(2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fw-list-row > meter { flex: 0 0 96px; width: 96px; }
+.fw-list-row > span:first-child { min-width: 0; }
+
+.fw-next-steps { margin-top: 14px; }
+.fw-next-steps ol { padding-left: 20px; margin: 8px 0 0; display: grid; gap: 8px; }
+.fw-next-steps li small { display: block; opacity: .75; }
+
 .fw-notification {
   display: flex;
   align-items: center;
