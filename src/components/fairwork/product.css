@@ -3001,4 +3001,4 @@ html .fw-product .fw-screen-enter.fw-home-body, html .fw-product .fw-home-body:n
 }
 
 /* The Add offer submit button sits in the page flow so it never covers the result text it produces. */
-.fw-product .fw-fixed-action.fw-inline-action { position: static; width: 100%; left: auto; bottom: auto; margin: 18px 0 110px; }
+html[data-brand] .fw-product .fw-fixed-action.fw-inline-action { position: static !important; transform: none !important; left: auto !important; bottom: auto !important; width: 100% !important; max-width: 600px; margin: 18px auto 110px !important; background: none !important; }
