@@ -1,41 +1,13 @@
-# Staging database: apply the pending migrations
+# Staging database migration status (corrected 30 Oct 2026)
 
-Why: on 30 Oct 2026 a read-only check of `oryqen-staging` (`jpvgsmzomlmowarlfkdl`) showed that the database is missing the
-functions behind offer drafts, offer lifecycle, analysis history, employment history, company team, credentials, evidence
-vault, developer keys/webhooks, entitlements and recruiter tools. The app then answers "ORYQEN could not reach the secure
-service" when saving. `supabase/migrations` holds 46 files; staging had about 32 applied.
+An earlier version of this note claimed 30 functions were missing on `oryqen-staging` (`jpvgsmzomlmowarlfkdl`). That was wrong: the
+check used the public (anon) key, and PostgREST reports a function the anon role may not execute as "not found". The functions
+exist and `authenticated` may execute them (verified with `pg_proc` / `has_function_privilege` in the SQL editor).
 
-This needs the project owner's Supabase login. It changes the database, so it is done by the owner, staging only.
+Verified in the Supabase dashboard:
+- `supabase_migrations.schema_migrations` listed every local migration except `20261029170000_audit_chain_timezone_pin`.
+- That one (two `ALTER FUNCTION ... SET timezone TO 'UTC'` statements, no data change) was applied on 30 Oct 2026 with the owner's
+  approval and recorded in `schema_migrations`. Staging is now level with `supabase/migrations`.
+- API logs showed `offer_drafts`, `list_offers`, `credential_list`, `entitlement_read`, `get_me` answering 200.
 
-## 1. Back up first
-Supabase dashboard → project `oryqen-staging` → Database → Backups → take a backup (or "Create backup" / download).
-Staging currently holds a few test users; the migrations are additive (rehearsal on PGlite and real PostgreSQL passed 5/5 with no
-existing row changed), but do not skip the backup.
-
-## 2. Link and review what is pending
-```bash
-npx supabase login
-npx supabase link --project-ref jpvgsmzomlmowarlfkdl
-npx supabase migration list
-```
-Rows with a LOCAL version and an empty REMOTE column are the pending ones. If any REMOTE version has no LOCAL file, stop and ask
-before continuing.
-
-## 3. Dry run, then apply
-```bash
-npx supabase db push --dry-run
-npx supabase db push
-```
-`db push` applies only the missing files, in filename order. Do not use `db reset` (it deletes data).
-
-## 4. Verify (read-only, no secrets printed)
-```bash
-node scripts/verify-staging-migrations.mjs
-```
-Expect `All functions the app calls exist.` Then in the app: sign in → Add offer → Analyze offer. The result must say
-"Saved to your account as a private draft", survive a page refresh under "Private offer drafts", and open again for edit.
-
-## 5. If something goes wrong
-Restore the backup from step 1 (Database → Backups). Do not edit a migration after it has been applied.
-
-## Do not run this against the `Fairwork` project (`cqjxsafeodslmyoqftdj`): it holds older real-looking data and is a separate decision (OWNER_ACTIONS.md, D1).
+Do not use anon-key probes to judge whether a migration is applied; compare `schema_migrations` with `supabase/migrations`.
