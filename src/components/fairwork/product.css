@@ -2999,3 +2999,6 @@ html .fw-product .fw-screen-enter.fw-home-body, html .fw-product .fw-home-body:n
   html[data-brand="oryqen"]:not([data-theme="light"]) .fw-dash :is(.fw-field input, .fw-field select, .fw-field textarea) { background: rgba(11, 27, 51, .6); color: var(--dk-text); border-color: rgba(143, 176, 255, .35); }
   html[data-brand="oryqen"]:not([data-theme="light"]) .fw-dash-top .fw-eyebrow { color: var(--dk-muted); }
 }
+
+/* The Add offer submit button sits in the page flow so it never covers the result text it produces. */
+.fw-product .fw-fixed-action.fw-inline-action { position: static; width: 100%; left: auto; bottom: auto; margin: 18px 0 110px; }

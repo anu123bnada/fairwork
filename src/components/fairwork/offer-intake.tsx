@@ -264,7 +264,7 @@ export function AddOfferScreen() {
               </div>
             </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
-            <div className="fw-fixed-action">
+            <div className="fw-fixed-action fw-inline-action">
               <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
             </div>
           </form>
