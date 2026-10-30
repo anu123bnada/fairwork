@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ClipboardPaste, FileText, FileType, Image as ImageIcon, PenLine } from "lucide-react";
 import { appRequest } from "@/features/authority/client";
@@ -60,6 +61,7 @@ export function AddOfferScreen() {
   const [privateResult, setPrivateResult] = useState<{ assessment: z.infer<typeof assessmentSchema>; revision: number | null } | null>(null);
   const privateDraft = useRef<{ id: string; revision: number } | null>(null);
   const resultRef = useRef<HTMLElement | null>(null);
+  const [finalized, setFinalized] = useState<"idle" | "saving" | "done" | "failed">("idle");
   useEffect(() => { if (privateResult) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [privateResult]);
 
   useEffect(() => {
@@ -70,6 +72,28 @@ export function AddOfferScreen() {
   const keyTermsDone = KEY_TERMS.filter(field => Boolean(terms[field]?.trim())).length;
   // Text read from a file or image moves into the editable paste box; nothing is applied to the fields until the person asks for suggestions.
   const applyReadText = (text: string) => { setSourceText(text); setReviewed(true); setMethod("paste"); };
+
+  const openQuestions = (assessment: z.infer<typeof assessmentSchema>) => [
+    ...assessment.items.filter(i => i.status === "concern"), ...assessment.items.filter(i => i.status === "uncertain"), ...assessment.items.filter(i => i.status === "missing"),
+  ].slice(0, 8);
+
+  async function saveAndContinue() {
+    if (!privateResult || !privateDraft.current) { setFinalized("failed"); return; }
+    setFinalized("saving");
+    try {
+      const nl = String.fromCharCode(10);
+      const lines = Object.entries(terms).filter(([, value]) => value.trim()).map(([name, value]) => `${name}: ${value}`).join(nl);
+      const questions = openQuestions(privateResult.assessment).map((i, n) => `${n + 1}. ${i.recommendation} (${i.label})`).join(nl);
+      const text = [sourceText.trim(), "--- Reviewed terms ---", lines, `--- Indicator score ${privateResult.assessment.score}/100 · questions to ask ---`, questions].filter(Boolean).join(nl + nl).slice(0, 10000);
+      const receipt = draftReceipt.parse(await appRequest("/api/v1/offers/drafts", {
+        operation: "save", id: privateDraft.current.id, expectedRevision: privateDraft.current.revision, idempotencyKey: crypto.randomUUID(),
+        content: { role: String(terms.role ?? "").slice(0, 120), employer: String(terms.employerName ?? "").slice(0, 200), text },
+      }));
+      privateDraft.current = { id: receipt.id, revision: receipt.revision };
+      setPrivateResult({ ...privateResult, revision: receipt.revision });
+      setFinalized("done");
+    } catch { setFinalized("failed"); }
+  }
 
   async function analyze(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -118,6 +142,7 @@ export function AddOfferScreen() {
         }));
         privateDraft.current = { id: receipt.id, revision: receipt.revision };
         setPrivateResult({ assessment, revision: receipt.revision });
+        setFinalized("idle");
       } catch (caught) {
         // The analysis is computed in the browser from the entered terms, so it is shown even when storage is unavailable.
         setPrivateResult({ assessment, revision: null });
@@ -258,9 +283,16 @@ export function AddOfferScreen() {
               <div className="fw-next-steps">
                 <strong>Questions to ask before you decide</strong>
                 {(() => {
-                  const open = [...privateResult.assessment.items.filter(i => i.status === "concern"), ...privateResult.assessment.items.filter(i => i.status === "uncertain"), ...privateResult.assessment.items.filter(i => i.status === "missing")].slice(0, 8);
+                  const open = openQuestions(privateResult.assessment);
                   return open.length ? <ol>{open.map(i => <li key={i.id}>{i.recommendation}<small>{i.label} · {i.status === "concern" ? "needs attention" : i.status === "uncertain" ? "unclear" : "not stated"}</small></li>)}</ol> : <p>Every checked term is stated. Still confirm each one in the written contract.</p>;
                 })()}
+              </div>
+              <div className="fw-next-steps">
+                <p role="status"><strong>Progress:</strong> ✓ 1 Add offer · ✓ 2 Review and findings · ✓ 3 Questions to ask · {finalized === "done" ? "✓" : "→"} 4 Save and continue</p>
+                <button type="button" className="fw-primary" disabled={finalized === "saving" || finalized === "done" || privateResult.revision === null} onClick={() => void saveAndContinue()}>{finalized === "saving" ? "Saving…" : finalized === "done" ? "Saved" : "Save and continue"}</button>
+                {finalized === "done" && <p role="status">Saved with your questions and score as revision {privateResult.revision}. Find it any time under “Private offer drafts” at the top of this page, or <Link href={routeFor("home")}>go to Home</Link>.</p>}
+                {finalized === "failed" && <p role="alert">Could not save. Your analysis above is still correct; try again.</p>}
+                {privateResult.revision === null && <p>Saving is unavailable right now, so this result stays on this page only.</p>}
               </div>
             </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
