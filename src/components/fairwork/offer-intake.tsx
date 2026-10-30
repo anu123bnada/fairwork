@@ -57,8 +57,10 @@ export function AddOfferScreen() {
   const [reviewed, setReviewed] = useState(false);
   const requestKeys = useRef(new Map<string, string>());
   // A worker without a linked organization still gets the real rule-based analysis, saved as a private draft.
-  const [privateResult, setPrivateResult] = useState<{ assessment: z.infer<typeof assessmentSchema>; revision: number } | null>(null);
+  const [privateResult, setPrivateResult] = useState<{ assessment: z.infer<typeof assessmentSchema>; revision: number | null } | null>(null);
   const privateDraft = useRef<{ id: string; revision: number } | null>(null);
+  const resultRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { if (privateResult) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [privateResult]);
 
   useEffect(() => {
     if (role === "WORKER" && profile?.id && !workerId) setWorkerId(profile.id);
@@ -105,8 +107,8 @@ export function AddOfferScreen() {
       else delete normalizedTerms[field];
     }
     if (privatePath) {
+      const assessment = assessOfferTerms(normalizedTerms);
       try {
-        const assessment = assessOfferTerms(normalizedTerms);
         const lines = Object.entries(normalizedTerms).map(([name, value]) => `${name}: ${value}`).join(String.fromCharCode(10));
         const text = (sourceText.trim() ? [sourceText.trim(), "--- Reviewed terms ---", lines].join(String.fromCharCode(10, 10)) : lines).slice(0, 10000);
         const current = privateDraft.current ?? { id: crypto.randomUUID(), revision: 0 };
@@ -117,7 +119,8 @@ export function AddOfferScreen() {
         privateDraft.current = { id: receipt.id, revision: receipt.revision };
         setPrivateResult({ assessment, revision: receipt.revision });
       } catch (caught) {
-        setPrivateResult(null);
+        // The analysis is computed in the browser from the entered terms, so it is shown even when storage is unavailable.
+        setPrivateResult({ assessment, revision: null });
         setError(caught instanceof Error ? caught : new Error("The private draft could not be saved."));
       } finally { setBusy(false); }
       return;
@@ -247,8 +250,10 @@ export function AddOfferScreen() {
               <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
               <p className="fw-notice">{t("add.idsNote")}</p>
             </section>
-            {privateResult && <section className="fw-card fw-offer-detail-card" role="region" aria-label="Analysis result">
-              <p role="status"><strong>Saved to your account as a private draft (revision {privateResult.revision}).</strong> Reload the page and open “Private offer drafts” to find it. Change any term and press Analyze offer again to see the result change.</p>
+            {privateResult && <section ref={resultRef} className="fw-card fw-offer-detail-card" role="region" aria-label="Analysis result" tabIndex={-1}>
+              {privateResult.revision === null
+                ? <p role="status"><strong>Analysis below is calculated from the terms you entered. It was NOT saved</strong> — the account storage service did not confirm the save. Change any term and press Analyze offer again to see the result change.</p>
+                : <p role="status"><strong>Saved to your account as a private draft (revision {privateResult.revision}).</strong> Reload the page and open “Private offer drafts” to find it. Change any term and press Analyze offer again to see the result change.</p>}
               <AssessmentDetails assessment={privateResult.assessment} basis="your entered terms" />
             </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
