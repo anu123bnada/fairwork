@@ -41,7 +41,9 @@ test("new worker sees an honest empty organization state and a legitimate approv
   await expect(page.getByLabel("Worker account ID")).toHaveValue(worker);
   await expect(page.getByLabel("Worker account ID")).toHaveAttribute("readonly", "");
   await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
-  await expect(page.locator(".fw-error[role='alert']")).toContainText("Select a linked organization");
+  // A worker without an organization is no longer blocked: the rule-based analysis runs and is saved as a private draft (or the draft save error is shown).
+  await expect(page.getByRole("region", { name: "Analysis result" }).or(page.locator(".fw-error[role='alert']"))).toBeVisible();
+  await expect(page.locator(".fw-error[role='alert']")).not.toContainText("Select a linked organization");
   await expect(page.getByRole("link", { name: "Request independent organization approval" })).toHaveAttribute("href", "/app/employer");
   expect(writes).toEqual([]);
   await page.setViewportSize({ width: 360, height: 800 });

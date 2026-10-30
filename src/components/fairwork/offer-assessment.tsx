@@ -40,7 +40,7 @@ export function DraftOfferAssessment({terms}:{terms:Record<string,string>}) {
  </section>;
 }
 
-function AssessmentDetails({assessment:engine,basis}:{assessment:z.infer<typeof assessmentSchema>;basis:string}) {
+export function AssessmentDetails({assessment:engine,basis}:{assessment:z.infer<typeof assessmentSchema>;basis:string}) {
  const { t } = useI18n();
  const assessment=localizeAssessment(engine,t);
  return <>

@@ -13,7 +13,10 @@ import { OfferDocx } from "./offer-docx";
 import { OfferDrafts } from "./offer-drafts";
 import { OfferPdf } from "./offer-pdf";
 import { OfferScreenshot } from "./offer-screenshot";
-import { DraftOfferAssessment } from "./offer-assessment";
+import { AssessmentDetails, DraftOfferAssessment } from "./offer-assessment";
+import { assessOfferTerms, type assessmentSchema } from "@/features/offer/assessment";
+import { draftReceipt } from "@/features/offer/draft-schema";
+import type { z } from "zod";
 import { RuleAnalysis } from "./rule-analysis";
 import { ClauseFindings, QualificationPanel } from "./offer-intelligence";
 import { ErrorMessage, Icon, routeFor, useProduct, type OfferResult, type Role } from "./product-app";
@@ -53,6 +56,9 @@ export function AddOfferScreen() {
   const [busy, setBusy] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const requestKeys = useRef(new Map<string, string>());
+  // A worker without a linked organization still gets the real rule-based analysis, saved as a private draft.
+  const [privateResult, setPrivateResult] = useState<{ assessment: z.infer<typeof assessmentSchema>; revision: number } | null>(null);
+  const privateDraft = useRef<{ id: string; revision: number } | null>(null);
 
   useEffect(() => {
     if (role === "WORKER" && profile?.id && !workerId) setWorkerId(profile.id);
@@ -67,7 +73,9 @@ export function AddOfferScreen() {
     event.preventDefault();
     setError(null);
     const formElement = event.currentTarget;
+    const privatePath = role === "WORKER" && !offer && !companyId;
     const invalid = Array.from(formElement.elements).find(element =>
+      !(privatePath && (element as HTMLElement & { name?: string }).name === "companyId") &&
       (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement) && !element.validity.valid,
     ) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | undefined;
     if (invalid) {
@@ -95,6 +103,24 @@ export function AddOfferScreen() {
       const value = String(form.get(field) ?? "").trim();
       if (value) normalizedTerms[field] = field === "salary" || field === "hoursPerWeek" ? Number(value) : value;
       else delete normalizedTerms[field];
+    }
+    if (privatePath) {
+      try {
+        const assessment = assessOfferTerms(normalizedTerms);
+        const lines = Object.entries(normalizedTerms).map(([name, value]) => `${name}: ${value}`).join(String.fromCharCode(10));
+        const text = (sourceText.trim() ? [sourceText.trim(), "--- Reviewed terms ---", lines].join(String.fromCharCode(10, 10)) : lines).slice(0, 10000);
+        const current = privateDraft.current ?? { id: crypto.randomUUID(), revision: 0 };
+        const receipt = draftReceipt.parse(await appRequest("/api/v1/offers/drafts", {
+          operation: "save", id: current.id, expectedRevision: current.revision, idempotencyKey: crypto.randomUUID(),
+          content: { role: String(normalizedTerms.role).slice(0, 120), employer: String(normalizedTerms.employerName ?? "").slice(0, 200), text },
+        }));
+        privateDraft.current = { id: receipt.id, revision: receipt.revision };
+        setPrivateResult({ assessment, revision: receipt.revision });
+      } catch (caught) {
+        setPrivateResult(null);
+        setError(caught instanceof Error ? caught : new Error("The private draft could not be saved."));
+      } finally { setBusy(false); }
+      return;
     }
     const requestBody = {
       offerId: offer?.offerId ?? ensureOfferId(),
@@ -221,6 +247,10 @@ export function AddOfferScreen() {
               <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
               <p className="fw-notice">{t("add.idsNote")}</p>
             </section>
+            {privateResult && <section className="fw-card fw-offer-detail-card" role="region" aria-label="Analysis result">
+              <p role="status"><strong>Saved to your account as a private draft (revision {privateResult.revision}).</strong> Reload the page and open “Private offer drafts” to find it. Change any term and press Analyze offer again to see the result change.</p>
+              <AssessmentDetails assessment={privateResult.assessment} basis="your entered terms" />
+            </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
             <div className="fw-fixed-action">
               <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
