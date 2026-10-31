@@ -1,4 +1,11 @@
-# ORYQEN session handoff (updated 27 October 2026)
+# ORYQEN session handoff
+
+## 31 October 2026 checkpoint (branch `integration/final-release`)
+- Verified this session at `a0a4076`: tsc, lint, vitest (154 files, 1038 passed, 17 skipped, 0 failed), `next build`. Playwright E2E, real-stack harness, hosted smoke, Android and live Gemini were NOT run; see `ORYQEN_TESTING.md`.
+- Unstaged 1,287 accidentally staged files under `work/temp` and ignored them. `landing/v6/next-env.d.ts` is still untracked on purpose.
+- New docs: `ORYQEN_FEATURE_MATRIX`, `_SECURITY`, `_DEPLOYMENT`, `_ANDROID`, `_TESTING`, `_EXHIBITION`, `_MAINTENANCE`. They summarize and link the older detailed docs.
+- Next: run `npm run test:e2e:isolated` (alone), then the real-stack harness, then hosted smoke after owner approval (D1/D2 in `OWNER_ACTIONS.md`). Nothing hosted was touched.
+
 
 Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 `docs/ORYQEN_V1_MASTER_SPECIFICATION.md` (the authoritative 22-module target). Do not repeat the audit.
