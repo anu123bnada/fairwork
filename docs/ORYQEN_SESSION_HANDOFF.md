@@ -5,6 +5,8 @@
 - Unstaged 1,287 accidentally staged files under `work/temp` and ignored them. `landing/v6/next-env.d.ts` is still untracked on purpose.
 - New docs: `ORYQEN_FEATURE_MATRIX`, `_SECURITY`, `_DEPLOYMENT`, `_ANDROID`, `_TESTING`, `_EXHIBITION`, `_MAINTENANCE`. They summarize and link the older detailed docs.
 - Next: run `npm run test:e2e:isolated` (alone), then the real-stack harness, then hosted smoke after owner approval (D1/D2 in `OWNER_ACTIONS.md`). Nothing hosted was touched.
+- 1 Nov update (HEAD `6a8e08e`): full isolated E2E rerun 625 passed / 0 failed / 14 skipped / 0 flaky. Real-stack harness NOT passing (F-43: Work Passport link or Decision receipt not found; page re-requests its document every 2-3 s; cause not established). Android build BLOCKED (no usable JDK 17+). Hosted smoke and live Gemini not run (approval needed); procedures in `ORYQEN_HOSTED_SMOKE.md` and `ORYQEN_GEMINI_ACTIVATION.md`.
+- Next: bisect F-43 against `bc29682` (last complete 225/225) in a separate worktree, or reproduce in a signed-in browser; then JDK install (needs approval) and Android debug build.
 
 
 Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
