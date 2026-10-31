@@ -325,7 +325,8 @@ try {
   record('Real worker and employer dashboards render their persisted scoped offer lists');
   for (const [screen, query] of [['questions', `offerId=${privateOfferId}`], ['agreement-workflow', `workflowId=${ids.agreementId}`], ['work-record', `workId=${ids.workId}`], ['passport', '']]) {
     await workerPage.goto(`${origin}/app/${screen}${query ? `?${query}` : ''}`);
-    if (screen === 'passport') await expect(workerPage.getByRole('link', { name: /Synthetic integration worker/ })).toBeVisible({ timeout: 30000 });
+    if (screen === 'passport') await expect(workerPage.getByRole('link', { name: /Synthetic integration worker/ })).toBeVisible({ timeout: 30000 }).catch(async error => { await workerPage.screenshot({ path: `${evidence}/passport-link-missing.png`, fullPage: true }).catch(() => {}); writeFileSync(`${evidence}/passport-link-missing.txt`, `${workerPage.url()}
+${await workerPage.locator('body').innerText().catch(() => '')}`); throw error; });
     else if (screen === 'work-record') await expect(workerPage.getByRole('status').filter({ hasText: 'Record version' })).toContainText('Verified', { timeout: 30000 });
     else if (screen === 'questions') await expect(workerPage.locator('.fw-question-card')).toHaveCount(2, { timeout: 30000 });
     else await expect(workerPage.getByRole('status').filter({ hasText: 'Version 1' })).toContainText('Both participants confirmed', { timeout: 30000 });
