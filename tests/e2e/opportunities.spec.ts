@@ -20,6 +20,28 @@ async function setup(page: Page) {
   });
   return { commands, deny: () => { denied = true; } };
 }
+
+test("a listing compares its actual requirements with the worker's own text",async({page})=>{
+ await setup(page);
+ await page.route("**/api/v1/opportunities**",route=>{
+  // This test uses an explicit transport fixture, not a claim of hosted proof.
+  return route.fulfill({json:{data:{preferences:null,preferenceVersion:0,nextCursor:null,items:[{
+   id,companyId:id,companyName:"Synthetic company",version:1,
+   fields:{title:"Synthetic requirements role",description:"Requirements:\n- Forklift licence\n- 3 years in warehouse operations\n- Knowledge of SAP preferred",location:"Colombo",workMode:"onsite",salary:null,currency:"LKR",payPeriod:"month"},
+   status:"published",expiresAt:"2026-11-01T00:00:00Z",updatedAt:"2026-10-30T00:00:00Z",choice:"none",canEdit:false,source:"representative_submission",assurance:"demo_provisioned"
+  }]}}});
+ });
+ await page.goto("/app/opportunities");
+ await page.getByText("Compare my qualifications with this job",{exact:true}).click();
+ await page.getByLabel("My skills, education and experience").fill("I hold a forklift licence.\n2 years in warehouse operations.");
+ await page.getByRole("button",{name:"Compare",exact:true}).click();
+ const result=page.getByLabel("Qualification comparison result",{exact:true});
+ await expect(result).toContainText("I hold a forklift licence.");
+ await expect(result).toContainText("3 years and you mention 2");
+ await expect(result).toContainText("does not verify any qualification");
+ await page.getByLabel("My skills, education and experience").fill("Updated statement");
+ await expect(result).toHaveCount(0);
+});
 for (const width of [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920]) test(`opportunity discovery ${width}px persists preferences and clears denied reads`, async ({ page }) => {
   await page.setViewportSize({ width, height: 900 }); const fixture = await setup(page);
   await page.goto("/app/opportunities");

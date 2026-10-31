@@ -8,6 +8,7 @@ import { explainMatch, type MatchReason } from "@/features/opportunities/matchin
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import { ReportProblem } from "./report-problem";
+import { QualificationPanel } from "./offer-intelligence";
 
 const inputText = (data: FormData, key: string) => String(data.get(key) ?? "").trim();
 const amount = (data: FormData, key: string) => inputText(data, key) === "" ? null : Number(data.get(key));
@@ -87,6 +88,7 @@ export function OpportunitiesScreen() {
       <p>{t("op.statusLine", { status: word("op.st", item.status), version: item.version })}<br />{t("op.datesLine", { updated: new Date(item.updatedAt).toLocaleDateString(), expires: new Date(item.expiresAt).toLocaleDateString() })}</p>
       <ul aria-label={t("op.matchAria")}>{explainMatch(item, data.preferences).map(reason => <li key={reason.criterion}><strong>{t(`op.m.${reason.id === "payUnknown" ? "pay" : reason.id}` as MessageKey)}: {t(`op.o.${reason.outcome}` as MessageKey)}</strong><br />{explain(reason)}</li>)}</ul>
       {explainMatch(item, data.preferences).length === 0 && <p>{t("op.addPrefs")}</p>}
+      <QualificationPanel jobText={item.fields.description} />
       {item.status === "published" && <div className="fw-discovery-actions"><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "saved" ? "none" : "saved" })}>{item.choice === "saved" ? t("op.removeSaved") : t("op.saveListing")}</button><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "hidden" ? "none" : "hidden" })}>{item.choice === "hidden" ? t("op.showAgain") : t("op.notInterested")}</button></div>}
       {item.canEdit && <button className="fw-secondary" disabled={busy} onClick={() => setEditing(item)}>{t("op.editListing")}</button>}
       {!item.canEdit && <ReportProblem kind="listing" subjectRef={item.id} subjectLabel={item.fields.title.slice(0, 120)} />}

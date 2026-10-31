@@ -149,7 +149,7 @@ export function AddOfferScreen() {
     <>
       <h2 className="fw-page-title">{t("add.title")}</h2>
       <p className="fw-page-subtitle">{t("add.subtitle")}</p>
-      <OfferDrafts onUse={draft => { startSeparateOffer(); setTerms({ role: draft.role, employerName: draft.employer }); setSourceText(draft.text); setExtraction(null); setError(null); requestKeys.current.clear(); router.replace("/app/add-offer"); }} />
+      <OfferDrafts current={{role:terms.role??"",employer:terms.employerName??"",text:sourceText}} onUse={draft => { startSeparateOffer(); setTerms({ role: draft.role, employerName: draft.employer }); setSourceText(draft.text); setExtraction(null); setError(null); requestKeys.current.clear(); router.replace("/app/add-offer"); }} />
       {offer && <section className="fw-card fw-offer-detail-card" aria-label="Selected offer">
         <p>{t("add.editing", { version: offer.version })}</p>
         <button type="button" className="fw-secondary" disabled={busy} onClick={() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { DashboardHero, RecentOffers, SummaryCards, useDashboardData } from "./dashboard";
+import { DashboardDrafts, DashboardHero, RecentOffers, SummaryCards, useDashboardData } from "./dashboard";
 import Link from "next/link";
 import Image from "next/image";
 import { AppBrandHeader, BrandLogo, BrandMark, ExistingBrand } from "@/components/brand/brand";
@@ -614,6 +614,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-dash-columns">
         <div className="fw-dash-main">
           <RecentOffers data={dashboard} />
+          <DashboardDrafts />
           <DashboardManage offers={<SavedOffers />} records={<DashboardRecords />} research={<CompanyResearch />} />
           <details className="fw-list-card"><summary>{t("pay.title")}</summary><PayCompare /></details>
           <details className="fw-list-card fw-advanced"><summary>{t("home.advanced")}</summary>
