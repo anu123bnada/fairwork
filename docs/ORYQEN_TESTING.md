@@ -21,7 +21,7 @@ Rules: never run vitest, browsers and the harness simultaneously. Never start tw
 | ESLint, 0 warnings | PASS |
 | Vitest | PASS: 154 files, 1038 tests passed, 17 skipped, 0 failed |
 | `next build` | PASS |
-| Playwright E2E | NOT RUN this session |
+| Playwright E2E (isolated, 1 worker) | 621 passed, 14 skipped, 4 failed in the first run (3 landing-download and 1 offer-draft test were stale against intended behavior: Windows preview link now published; clause check does not flag missing terms under 120 characters). Tests corrected; the two affected files rerun: 9 passed. Full suite not rerun after the fix. |
 | Real-stack harness (Docker + local Supabase) | NOT RUN this session (earlier recorded 225/225 on 28 Oct, historical) |
 | Hosted staging smoke | NOT RUN this session |
 | Android build/device | NOT RUN |

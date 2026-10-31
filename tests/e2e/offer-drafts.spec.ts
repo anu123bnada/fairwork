@@ -27,7 +27,7 @@ test("private drafts save without an organization, reload and resume in the edit
  await expect(review).toContainText("Draft technician · Revision 1");
  await expect(review).toContainText("Salary: LKR 80000 monthly");
  await expect(review).not.toContainText("Unsaved edit must not replace saved evidence");
- await expect(review.getByRole("region",{name:"Clause check"})).toContainText("missing term");
+ await expect(review.getByRole("region",{name:"Clause check"})).toContainText("No unclear, contradictory or suspicious wording was found");
  await review.getByRole("button",{name:"Check draft indicators"}).click();
  await expect(review).toContainText("Employer verification: not assessed");
  await page.getByRole("button",{name:"Use saved draft in a new offer",exact:true}).click();await expect(page.locator('input[name="role"]')).toHaveValue("Draft technician");
