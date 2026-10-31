@@ -15,3 +15,7 @@ Detail: `ANDROID_ARCHITECTURE_20261013.md`, `ORYQEN_RELEASE_SIGNING.md`, `ORYQEN
 
 ## Build checks
 Use the scripts under `scripts/` named `android-*` and `playwright.android-local.config.ts`; read `ORYQEN_RELEASE_VERIFICATION.md` first. Emulator runs need roughly 8 GB free RAM.
+
+## Local build attempt, 1 Nov 2026 (BLOCKED)
+`gradlew assembleOnlineDebug` with `JAVA_HOME` set to Android Studio's bundled runtime failed immediately: `could not open ...\jbr\lib\jvm.cfg`. That `jbr` folder contains only `bin` and `lib\modules`, so the Android Studio install looks incomplete or corrupted. The only other Java on this machine is JRE 8 (`C:\Program Files\Java\jre-1.8`), which Gradle for this project cannot use (needs JDK 17 or newer). The Android SDK itself is present (platforms 36 and 37.0, build-tools 35.0.0 and 36.0.0). No APK was built, no signing key exists, and nothing was signed.
+Unblock: install a JDK 17 or 21 (for example Eclipse Temurin) or repair Android Studio, set `JAVA_HOME`, then run `mobile/poc/android/gradlew.bat assembleOnlineDebug`. Installing a JDK is a download and needs the owner's approval.

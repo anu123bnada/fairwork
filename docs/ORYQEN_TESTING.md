@@ -25,7 +25,7 @@ Rules: never run vitest, browsers and the harness simultaneously. Never start tw
 | Playwright E2E full rerun after `99fa25f` | **625 passed, 0 failed, 14 skipped, 0 flaky** (no retries configured; 24.3 min). Fixture-based browser tests, not live-service evidence. |
 | Real-stack harness (Docker + local Supabase, dev-mode app) | **NOT PASSING at `f2bda5f`, no complete pass this session.** Six runs against the local Docker stack (`oryqen-local-dev`, synthetic data): runs 1 and 3 stopped after 70 PASS at the Work Passport screen (verified-work link not found in 30 s); runs 2, 4, 5 and 6 reached 199 PASS and stopped at the dispute "Decision receipt" screen. In the failing page loads the browser re-requests the page document every 2-3 s with no JavaScript error and no failed API call; the page stays on "Loading your private ORYQEN session". Cause not established; dev-server reload is suspected, a product defect is not excluded. A production-mode attempt could not register accounts (mode difference not investigated). Last complete pass: 225/225 at `bc29682` (28 Oct, historical). |
 | Hosted staging smoke | NOT RUN this session |
-| Android build/device | NOT RUN |
+| Android build/device | BLOCKED: no usable JDK 17+ (Android Studio `jbr` is incomplete; only JRE 8 present). See `ORYQEN_ANDROID.md` |
 | Live Gemini | NOT RUN (earlier synthetic-text pass on 28 Oct, historical) |
 
 Historical counts in older docs (222 unit, 146 integration) are superseded by the numbers above.
