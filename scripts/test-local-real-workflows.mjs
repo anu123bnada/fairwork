@@ -5,8 +5,9 @@ import { chromium, expect as baseExpect } from '@playwright/test';
 const expect = baseExpect.configure({ timeout: 60000 });
 import { generateKeyPair, exportJWK } from 'jose';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
-import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, readdirSync, openSync } from 'node:fs';
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { checkLocalDocker } from './local-development-runtime.mjs';
 import { redactStartupOutput } from './local-development-diagnostics.mjs';
@@ -43,12 +44,16 @@ if (!process.env.ORYQEN_CREDENTIAL_SIGNING_KEY) {
   process.env.ORYQEN_CREDENTIAL_SIGNING_KEY = JSON.stringify({ ...(await exportJWK(privateKey)), kid });
   process.env.ORYQEN_CREDENTIAL_PUBLIC_KEYS = JSON.stringify({ [kid]: (({ kty, crv, x }) => ({ kty, crv, x }))(await exportJWK(publicKey)) });
 }
-process.env.ORYQEN_VAULT_LOCAL_DIR ??= `${process.cwd()}/${evidence}/vault-store`;
+// Outside the project folder: the app writes uploaded files here, and the Next development watcher reloads pages when files change under the project.
+process.env.ORYQEN_VAULT_LOCAL_DIR ??= `${tmpdir()}/oryqen-vault-${Date.now()}`;
 const record = check => { results.push({ check, status: 'PASS' }); console.log(`PASS: ${check}`); };
 const must = (value, check) => { if (!value) throw new Error(check); record(check); };
 let browser, app, stage = 'startup';
 async function startApp() {
-  app = spawn(process.execPath, ['scripts/run-local-development.mjs'], { windowsHide: true, stdio: 'ignore' });
+  // Keep the app's own output (outside the project folder, so the dev watcher ignores it) to explain page reloads or crashes.
+  const appLog = openSync(`${tmpdir()}/oryqen-local-app-${Date.now()}.log`, 'a');
+  console.log(`Local app output: ${tmpdir()}/oryqen-local-app-*.log`);
+  app = spawn(process.execPath, ['scripts/run-local-development.mjs'], { windowsHide: true, stdio: ['ignore', appLog, appLog] });
   for (let i = 0; i < 120; i++) {
     if (app.exitCode !== null) throw new Error('Owned local app process exited');
     if (await fetch(`${origin}/sign-in`).then(r => r.ok).catch(() => false)) return;
