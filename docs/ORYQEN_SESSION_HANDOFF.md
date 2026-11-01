@@ -7,6 +7,7 @@
 - Next: run `npm run test:e2e:isolated` (alone), then the real-stack harness, then hosted smoke after owner approval (D1/D2 in `OWNER_ACTIONS.md`). Nothing hosted was touched.
 - 1 Nov update (HEAD `6a8e08e`): full isolated E2E rerun 625 passed / 0 failed / 14 skipped / 0 flaky. Real-stack harness NOT passing (F-43: Work Passport link or Decision receipt not found; page re-requests its document every 2-3 s; cause not established). Android build BLOCKED (no usable JDK 17+). Hosted smoke and live Gemini not run (approval needed); procedures in `ORYQEN_HOSTED_SMOKE.md` and `ORYQEN_GEMINI_ACTIVATION.md`.
 - Next: bisect F-43 against `bc29682` (last complete 225/225) in a separate worktree, or reproduce in a signed-in browser; then JDK install (needs approval) and Android debug build.
+- 1 Nov final state (HEAD after this commit): real-stack harness 219/219 via `node scripts/run-local-split-harness.mjs` (`--manage-app` still unreliable, F-43). Android debug/online compile with JDK 21; emulator run BLOCKED: APK installs but the real-UI journey timed out twice at onboarding with ~350 MB host RAM free (cause unconfirmed). Hosted smoke, live Gemini, release signing: NOT RUN / need owner decisions. Next: rerun Android with >=8 GB free RAM or a physical device; hosted smoke after approval.
 
 
 Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
