@@ -6,7 +6,7 @@ Target: https://oryqen-staging.vercel.app only. Never run against production or 
 ```bash
 node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app --json
 ```
-It sends GET requests to public pages, private pages and API routes. It creates no account, sends no email, writes nothing and prints no secret. It proves the intended build is deployed and that private screens and APIs fail closed for anonymous visitors. It does not prove sign-in, persistence or AI. Status of the latest run: NOT RUN (no hosted access was requested this session).
+It sends GET requests to public pages, private pages and API routes. It creates no account, sends no email, writes nothing and prints no secret. It proves the intended build is deployed and that private screens and APIs fail closed for anonymous visitors. It does not prove sign-in, persistence or AI. Latest run: 1 Nov 2026, 24 PASS / 0 FAIL / 5 WARN (see `ORYQEN_TESTING.md`).
 
 ## Tier 2: signed-in checks (OWNER APPROVAL REQUIRED)
 Needs a staging-only synthetic account, created by the owner, with a password the owner types; the assistant must not enter credentials. Checks, in order:
