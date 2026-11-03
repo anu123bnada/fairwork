@@ -33,3 +33,7 @@ Owner approved an emulator run. AVD `Medium_Phone_API_37.0` booted; adb showed `
 - Context: host free RAM was about 350 MB of 16 GB with the emulator running (this doc already asks for ~8 GB free), and the first run left a System UI "Not Responding" dialog. Resource starvation is the likely, **unconfirmed**, cause; a product defect is not excluded.
 - Not run: registration, sign-in, relaunch session persistence, any record journey. Emulator and server were stopped afterwards. Evidence: `test-results/android-real-1793536160575` and `-1793536479630` (git-ignored).
 Next: rerun with at least 8 GB free RAM (close other apps, stop Docker extras), ideally on a physical device.
+
+## Emulator retry, 3 Nov 2026 (BLOCKED: emulator never booted)
+Retried with `Medium_Phone_API_37.0` started headless (`-no-window -no-audio -no-snapshot -memory 1536 -gpu swiftshader_indirect`) because only ~1.25 GB of the host's 16 GB was free (the AVD itself warns it wants 16 GB). adb listed the device as `offline` for about 10 minutes and `sys.boot_completed` never became 1 (qemu resident ~374 MB, stalled). No APK install and no journey was attempted; the Android evidence remains the 1 Nov result (install PASS, startup journey FAIL twice). Emulator processes stopped afterwards.
+Needs one of: more free RAM (close the other applications; a clean reboot first helps), a lighter AVD (smaller API level image, 2 GB RAM, no Play Store image), or a physical device with USB debugging authorized by the owner.
