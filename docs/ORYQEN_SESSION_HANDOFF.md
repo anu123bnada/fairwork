@@ -1,5 +1,10 @@
 # ORYQEN session handoff
 
+## 3 November 2026
+- Added `scripts/local-tier2-journey.mjs` (wired into `scripts/test-local-real-workflows.mjs`): anonymous route/API protection, outsider direct-URL denial, MFA-aware password recovery. Full real-stack run via `node scripts/run-local-split-harness.mjs`: 245 PASS / 0 FAIL / 0 SKIPPED. Docker Desktop must be started first (`C:/Users/vehiv/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe`). One intermittent telemetry miss is recorded as F-45 (open).
+- Hosted: Tier 1 done (24/0/5). A single approval request for Tier 2 is in `ORYQEN_HOSTED_APPROVAL_REQUEST.md`; NOT approved, nothing hosted written.
+- Not done: full vitest/E2E/build rerun after these script-only changes (no product code touched), Android emulator retry, live Gemini, release signing.
+
 ## 31 October 2026 checkpoint (branch `integration/final-release`)
 - Verified this session at `a0a4076`: tsc, lint, vitest (154 files, 1038 passed, 17 skipped, 0 failed), `next build`. Playwright E2E, real-stack harness, hosted smoke, Android and live Gemini were NOT run; see `ORYQEN_TESTING.md`.
 - Unstaged 1,287 accidentally staged files under `work/temp` and ignored them. `landing/v6/next-env.d.ts` is still untracked on purpose.
