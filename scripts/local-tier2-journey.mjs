@@ -1,0 +1,83 @@
+import { randomBytes, randomUUID } from 'node:crypto';
+
+// Real local stack (Auth, mail sink, PostgreSQL, the app). Covers three Tier 2 gaps the other journeys do not:
+// anonymous route and API protection, direct-URL access by an unrelated signed-in account, and password recovery through the local mail sink.
+// No mocks. Uses the synthetic reviewing account as the outsider; its password is changed at the end, so run this last among the outsider's journeys.
+const PRIVATE_ROUTES = ['/app/home', '/app/passport', '/app/work-record', '/app/employer', '/admin'];
+const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications'];
+
+export async function localTier2Journey({ browser, worker, outsider, offerId, secrets, request, record, origin, evidence, mail, totp }) {
+  const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
+  const leaks = text => secrets.filter(secret => text.includes(secret));
+  // The local app is a development server that compiles routes on first use and can drop one connection while it does. Retry connection-level errors only (never an HTTP status), at most three attempts.
+  const fetchAs = async (context, url) => {
+    for (let attempt = 1; ; attempt++) {
+      try { return await context.request.fetch(url, { maxRedirects: 0, timeout: 60000 }); }
+      catch (error) { if (attempt === 3 || !/ECONNRESET|socket hang up|ECONNREFUSED/.test(error.message)) throw error; await new Promise(resolve => setTimeout(resolve, 2000)); }
+    }
+  };
+
+  // Anonymous visitors: no private data in the document or after the client renders, and every private API fails closed.
+  const anonymous = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const page = await anonymous.newPage();
+  for (const route of PRIVATE_ROUTES) {
+    const raw = await fetchAs(anonymous, `${origin}${route}`);
+    must(leaks(await raw.text()).length === 0, `Anonymous document for ${route} contains no private data (HTTP ${raw.status()})`);
+    await page.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(4000);
+    const rendered = await page.locator('body').innerText();
+    must(leaks(rendered).length === 0, `Anonymous rendered ${route} shows no private data (ends on ${new URL(page.url()).pathname})`);
+  }
+  await page.screenshot({ path: `${evidence}/anonymous-admin.png` });
+  for (const api of [...PRIVATE_APIS, `/api/v1/agreements?offerId=${offerId}`, `/api/v1/offers/assessment?offerId=${offerId}`]) {
+    const response = await fetchAs(anonymous, `${origin}${api}`);
+    must(response.status() === 401 && leaks(await response.text()).length === 0, `Anonymous ${api.split('?')[0]} returns 401 with no private data`);
+  }
+  await anonymous.close();
+
+  // An unrelated signed-in account opening the worker's private offer by URL sees nothing of it.
+  const outsiderPage = outsider.context.pages()[0] ?? await outsider.context.newPage();
+  for (const route of [`/app/agreement?offerId=${offerId}`, `/app/analyzing?offerId=${offerId}`]) {
+    await outsiderPage.goto(`${origin}${route}`, { waitUntil: 'domcontentloaded' });
+    await outsiderPage.waitForTimeout(4000);
+    must(leaks(await outsiderPage.locator('body').innerText()).length === 0, `Unrelated account opening ${route.split('?')[0]} by URL sees no private offer content`);
+  }
+  const denied = await fetchAs(outsider.context, `${origin}/api/v1/agreements?offerId=${offerId}`);
+  must([403, 404].includes(denied.status()) && leaks(await denied.text()).length === 0, `Unrelated account API read of the private offer is denied without leaking content (HTTP ${denied.status()})`);
+  void worker;
+
+  // Password recovery end to end through the local mail sink, then old password rejected and new password accepted.
+  const visitor = { context: await browser.newContext() };
+  const unknown = await request(visitor, '/api/v1/auth/recovery', { email: `nobody-${randomUUID()}@example.test` }, [200, 202]);
+  const known = await request(visitor, '/api/v1/auth/recovery', { email: outsider.email }, [200, 202]);
+  must(JSON.stringify(unknown) === JSON.stringify(known), 'Recovery answers identically for an unknown and a known address (no account enumeration)');
+  let tokenHash;
+  for (let i = 0; i < 30 && !tokenHash; i++) {
+    const list = await fetch(`${mail}/api/v1/messages`).then(r => r.json());
+    for (const message of (list.messages ?? []).filter(m => m.To?.some(to => to.Address === outsider.email))) {
+      const detail = await fetch(`${mail}/api/v1/message/${message.ID}`).then(r => r.json());
+      const match = detail.HTML?.includes('recovery') ? detail.HTML.match(/href="([^"]+)"/)?.[1]?.replaceAll('&amp;', '&') : undefined;
+      if (match && new URL(match).origin === origin && new URL(match).pathname === '/auth/recover') tokenHash = new URL(match).hash.match(/token_hash=([A-Za-z0-9_-]+)/)?.[1];
+      if (tokenHash) break;
+    }
+    if (!tokenHash) await new Promise(resolve => setTimeout(resolve, 500));
+  }
+  must(Boolean(tokenHash), 'A recovery email reaches the local mail sink with a same-origin /auth/recover link');
+  const newPassword = randomBytes(24).toString('base64url');
+  await request(visitor, '/api/v1/auth/recovery/confirm', { tokenHash });
+  // The recovery link alone must not change the password of an account that has a second factor.
+  await request(visitor, '/api/v1/auth/password', { password: newPassword }, [403]);
+  record('A recovery link alone cannot change the password of an account with MFA enrolled (MFA_REQUIRED)');
+  await request(visitor, '/api/v1/auth/mfa', { action: 'verify', factorId: outsider.factorId, code: totp(outsider.factorSecret) });
+  await request(visitor, '/api/v1/auth/password', { password: newPassword });
+  await request(visitor, '/api/v1/auth/sign-out', {});
+  await request(visitor, '/api/v1/auth/recovery/confirm', { tokenHash }, [400, 401, 403, 404, 410, 422]);
+  record('A used recovery link cannot be confirmed again');
+  const fresh = { context: await browser.newContext() };
+  await request(fresh, '/api/v1/auth/sign-in', { email: outsider.email, password: outsider.password }, [401, 422]);
+  await request(fresh, '/api/v1/auth/sign-in', { email: outsider.email, password: newPassword });
+  outsider.password = newPassword;
+  record('After recovery the old password is rejected and the new password signs in');
+  await visitor.context.close();
+  await fresh.context.close();
+}

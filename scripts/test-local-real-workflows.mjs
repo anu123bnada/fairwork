@@ -25,6 +25,7 @@ import { localRecruiterJourney } from './local-recruiter-journey.mjs';
 import { localOrgPlanJourney } from './local-orgplan-journey.mjs';
 import { localReportJourney } from './local-report-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
+import { localTier2Journey } from './local-tier2-journey.mjs';
 
 checkLocalDocker();
 if (!existsSync('test-results/activation-plan/constraints-stage-6.sql')) {
@@ -404,6 +405,8 @@ ${await workerPage.locator('body').innerText().catch(() => '')}`); throw error; 
   await request(employer, '/api/v1/companies', { ...companyBody, expectedVersion: 2 }, [403, 404]);
   record('Revoked representative cannot edit company claims');
   must(!(await request(employer, '/api/v1/notifications')).items.some(n => ['offer_revision','agreement_decision','work_decision','work_integrity'].includes(n.kind)), 'Revoked employer cannot retain employment access through notifications');
+  stage = 'anonymous protection, direct URL isolation and password recovery';
+  await localTier2Journey({ browser, worker, outsider: approver, offerId: privateOfferId, secrets: ['Synthetic local maintenance', 'Synthetic local maintenance task', worker.email], request, record, origin, evidence, mail, totp });
   stage = 'self-service account deactivation';
   await localDeactivationJourney({worker,employer,request,record,origin,evidence,localSql,grantId:share.grantId,totp});
 } catch (error) {
