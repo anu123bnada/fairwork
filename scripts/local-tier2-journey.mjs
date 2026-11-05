@@ -4,7 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 // anonymous route and API protection, direct-URL access by an unrelated signed-in account, and password recovery through the local mail sink.
 // No mocks. Uses the synthetic reviewing account as the outsider; its password is changed at the end, so run this last among the outsider's journeys.
 const PRIVATE_ROUTES = ['/app/home', '/app/passport', '/app/work-record', '/app/employer', '/admin'];
-const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications', '/api/v1/security-events'];
+const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications', '/api/v1/security-events', '/api/v1/opportunities/history'];
 
 export async function localTier2Journey({ browser, worker, outsider, offerId, secrets, request, record, origin, evidence, mail, totp }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
@@ -59,6 +59,22 @@ export async function localTier2Journey({ browser, worker, outsider, offerId, se
   must(own.items.every((item, index, all) => index === 0 || Date.parse(all[index - 1].occurredAt) >= Date.parse(item.occurredAt)), 'Security activity is newest first');
   await request(worker, `/api/v1/security-events?subjectId=${outsider.id}`, undefined, [422]);
   record('Security activity refuses a client-supplied subject');
+
+  // Recommendation history: a saved-listing snapshot is private to its owner, holds only criterion outcomes, rejects invented content and is deletable only by the owner.
+  const listingId = randomUUID();
+  const snapshot = { listingId, listingTitle: 'Synthetic local warehouse role', companyName: null, preferenceVersion: 1, reasons: [{ id: 'role', outcome: 'matches' }, { id: 'payUnknown', outcome: 'unknown' }] };
+  const added = await request(worker, '/api/v1/opportunities/history', snapshot);
+  must(added.replayed === false, 'A saved-listing snapshot is stored for the worker');
+  const mine = await request(worker, '/api/v1/opportunities/history');
+  const entry = mine.items.find(item => item.listingId === listingId);
+  must(entry && entry.reasons.length === 2 && entry.reasons.every(reason => ['id', 'outcome'].join() === Object.keys(reason).sort().join()), 'The snapshot keeps only criterion ids and outcomes');
+  must((await request(outsider, '/api/v1/opportunities/history')).items.every(item => item.listingId !== listingId), 'Another account cannot see the owner recommendation history');
+  await request(worker, '/api/v1/opportunities/history', { ...snapshot, listingId: randomUUID(), reasons: [{ id: 'role', outcome: 'matches', detail: 'Your preference: nurse' }] }, [422]);
+  await request(worker, '/api/v1/opportunities/history', { ...snapshot, listingId: randomUUID(), ownerId: outsider.id }, [422]);
+  record('Recommendation history rejects invented reason content and a client-supplied owner');
+  await request(outsider, '/api/v1/opportunities/history/remove', { entryId: entry.entryId }, [404]);
+  await request(worker, '/api/v1/opportunities/history/remove', { entryId: entry.entryId });
+  must((await request(worker, '/api/v1/opportunities/history')).items.every(item => item.entryId !== entry.entryId), 'Only the owner can delete a recommendation-history entry');
 
   // Password recovery end to end through the local mail sink, then old password rejected and new password accepted.
   const visitor = { context: await browser.newContext() };

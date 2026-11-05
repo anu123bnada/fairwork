@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import { ReportProblem } from "./report-problem";
 import { QualificationPanel } from "./offer-intelligence";
+import { RecommendationHistory } from "./recommendation-history";
 
 const inputText = (data: FormData, key: string) => String(data.get(key) ?? "").trim();
 const amount = (data: FormData, key: string) => inputText(data, key) === "" ? null : Number(data.get(key));
@@ -29,6 +30,7 @@ export function OpportunitiesScreen() {
   const [error, setError] = useState(""), [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(true), [editing, setEditing] = useState<Opportunity | "new" | null>(null);
   const sequence = useRef(0), keys = useRef(new Map<string, string>());
+  const [historyKey, setHistoryKey] = useState(0);
   async function load(nextView = view, nextQuery = query, cursor: string | null = null) {
     const current = ++sequence.current;
     setBusy(true); setError("");
@@ -66,12 +68,22 @@ export function OpportunitiesScreen() {
     }
     finally { setBusy(false); }
   };
+  // After a listing is saved, keep a minimal snapshot of how it compared with the person's preferences. Best effort: a failure here never blocks the save.
+  async function saveChoice(item: Opportunity, choice: "saved" | "hidden" | "none") {
+    const preferences = data?.preferences ?? null, preferenceVersion = data?.preferenceVersion ?? 0;
+    const saved = await save({ operation: "choice", id: item.id, choice });
+    if (!saved || choice !== "saved") return;
+    const reasons = explainMatch(item, preferences).map(reason => ({ id: reason.id, outcome: reason.outcome }));
+    try { await appRequest("/api/v1/opportunities/history", { listingId: item.id, listingTitle: item.fields.title, companyName: item.companyName || null, preferenceVersion, reasons }, crypto.randomUUID()); setHistoryKey(value => value + 1); }
+    catch { /* the listing is saved; the history entry is optional */ }
+  }
   function changeView(value: string) { setView(value); setData(null); setNotice(""); void load(value); }
   return <section className="fw-opportunities" aria-label={t("op.aria")}>
     <p>{t("op.intro")}</p>
     <div className="fw-discovery-tabs" role="group" aria-label={t("op.viewAria")}>{(["discover", "saved", "hidden", "mine"] as const).map(value => <button key={value} className="fw-secondary" disabled={busy} aria-pressed={view === value} onClick={() => changeView(value)}>{t(`op.v.${value}` as MessageKey)}</button>)}</div>
     <form onSubmit={event => { event.preventDefault(); setNotice(""); void load(); }}><label className="fw-field">{t("op.search")}<input value={query} onChange={event => setQuery(event.target.value)} maxLength={120} /></label><button className="fw-secondary" disabled={busy}>{t("op.searchButton")}</button></form>
     {data && <PreferenceForm key={data.preferenceVersion} value={data.preferences ?? defaultPreferences} revision={data.preferenceVersion} busy={busy} save={save} />}
+    <RecommendationHistory refreshKey={historyKey} />
     {view === "mine" && <><p>{t("op.mineNote")}</p><button className="fw-primary" disabled={busy} onClick={() => setEditing("new")}>{t("op.createListing")}</button></>}
     {editing && <ListingForm key={editing === "new" ? "new" : `${editing.id}:${editing.version}`} item={editing === "new" ? null : editing} busy={busy} save={save} cancel={() => setEditing(null)} />}
     {busy && <p role="status">{t("op.loading")}</p>}
@@ -89,7 +101,7 @@ export function OpportunitiesScreen() {
       <ul aria-label={t("op.matchAria")}>{explainMatch(item, data.preferences).map(reason => <li key={reason.criterion}><strong>{t(`op.m.${reason.id === "payUnknown" ? "pay" : reason.id}` as MessageKey)}: {t(`op.o.${reason.outcome}` as MessageKey)}</strong><br />{explain(reason)}</li>)}</ul>
       {explainMatch(item, data.preferences).length === 0 && <p>{t("op.addPrefs")}</p>}
       <QualificationPanel jobText={item.fields.description} />
-      {item.status === "published" && <div className="fw-discovery-actions"><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "saved" ? "none" : "saved" })}>{item.choice === "saved" ? t("op.removeSaved") : t("op.saveListing")}</button><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "hidden" ? "none" : "hidden" })}>{item.choice === "hidden" ? t("op.showAgain") : t("op.notInterested")}</button></div>}
+      {item.status === "published" && <div className="fw-discovery-actions"><button className="fw-secondary" disabled={busy} onClick={() => void saveChoice(item, item.choice === "saved" ? "none" : "saved")}>{item.choice === "saved" ? t("op.removeSaved") : t("op.saveListing")}</button><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "hidden" ? "none" : "hidden" })}>{item.choice === "hidden" ? t("op.showAgain") : t("op.notInterested")}</button></div>}
       {item.canEdit && <button className="fw-secondary" disabled={busy} onClick={() => setEditing(item)}>{t("op.editListing")}</button>}
       {!item.canEdit && <ReportProblem kind="listing" subjectRef={item.id} subjectLabel={item.fields.title.slice(0, 120)} />}
     </article>)}

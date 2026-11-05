@@ -4,8 +4,8 @@ import { readFile, readdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { localPostgresConnection } from "../local-postgres";
 
-// Rehearsal of the hosted upgrade. The staging project has the first 32 migrations applied and holds data; 19 migrations were pending then (they have since been applied there); every later migration, 28 in total at present, is rehearsed the same way. This applies the first
-// 32 to a fresh database, writes synthetic rows, then applies the remaining 28 in order and checks that: every migration applies cleanly on top of existing
+// Rehearsal of the hosted upgrade. The staging project has the first 32 migrations applied and holds data; 19 migrations were pending then (they have since been applied there); every later migration, 29 in total at present, is rehearsed the same way. This applies the first
+// 32 to a fresh database, writes synthetic rows, then applies the remaining 29 in order and checks that: every migration applies cleanly on top of existing
 // data, no existing row was changed or lost, and everything the pending migrations added is protected (row-level security enabled and forced, no direct
 // client grants, no function callable by the public or anonymous roles).
 const APPLIED_ON_STAGING = "20261024053156";
@@ -40,7 +40,7 @@ afterAll(() => db.close());
 
 it("starts from the staging state: 32 migrations, with real rows present", async () => {
   expect(files.filter(file => file.split("_")[0]! <= APPLIED_ON_STAGING)).toHaveLength(32);
-  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(28);
+  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(29);
   expect(before.profiles).toBe(2);
 });
 

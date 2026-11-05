@@ -19,7 +19,7 @@ env.ORYQEN_VAULT_LOCAL_DIR = `${tmpdir()}/oryqen-vault-split-${Date.now()}`;
 const log = openSync(`${tmpdir()}/oryqen-split-app-${Date.now()}.log`, 'a');
 const app = spawn(process.execPath, ['scripts/run-local-development.mjs'], { env, windowsHide: true, stdio: ['ignore', log, log] });
 let ready = false;
-for (let i = 0; i < 120 && !ready; i++) {
+for (let i = 0; i < 300 && !ready; i++) {
   if (app.exitCode !== null) throw new Error('app exited');
   ready = await fetch('http://127.0.0.1:3100/sign-in').then(r => r.ok).catch(() => false);
   if (!ready) await new Promise(r => setTimeout(r, 1000));

@@ -63,6 +63,7 @@ const files = [...foundation, ...inventory().map(row => [row.name, row.sha256]),
   ['20261029160000_audit_chain.sql', 'e8fc3fc3dfb4b7b1689b58a8251d50f8790eaaa5a285a9ad8693423f106832a0'],
   ['20261029170000_audit_chain_timezone_pin.sql', '27e72add82055a7ecf5bbec984025d256f300b143f93bb7cd4519d7ecc9e58c4'],
   ['20261105100000_security_event_log.sql', '83bf17bdba611eb43111930e09c30739da620e11f6d2ddb51efc84b26971d552'],
+  ['20261105110000_recommendation_history.sql', 'fac6835a7ba23ffcf101c91ced2f10221d52fa8190c03e04d79bd7a4ff09d5ba'],
 ];
 if (JSON.stringify(readdirSync('supabase/migrations').sort()) !== JSON.stringify(files.map(([name]) => name))) throw new Error('Unexpected migration inventory');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
