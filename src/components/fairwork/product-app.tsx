@@ -24,6 +24,7 @@ import { NotificationFeed } from "@/components/fairwork/notifications";
 import { PlatformNotices } from "@/components/fairwork/platform-notices";
 import { PrivacyRequests } from "@/components/fairwork/privacy-requests";
 import { AccountSecurity } from "@/components/fairwork/account-security";
+import { SecurityActivity } from "@/components/fairwork/security-activity";
 import { PassportSharing } from "@/components/fairwork/passport-sharing";
 import { AuthInformationLink } from "@/components/fairwork/auth-information-link";
 import { agreementReadSchema, type AgreementRead } from "@/features/offer/read-schema";
@@ -1144,6 +1145,7 @@ function SettingsScreen({ profile }: { profile: Profile | null }) {
       <details className="fw-list-card"><summary>{t("rp.mine")}</summary><MyReports /></details>
       <details className="fw-list-card"><summary>{t("set.developer")}</summary><DeveloperAccess /></details>
       {profile && <details className="fw-list-card"><summary>{t("set.security")}</summary><AccountSecurity revision={profile.revision} /></details>}
+      {profile && <SecurityActivity />}
       <Link className="fw-secondary" href="/forgot-password">{t("set.resetPassword")}</Link>
       {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>{t("set.assignPlans")}</summary><PlanAssignment /></details>}
       {profile?.capabilities.includes("authority_operator") && <details className="fw-list-card"><summary>Assign organization plans (operator)</summary><OrgPlanAssignment /></details>}

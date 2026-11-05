@@ -4,7 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 // anonymous route and API protection, direct-URL access by an unrelated signed-in account, and password recovery through the local mail sink.
 // No mocks. Uses the synthetic reviewing account as the outsider; its password is changed at the end, so run this last among the outsider's journeys.
 const PRIVATE_ROUTES = ['/app/home', '/app/passport', '/app/work-record', '/app/employer', '/admin'];
-const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications'];
+const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications', '/api/v1/security-events'];
 
 export async function localTier2Journey({ browser, worker, outsider, offerId, secrets, request, record, origin, evidence, mail, totp }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
@@ -45,6 +45,20 @@ export async function localTier2Journey({ browser, worker, outsider, offerId, se
   const denied = await fetchAs(outsider.context, `${origin}/api/v1/agreements?offerId=${offerId}`);
   must([403, 404].includes(denied.status()) && leaks(await denied.text()).length === 0, `Unrelated account API read of the private offer is denied without leaking content (HTTP ${denied.status()})`);
   void worker;
+
+  // Own security activity: the worker's real sign-in and sign-out were recorded by the server and are readable only by that worker.
+  // Telemetry is best effort (F-45), so poll briefly instead of asserting on the first read.
+  let own;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    own = await request(worker, '/api/v1/security-events');
+    if (own.items.some(item => item.kind === 'login_success') && own.items.some(item => item.kind === 'logout_success')) break;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  must(own.items.some(item => item.kind === 'login_success') && own.items.some(item => item.kind === 'logout_success'), 'Own security activity lists the real sign-in and sign-out recorded for this account');
+  must(own.items.every(item => Object.keys(item).sort().join() === 'kind,occurredAt') && own.items.length <= 30, 'Security activity exposes only kind and time, at most 30 entries');
+  must(own.items.every((item, index, all) => index === 0 || Date.parse(all[index - 1].occurredAt) >= Date.parse(item.occurredAt)), 'Security activity is newest first');
+  await request(worker, `/api/v1/security-events?subjectId=${outsider.id}`, undefined, [422]);
+  record('Security activity refuses a client-supplied subject');
 
   // Password recovery end to end through the local mail sink, then old password rejected and new password accepted.
   const visitor = { context: await browser.newContext() };

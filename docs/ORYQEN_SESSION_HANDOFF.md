@@ -1,5 +1,9 @@
 # ORYQEN session handoff
 
+## 5 November 2026
+- 5 Nov: built two local features. (1) Work Passport "Print or save as PDF" private copy (browser print, not a signed PDF). (2) Security activity log (module 12): migration `20261105100000_security_event_log.sql`, `/api/v1/security-events`, Settings panel. **That migration is NOT applied to staging** (owner approval and a staging backup are needed first; apply with the existing procedure, then update the staging-baseline pin in `tests/integration/migration-upgrade.test.ts` only if the baseline changes). The delivery tracker's gap lists are stale; the 22-module acceptance doc (29 Oct) is closer, and research history (module 02) and dispute categories (module 09) were already built and applied to staging.
+- Harness reliability: never run two harness runs at once; if `app not ready`, check for a leftover Next process on port 3100 (`Get-NetTCPConnection -LocalPort 3100`) and stop it first.
+
 ## 3 November 2026
 - Added `scripts/local-tier2-journey.mjs` (wired into `scripts/test-local-real-workflows.mjs`): anonymous route/API protection, outsider direct-URL denial, MFA-aware password recovery. Full real-stack run via `node scripts/run-local-split-harness.mjs`: 245 PASS / 0 FAIL / 0 SKIPPED. Docker Desktop must be started first (`C:/Users/vehiv/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe`). One intermittent telemetry miss is recorded as F-45 (open).
 - Hosted: Tier 1 done (24/0/5). A single approval request for Tier 2 is in `ORYQEN_HOSTED_APPROVAL_REQUEST.md`; NOT approved, nothing hosted written.
