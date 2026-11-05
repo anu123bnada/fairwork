@@ -21,3 +21,6 @@ See also `ORYQEN_DEMO_GUIDE.md`, `DEMO_SCRIPT_14_FEATURES.md`, `scripts/demo-see
 - Fallback 2: phone hotspot; keep a second device logged in.
 - Printed QR code to the staging URL (generate with the `qrcode` dependency).
 - If Gemini fails, continue with the deterministic analysis; do not retry on stage.
+
+## Demo account seeding (5 Nov 2026)
+`DEMO_PASSWORD` is mandatory and is never stored. If the default demo account (`oryqen-demo-worker@example.test`) already exists with a password nobody remembers, registration returns 200 but no email arrives and sign-in fails with 401. Set `DEMO_EMAIL=oryqen-demo-2@example.test` (any `@example.test` address) to create a fresh account. Local origins only; the script refuses anything else.
