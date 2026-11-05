@@ -32,3 +32,13 @@
 @media (min-width: 520px) { .oq-pp-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: no-preference) { .oq-pp-card { transition: border-color .15s ease; } .oq-pp-card:hover { border-color: var(--oq-accent); } }
 @media print { .oq-pp-hero, .oq-pp-card { break-inside: avoid; } }
+
+/* Print-only sheet for "Print or save as PDF": hidden on screen, the only thing printed. */
+.oq-print-sheet { display: none; }
+@media print {
+  body * { visibility: hidden !important; }
+  .oq-print-sheet, .oq-print-sheet * { visibility: visible !important; }
+  .oq-print-sheet { display: block; position: absolute; inset: 0 auto auto 0; width: 100%; color: #000; background: #fff; padding: 16mm; font: 12pt/1.4 system-ui, sans-serif; }
+  .oq-print-sheet table { width: 100%; border-collapse: collapse; margin-block: 12pt; }
+  .oq-print-sheet th, .oq-print-sheet td { border: 1px solid #444; padding: 4pt 6pt; text-align: left; vertical-align: top; }
+}

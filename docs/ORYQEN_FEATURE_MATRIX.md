@@ -12,7 +12,7 @@ Evidence rule: unit, PGlite and browser-fixture tests prove no regression; they 
 | 4 | Offer management | PARTIAL | `src/components/fairwork/offer-drafts.tsx`, offers API | ready / ready / ready | RLS | unit, PGlite, browser | none known locally |
 | 5 | Agreements | PARTIAL | agreement API and screens | ready / ready / ready | immutable versions | unit, PGlite + real PG | clause editing; no e-signature legal claim is made |
 | 6 | Work records and evidence | PARTIAL | vault and work-record services | ready / ready / ready | owner-only RLS | unit, PGlite + real PG | hosted Storage bucket unverified |
-| 7 | Work Passport | PARTIAL | passport API | ready / ready / ready | recipient-scoped | unit, real PG | signing key is owner-held; skills not in shared passport |
+| 7 | Work Passport | PARTIAL | passport API | ready / ready / ready | recipient-scoped | unit, real PG | signing key is owner-held; skills not in shared passport; **5 Nov: "Print or save as PDF" private copy added (browser print dialog, not a signed or server-generated PDF)** |
 | 8 | Organization portal | PARTIAL | org and recruiter services | ready / ready / ready | independent approval | unit, real PG | role granularity |
 | 9 | Disputes and appeals | PARTIAL | case services | ready / ready / ready | reviewer conflict checks, MFA | unit, real PG | org response workflow |
 | 10 | Tamper-resistant records | PARTIAL | audit triggers, hash chain | ready / partial / ready | admin MFA | real PG tamper tests | not blockchain; wording must stay "append-only, hash-chained" |
