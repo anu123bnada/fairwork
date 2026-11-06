@@ -4,7 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 // anonymous route and API protection, direct-URL access by an unrelated signed-in account, and password recovery through the local mail sink.
 // No mocks. Uses the synthetic reviewing account as the outsider; its password is changed at the end, so run this last among the outsider's journeys.
 const PRIVATE_ROUTES = ['/app/home', '/app/passport', '/app/work-record', '/app/employer', '/admin'];
-const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications', '/api/v1/security-events', '/api/v1/opportunities/history'];
+const PRIVATE_APIS = ['/api/v1/me', '/api/v1/offers', '/api/v1/passport', '/api/v1/vault', '/api/v1/credentials', '/api/v1/notifications', '/api/v1/security-events', '/api/v1/opportunities/history', '/api/v1/cv'];
 
 export async function localTier2Journey({ browser, worker, outsider, offerId, secrets, request, record, origin, evidence, mail, totp }) {
   const must = (ok, label) => { if (!ok) throw new Error(label); record(label); };
@@ -75,6 +75,28 @@ export async function localTier2Journey({ browser, worker, outsider, offerId, se
   await request(outsider, '/api/v1/opportunities/history/remove', { entryId: entry.entryId }, [404]);
   await request(worker, '/api/v1/opportunities/history/remove', { entryId: entry.entryId });
   must((await request(worker, '/api/v1/opportunities/history')).items.every(item => item.entryId !== entry.entryId), 'Only the owner can delete a recommendation-history entry');
+
+  // Smart CV Builder: documents are private to their owner, strictly validated, revision-checked and deletable only by the owner.
+  const cvId = randomUUID();
+  const cvContent = { basics: { fullName: 'Synthetic Local Person', headline: '', email: '', phone: '', location: '', links: [{ label: 'Portfolio', url: 'https://example.test/me' }] }, summary: 'Synthetic summary typed by the person.', education: [], experience: [], skills: ['Welding'], projects: [], achievements: [], certifications: [], references: [], includeVerifiedWork: false };
+  const cvBody = { id: cvId, title: 'Synthetic local CV', template: 'modern', targetRole: 'Welder', content: cvContent, expectedRevision: 0 };
+  must((await request(worker, '/api/v1/cv', cvBody)).revision === 1, 'A CV document is saved for the worker');
+  const cvRead = await request(worker, `/api/v1/cv?id=${cvId}`);
+  must(JSON.stringify(cvRead.content) === JSON.stringify(cvContent) && cvRead.template === 'modern', 'The CV reads back exactly what was saved');
+  must((await request(outsider, '/api/v1/cv')).items.every(item => item.id !== cvId), 'Another account cannot see the owner CV list');
+  await request(outsider, `/api/v1/cv?id=${cvId}`, undefined, [404]);
+  await request(outsider, '/api/v1/cv', { ...cvBody, expectedRevision: 1 }, [404]);
+  await request(worker, '/api/v1/cv', { ...cvBody, id: randomUUID(), content: { ...cvContent, basics: { ...cvContent.basics, links: [{ label: 'x', url: 'javascript:alert(1)' }] } } }, [422]);
+  await request(worker, '/api/v1/cv', { ...cvBody, id: randomUUID(), content: { ...cvContent, verified: true } }, [422]);
+  await request(worker, '/api/v1/cv', { ...cvBody, id: randomUUID(), ownerId: outsider.id }, [422]);
+  record('The CV API refuses an unsafe link, a verification flag and a client-supplied owner');
+  await request(worker, '/api/v1/cv', { ...cvBody, expectedRevision: 0 }, [404, 409]);
+  must((await request(worker, '/api/v1/cv', { ...cvBody, title: 'Renamed CV', expectedRevision: 1 })).revision === 2, 'A CV is updated only with the current revision');
+  await request(worker, '/api/v1/cv', { ...cvBody, expectedRevision: 1 }, [409]);
+  await request(outsider, '/api/v1/cv/remove', { id: cvId }, [404]);
+  await request(worker, '/api/v1/cv/remove', { id: cvId });
+  await request(worker, `/api/v1/cv?id=${cvId}`, undefined, [404]);
+  record('Only the owner can delete a CV');
 
   // Password recovery end to end through the local mail sink, then old password rejected and new password accepted.
   const visitor = { context: await browser.newContext() };

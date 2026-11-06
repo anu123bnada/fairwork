@@ -13,6 +13,7 @@ const screens = new Set([
   "work-record",
   "cases",
   "passport",
+  "cv",
   "settings",
   "employer",
   "notifications",

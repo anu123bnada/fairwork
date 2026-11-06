@@ -1,0 +1,28 @@
+/* Smart CV Builder: editor beside a live preview on wide screens, stacked on phones. Print shows only the CV sheet. */
+.oq-cv { display: grid; gap: 16px; }
+.oq-cv-list { list-style: none; padding: 0; display: grid; gap: 8px; }
+.oq-cv-list li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.oq-cv-editor { display: grid; gap: 10px; align-content: start; }
+.oq-cv-group { border: 1px solid var(--oq-border, #8a94a6); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+.oq-cv-row { display: grid; gap: 6px; padding-bottom: 8px; border-bottom: 1px dashed var(--oq-border, #8a94a6); }
+.oq-cv-check { display: flex; gap: 8px; align-items: center; }
+.oq-cv-sheet { background: #fff; color: #111; border-radius: 12px; padding: 20px; line-height: 1.45; overflow-wrap: anywhere; }
+.oq-cv-sheet h1 { font-size: 1.6rem; margin: 0 0 4px; }
+.oq-cv-sheet h2 { font-size: 1.05rem; margin: 16px 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.oq-cv-sheet h3 { font-size: 1rem; margin: 8px 0 0; }
+.oq-cv-sheet p, .oq-cv-sheet ul { margin: 2px 0; }
+.oq-cv-sheet a { color: inherit; }
+.oq-cv-headline { font-weight: 600; }
+.oq-cv-footer { margin-top: 18px; font-size: .8rem; color: #444; }
+.oq-cv-classic h2 { border-bottom: 1px solid #111; }
+.oq-cv-modern h1, .oq-cv-modern h2 { color: #0b4f8a; }
+.oq-cv-modern h2 { border-bottom: 2px solid #0b4f8a; }
+.oq-cv-compact { font-size: .9rem; padding: 14px; }
+.oq-cv-compact h2 { font-size: .95rem; margin-top: 10px; }
+@media (min-width: 980px) { .oq-cv:has(.oq-cv-editor) { grid-template-columns: minmax(320px, 1fr) minmax(360px, 1fr); align-items: start; } }
+@media print {
+  body * { visibility: hidden !important; }
+  .oq-cv-sheet, .oq-cv-sheet * { visibility: visible !important; }
+  .oq-cv-sheet { position: absolute; inset: 0 auto auto 0; width: 100%; border-radius: 0; padding: 14mm; font: 11pt/1.4 system-ui, sans-serif; color: #000; }
+  .oq-cv-modern h1, .oq-cv-modern h2 { color: #000; }
+}

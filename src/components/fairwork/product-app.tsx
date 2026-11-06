@@ -67,6 +67,7 @@ import { CompanyProfiles } from "./company-profiles";
 import { RecruiterVerification } from "./recruiter-verification";
 import { CaseReviewScreen } from "./case-review";
 import { WorkPassportScreen } from "./work-passport";
+import { CvBuilder } from "./cv-builder";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
 import "./visual.css";
@@ -344,6 +345,7 @@ const screenTitle: Record<string, string> = {
   "work-record": "Work record",
   cases: "Case review",
   passport: "Work Passport",
+  cv: "CV Builder",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -363,6 +365,7 @@ const backTarget: Record<string, string> = {
   "work-record": "home",
   cases: "work-record",
   passport: "home",
+  cv: "home",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -406,7 +409,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -516,6 +519,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {["add-offer", "analyzing", "check", "questions", "agreement"].includes(screen) && !demoPreview ? <FlowSteps screen={screen} /> : null}
       {screen === "home" ? <HomeScreen profile={profile} demoPreview={demoPreview} /> : null}
       {screen === "opportunities" && profile ? <OpportunitiesScreen /> : null}
+      {screen === "cv" && profile ? <CvBuilder displayName={profile.displayName} /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}
