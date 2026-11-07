@@ -1,4 +1,4 @@
-# ORYQEN feature matrix (31 October 2026)
+# ORYQEN feature matrix (updated 7 November 2026)
 
 States: VERIFIED_COMPLETE, IMPLEMENTED_UNVERIFIED, PARTIAL, BLOCKED, NOT_IMPLEMENTED.
 Per-module detail (built / missing / tests / blockers) lives in `ORYQEN_22_MODULE_ACCEPTANCE.md`; this file maps it to the 14 exhibition domains.
@@ -21,6 +21,14 @@ Evidence rule: unit, PGlite and browser-fixture tests prove no regression; they 
 | 13 | Admin control center | PARTIAL | admin console | ready / ready / ready | capability + MFA | unit, real PG | account moderation, monitoring |
 | 14 | Web and Android | PARTIAL | `src/`, `mobile/poc` | n/a | n/a | build, axe, route matrix | physical-device acceptance; release signing key |
 
-Latest local gates (31 Oct, commit `a0a4076`): `tsc --noEmit` pass; `npm run lint` pass (0 warnings); `vitest run` 154 files, 1038 passed, 17 skipped, 0 failed; `next build` pass.
+| 15 | Smart CV Builder | IMPLEMENTED_UNVERIFIED | `src/components/fairwork/cv-builder.tsx`, `src/features/cv`, `/api/v1/cv` | ready / ready / ready (migration local only) | owner-only RLS, strict validation | PGlite 5, unit 4, browser 4 (fixtures), real-stack harness (local) | not on staging; no AI writing, no cover letters; English labels only |
+| 16 | Security activity log | IMPLEMENTED_UNVERIFIED | `/api/v1/security-events`, Settings panel | ready / ready / ready (migration local only) | owner-only | PGlite 4, browser 2, real-stack | not on staging |
+| 17 | Saved-listing history | IMPLEMENTED_UNVERIFIED | `/api/v1/opportunities/history`, Opportunities panel | ready / ready / ready (migration local only) | owner-only, minimal snapshot | PGlite 4, browser 2, real-stack | not on staging |
+| 18 | Passport print to PDF | IMPLEMENTED_UNVERIFIED | Passport screen | n/a / ready / n/a | re-authorized read | browser 1 (fixture) | browser-printed copy, not a signed PDF |
+| 19 | AI Challenge Arena | NOT_IMPLEMENTED | none | none | none | none | needs design, admin authoring, human review and AI approval |
+| 20 | AI career analysis, AI CV writing, AI mentor | NOT_IMPLEMENTED | rules-based guidance only | none | none | none | needs owner AI approval and per-feature consent notices (`ORYQEN_AI_PROVIDERS.md`) |
+| 21 | LinkedIn connection | NOT_IMPLEMENTED | none | none | none | official API reviewed 6 Nov (`ORYQEN_LINKEDIN.md`) | adult-created developer app; no experience import without a partner program |
+| 22 | Paid plans and billing | NOT_IMPLEMENTED | entitlements only (no billing) | partial | operator assignment | unit, real PG | provider, legal text, adult account holder (`ORYQEN_COMMERCIAL_LAUNCH.md`) |
+Latest recorded gates: see `ORYQEN_TESTING.md`: `tsc`, lint, full vitest (1055 passed), `next build` and the real-stack harness (263/263, local) pass; the full Playwright E2E is **not passing** (F-47, intermittent, host memory); hosted tier 2, Android device and live Gemini are NOT RUN.
 Not run this session: Playwright E2E, real-stack harness, hosted smoke test, Android build. Treat those as UNVERIFIED until run.
 No domain is VERIFIED_COMPLETE for exhibition-as-production; hosted verification is a separate, owner-approved step.
