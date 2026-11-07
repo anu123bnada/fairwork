@@ -63,7 +63,7 @@ Keep several GB of disk and RAM free before any gate run: a full disk stopped wo
 |---|---|
 | `tsc`, ESLint, full vitest, `next build` | PASS on the latest code commit (see `ORYQEN_TESTING.md`) |
 | Real-stack harness (local Docker, synthetic accounts) | PASS 263/263 |
-| Full E2E (isolated, fixture-based) | **NOT PASSING**: three runs, one different intermittent failure each, the last `ERR_INSUFFICIENT_RESOURCES`; needs a clean run alone with several GB free RAM |
+| Full E2E (isolated, fixture-based) | **NOT PASSING**: four runs, none clean (1, 1, 1 and 3 failures, different tests, none reproduced reliably except `android-browser:27`, which also fails on the pre-CV baseline); keep the laptop awake and run alone (F-47) |
 | Hosted smoke tier 1 (anonymous) | PASS 24/0/5 (1 Nov) |
 | Hosted smoke tier 2 (signed in) | NOT RUN, needs owner approval |
 | Android device run | NOT RUN (emulator did not boot on this RAM) |
