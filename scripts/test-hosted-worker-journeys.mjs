@@ -5,7 +5,7 @@
 //   node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app --email you@example.com
 //   node scripts/test-hosted-worker-journeys.mjs http://127.0.0.1:3100 --local-register --mail=http://127.0.0.1:55424      (rehearsal: makes its own local account)
 //
-// What it writes to the target: one synthetic PDF to the Evidence Vault (deleted again before the script ends), a private opportunity preference, and, when the
+// What it writes to the target: a synthetic CV, a saved-listing snapshot (both deleted again), one synthetic PDF to the Evidence Vault (deleted again before the script ends), a private opportunity preference, and, when the
 // credential signing key is configured, one developer key (revoked again). It writes no offers, no work records and nothing visible to anyone else.
 // Journeys that need a second person or an operator capability (agreements, verification of work, disputes, organization approval, recruiter confirmation, plan
 // assignment) are NOT run here and are reported as NOT RUN.
@@ -165,6 +165,53 @@ await step('10 Job discovery: listings load and private preferences persist', as
   const read = (await call('/api/v1/opportunities?view=discover')).data;
   if (read.preferences?.role !== 'Technician') throw new Error('the saved preference was not read back');
   return `${page.items.length} listing(s) visible; preferences saved (version ${read.preferenceVersion})`;
+});
+
+// ---- 15. security activity (module 12): the server's record of this account's own sign-ins
+await step('15 Security activity: only this account\'s events, kind and time only, newest first', async () => {
+  const result = (await call('/api/v1/security-events')).data;
+  if (!Array.isArray(result.items) || result.limit !== 30 || result.items.length > 30) throw new Error('unexpected answer');
+  if (result.items.some(item => Object.keys(item).sort().join() !== 'kind,occurredAt')) throw new Error('an entry exposed more than kind and time');
+  if (result.items.some((item, i, all) => i > 0 && Date.parse(all[i - 1].occurredAt) < Date.parse(item.occurredAt))) throw new Error('not newest first');
+  const refused = await call('/api/v1/security-events?subjectId=' + randomUUID(), undefined, { statuses: [422] });
+  return result.items.length === 0 ? `empty (the hosted service may not record sign-ins yet); a client-supplied subject is refused (${refused.status})` : `${result.items.length} event(s), newest ${result.items[0].kind}`;
+});
+
+// ---- 16. Smart CV Builder: private, validated, revision-checked
+await step('16 CV Builder: save, read back exactly, update with the revision, refuse a stale one and an unsafe link, delete', async () => {
+  const id = randomUUID();
+  const content = { basics: { fullName: 'Synthetic Hosted Check', headline: '', email: '', phone: '', location: '', links: [{ label: 'Portfolio', url: 'https://example.test/me' }] }, summary: 'Synthetic summary typed for a hosted check.', education: [], experience: [], skills: ['Welding'], projects: [], achievements: [], certifications: [], references: [], includeVerifiedWork: false };
+  const body = { id, title: 'Synthetic hosted CV', template: 'modern', targetRole: 'Welder', content, expectedRevision: 0 };
+  try {
+    if ((await call('/api/v1/cv', body)).data.revision !== 1) throw new Error('the first save should be revision 1');
+    const read = (await call('/api/v1/cv?id=' + id)).data;
+    if (JSON.stringify(read.content) !== JSON.stringify(content) || read.template !== 'modern') throw new Error('the CV did not read back as saved');
+    if ((await call('/api/v1/cv', { ...body, title: 'Renamed hosted CV', expectedRevision: 1 })).data.revision !== 2) throw new Error('the update should be revision 2');
+    await call('/api/v1/cv', { ...body, expectedRevision: 1 }, { statuses: [409] });
+    await call('/api/v1/cv', { ...body, id: randomUUID(), content: { ...content, basics: { ...content.basics, links: [{ label: 'x', url: 'javascript:alert(1)' }] } } }, { statuses: [422] });
+    await call('/api/v1/cv', { ...body, id: randomUUID(), content: { ...content, verified: true } }, { statuses: [422] });
+    const list = (await call('/api/v1/cv')).data;
+    if (!list.items.some(item => item.id === id)) throw new Error('the CV is missing from the list');
+  } finally { await call('/api/v1/cv/remove', { id }).catch(() => null); }
+  await call('/api/v1/cv?id=' + id, undefined, { statuses: [404] });
+  return 'saved, read back, updated, stale save and unsafe link refused, then deleted';
+});
+
+// ---- 17. saved-listing history (module 3): a minimal private snapshot
+await step('17 Saved-listing history: a snapshot is stored privately, keeps only criterion outcomes, and can be deleted', async () => {
+  const listingId = randomUUID();
+  const snapshot = { listingId, listingTitle: 'Synthetic hosted listing', companyName: null, preferenceVersion: 1, reasons: [{ id: 'role', outcome: 'matches' }, { id: 'payUnknown', outcome: 'unknown' }] };
+  const added = (await call('/api/v1/opportunities/history', snapshot)).data;
+  if (added.replayed !== false) throw new Error('unexpected replay');
+  let entryId = added.entryId;
+  try {
+    const entry = (await call('/api/v1/opportunities/history')).data.items.find(item => item.listingId === listingId);
+    if (!entry || entry.reasons.length !== 2) throw new Error('the snapshot is missing from the list');
+    await call('/api/v1/opportunities/history', { ...snapshot, listingId: randomUUID(), reasons: [{ id: 'role', outcome: 'matches', detail: 'Your preference: nurse' }] }, { statuses: [422] });
+    entryId = entry.entryId;
+  } finally { await call('/api/v1/opportunities/history/remove', { entryId }).catch(() => null); }
+  if ((await call('/api/v1/opportunities/history')).data.items.some(item => item.listingId === listingId)) throw new Error('the entry is still listed after deletion');
+  return 'stored, read back with outcomes only, invented content refused, deleted';
 });
 
 // ---- 12. notifications
