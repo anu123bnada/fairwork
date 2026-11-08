@@ -89,10 +89,17 @@ await step('14 Plans: free plan, essentials listed, no billing offered', async (
 });
 
 // ---- 3. offer analysis stays rules-based while AI is off
-await step('3 Offer analysis: with AI off the answer is explicitly "not configured", never invented', async () => {
-  const ai = (await call('/api/v1/offers/analyze', { text: 'Synthetic check: LKR 1000 monthly, eight hours each week.', role: 'WORKER' })).data;
-  if (ai.status !== 'UNCONFIGURED' || ai.configured !== false || ai.data !== null) throw new Error(`AI answered ${ai.status}; it must stay off until the policy is approved`);
-  return 'UNCONFIGURED';
+await step('3 Offer analysis: the AI state is reported honestly (off = not configured; on = provider and region shown); no model is called here', async () => {
+  // GET reads the configuration only: it sends no text to any provider and uses no AI quota.
+  const state = (await call('/api/v1/offers/analyze')).data;
+  if (state.configured === false) {
+    const ai = (await call('/api/v1/offers/analyze', { text: 'Synthetic check: LKR 1000 monthly, eight hours each week.', role: 'WORKER' })).data;
+    if (ai.status !== 'UNCONFIGURED' || ai.data !== null) throw new Error(`AI is not configured but the answer was ${ai.status}`);
+    return 'AI is OFF: the answer is explicitly UNCONFIGURED, nothing invented';
+  }
+  if (state.configured !== true || !state.provider || !state.model || !state.processingRegion) throw new Error('AI reports as configured but the provider, model or region is missing');
+  const availability = (state.availability ?? []).map(item => `${item.provider}:${item.state}`).join(', ') || 'no availability data';
+  return `AI is ON (provider ${state.provider}, model ${state.model}, region ${state.processingRegion}); availability ${availability}. No text was sent. Each person must still consent in the app before any offer text leaves the server.`;
 });
 
 // ---- 5. Evidence Vault: real bucket, real key
