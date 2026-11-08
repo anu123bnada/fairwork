@@ -1,0 +1,14 @@
+/* Help assistant: a simple chat transcript with clearly labelled speakers. */
+.oq-help { display: grid; gap: 12px; }
+.oq-help-badge { font-weight: 600; }
+.oq-help-log { display: grid; gap: 10px; max-height: 55vh; overflow-y: auto; padding: 4px; }
+.oq-help-msg { border-radius: 14px; padding: 10px 12px; max-width: 46rem; overflow-wrap: anywhere; border: 1px solid var(--oq-border, #8a94a6); }
+.oq-help-msg p { margin: 4px 0; }
+.oq-help-you { justify-self: end; background: rgba(80, 120, 255, .16); }
+.oq-help-bot { justify-self: start; }
+.oq-help-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.oq-help-form { display: grid; gap: 8px; }
+.oq-help-note { font-size: .85rem; opacity: .85; }
+@media (min-width: 640px) { .oq-help-form { grid-template-columns: 1fr auto auto; align-items: end; } }
+@media (prefers-reduced-motion: no-preference) { .oq-help-msg { animation: oq-help-in .18s ease-out; } }
+@keyframes oq-help-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
