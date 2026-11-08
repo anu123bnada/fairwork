@@ -19,14 +19,14 @@ Status as of 6 Nov 2026: **NOT READY for paid customers.** This file lists what 
 | Hosting costs | Not estimated. Supabase, Vercel, AI usage and email each have free-tier limits and paid tiers; see Costs below. |
 | Android | Debug-signed preview only; a signed release needs the owner's keystore (see `ORYQEN_ANDROID.md`). |
 
-## The founder is under 18: what needs an adult
+## Accounts and services that need an adult account holder
 Services that need an adult account holder, legal guardian or registered business (to be confirmed with each provider's current terms, not assumed):
 - A payment processor account (and any bank account that receives money).
 - Apple or Google developer accounts for publishing apps; domain registration; paid hosting plans.
 - A LinkedIn developer application tied to a LinkedIn Page (`ORYQEN_LINKEDIN.md`).
 - Signing the Terms of Service and Privacy Policy as the operator, and being the legal "data controller" for users' personal data.
 - Business registration and tax obligations once money is received.
-A parent or guardian, or a registered company with an adult director, should hold these accounts and approve spending. ORYQEN's code and brand can stay with the founder; the account holder is a separate decision.
+A parent or guardian, or a registered company with an adult director, should hold these accounts and approve spending. The code and brand can stay with the project owner; who holds each account is a separate decision.
 
 ## Costs to estimate with real numbers before charging anyone
 Hosting (Vercel plan), database and storage (Supabase plan, backups, egress), AI provider usage (per-token cost times expected use; the free tier ran out of quota in testing), transactional email, domain, error monitoring, app-store fees, and payment-processor fees. None of these were purchased or activated.
