@@ -35,8 +35,8 @@ Registration and sign-in with email confirmation; offer paste, review and rules-
 AI Challenge Arena, AI career analysis, AI-written CVs or cover letters, LinkedIn connection, interview simulator, payments or paid plans, organization analytics, a signed Android release, any claim of "verified" for self-reported data, any claim that ORYQEN replaces a lawyer or labour authority. Say "planned" for these, never "available".
 
 ### Owner decisions and actions needed before the freeze (none done by the assistant)
-1. Approve and apply to **staging** the three pending migrations (security event log, recommendation history, CV documents) after a staging backup (`node scripts/backup-staging-logical.mjs`). Until then staging does not match the code.
-2. Approve deploying the freeze commit to staging (Vercel) and running the hosted smoke test tier 2 (`ORYQEN_HOSTED_APPROVAL_REQUEST.md`).
+1. ~~Apply the three pending migrations to staging~~ **done 8 Nov** (see `ORYQEN_TESTING.md`).
+2. ~~Deploy to staging~~ **done 8 Nov**. Still open: the signed-in hosted smoke test (tier 2, `ORYQEN_HOSTED_APPROVAL_REQUEST.md`).
 3. Decide AI: off (recommended; the labelled rules-based analysis is shown) or approved for the demo account only.
 4. Confirm auth email capacity (see below) and create demo accounts with passwords kept off paper and out of git.
 5. Choose who holds the accounts (adult account holder) for hosting, domain and email services.
@@ -65,7 +65,7 @@ Keep several GB of disk and RAM free before any gate run: a full disk stopped wo
 | Real-stack harness (local Docker, synthetic accounts) | PASS 263/263 |
 | Full E2E (isolated, fixture-based) | **PASS on CI** (GitHub `windows-latest`, commit `4ce1e1e`, run 42433081034: 648 passed, 0 failed; typecheck, lint, 1055 unit/integration tests, PostgreSQL suites and the build all passed too). Local laptop runs were unreliable (F-47); use CI for the freeze check. Any later commit needs its own CI run. |
 | Hosted smoke tier 1 (anonymous) | PASS 24/0/5 (1 Nov) |
-| Hosted smoke tier 2 (signed in) | NOT RUN, needs owner approval |
+| Hosted smoke tier 2 (signed in) | NOT RUN: needs staging accounts the owner creates; the new CV, security-activity and saved-listing screens have not been exercised signed in on staging |
 | Android device run | NOT RUN (emulator did not boot on this RAM) |
-| Staging migrations and deployment match the code | NOT DONE, needs owner approval |
+| Staging migrations and deployment match the code | **DONE 8 Nov** (62 migrations; `release/oryqen-oct27` at `b4d69a2` serves staging; anonymous smoke 24/0/5 and rendering 10/10 on the new build) |
 | Demo accounts and rehearsal | NOT DONE |
