@@ -1,5 +1,15 @@
 # ORYQEN session handoff
 
+## 8 November 2026 (staging deploy steps, owner to run)
+Done: staging backup taken (`backups/staging-logical-20261108-0335Z`, git-ignored: 132 tables, 592 rows, 7 users, 59 migrations). Staging has 59 migrations applied (latest `20261029170000`) and runs a build from about 29 Oct (it has `/api/v1/research/history` and `/trust-chain`, not `/security-events`, `/opportunities/history` or `/cv`). The CI workflow passed on `integration/final-release`.
+Blocked for the assistant (the permission system refuses writes to the shared staging database): applying the three pending migrations and deploying. Steps for the owner, in this order:
+1. `node scripts/apply-staging-migrations.mjs` (guarded: linked project must be `oryqen-staging`, backup under 24 h old; `--check` lists pending). Applies security event log, recommendation history and CV documents, each in one transaction.
+2. Deploy. The `release/oryqen-oct27` branch has diverged from `integration/final-release`, so do not force-push. A local branch `staging-release-candidate` (commit `c0031a4`, content identical to `integration/final-release` at `01a3dfc`, parent includes the current release tip) is a plain fast-forward: `git push origin staging-release-candidate:release/oryqen-oct27`. Which branch feeds `oryqen-staging.vercel.app` is **inferred, not verified** (Vercel builds both the `oryqen` and `fairwork` projects for every push); confirm in the Vercel dashboard (Project, Settings, Git, Production Branch, and the domain assignment). If the domain is not tied to that branch, the push only creates a preview: promote the deployment of that commit in Vercel instead.
+3. Check: `node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app`, and confirm `/api/v1/cv`, `/api/v1/security-events`, `/api/v1/opportunities/history` return 401 (not 404) when signed out.
+4. Signed-in hosted smoke (tier 2) still needs accounts the owner creates (`ORYQEN_HOSTED_APPROVAL_REQUEST.md`).
+Rollback: promote the previous Vercel deployment; the migrations are additive and can stay.
+Also: the GitHub repository `anu123bnada/fairwork` is **public**. A sentence about the project owner's age was published in one doc on 8 Nov and removed in `01a3dfc`, but it remains in git history; making the repository private in GitHub settings is the effective fix.
+
 ## 8 November 2026
 - Branch `integration/final-release` pushed to GitHub (owner-approved) and the repo's CI workflow passed fully on `4ce1e1e` (run 42433081034): typecheck, lint, 1055 tests, PostgreSQL suites, **E2E 648 passed 0 failed**, build. F-47 resolved as a laptop problem. Local E2E remains unreliable; use CI. Any commit after `4ce1e1e` (this docs commit and later) is not yet covered by a CI run and is not yet pushed.
 - Freeze runbook and the pre-freeze checklist are in `ORYQEN_EXHIBITION.md`. Still needing the owner: approve three staging migrations and a staging deploy, hosted smoke tier 2, demo accounts, AI on/off decision, Android device or phone test.
