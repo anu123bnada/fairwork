@@ -1,5 +1,9 @@
 # ORYQEN session handoff
 
+## 8 November 2026
+- Branch `integration/final-release` pushed to GitHub (owner-approved) and the repo's CI workflow passed fully on `4ce1e1e` (run 42433081034): typecheck, lint, 1055 tests, PostgreSQL suites, **E2E 648 passed 0 failed**, build. F-47 resolved as a laptop problem. Local E2E remains unreliable; use CI. Any commit after `4ce1e1e` (this docs commit and later) is not yet covered by a CI run and is not yet pushed.
+- Freeze runbook and the pre-freeze checklist are in `ORYQEN_EXHIBITION.md`. Still needing the owner: approve three staging migrations and a staging deploy, hosted smoke tier 2, demo accounts, AI on/off decision, Android device or phone test.
+
 ## 6 November 2026
 - Built the Smart CV Builder (`/app/cv`; migration `20261106100000_cv_documents.sql` applied **locally only**). Three migrations are now pending for staging (security event log, recommendation history, CV documents), all needing owner approval and a staging backup. New docs: `ORYQEN_LINKEDIN.md` (official API check: no experience import without a partner program), `ORYQEN_AI_PROVIDERS.md`, `ORYQEN_COMMERCIAL_LAUNCH.md`.
 - NOT built from the 6 Nov brief: AI Challenge Arena, AI career analysis, AI cover letters, LinkedIn OAuth (needs an adult-created developer app), interview simulator, organization analytics, load tests, Android device verification. Each is listed with its blocker in `ORYQEN_FEATURE_MATRIX.md` terms: NOT_IMPLEMENTED or BLOCKED.
