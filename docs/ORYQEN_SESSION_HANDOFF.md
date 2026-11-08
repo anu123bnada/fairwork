@@ -1,4 +1,44 @@
-# ORYQEN session handoff (updated 27 October 2026)
+# ORYQEN session handoff
+
+## 8 November 2026 (staging deploy steps, owner to run)
+Done: staging backup taken (`backups/staging-logical-20261108-0335Z`, git-ignored: 132 tables, 592 rows, 7 users, 59 migrations). Staging has 59 migrations applied (latest `20261029170000`) and runs a build from about 29 Oct (it has `/api/v1/research/history` and `/trust-chain`, not `/security-events`, `/opportunities/history` or `/cv`). The CI workflow passed on `integration/final-release`.
+Blocked for the assistant (the permission system refuses writes to the shared staging database): applying the three pending migrations and deploying. Steps for the owner, in this order:
+1. `node scripts/apply-staging-migrations.mjs` (guarded: linked project must be `oryqen-staging`, backup under 24 h old; `--check` lists pending). Applies security event log, recommendation history and CV documents, each in one transaction.
+2. Deploy. The `release/oryqen-oct27` branch has diverged from `integration/final-release`, so do not force-push. A local branch `staging-release-candidate` (content identical to `integration/final-release`, its parents include the current release tip; refresh it with the `git commit-tree` approach if the integration branch moves) is a plain fast-forward: `git push origin staging-release-candidate:release/oryqen-oct27`. Which branch feeds `oryqen-staging.vercel.app` is **inferred, not verified** (Vercel builds both the `oryqen` and `fairwork` projects for every push); confirm in the Vercel dashboard (Project, Settings, Git, Production Branch, and the domain assignment). If the domain is not tied to that branch, the push only creates a preview: promote the deployment of that commit in Vercel instead.
+3. Check: `node scripts/verify-hosted-staging.mjs https://oryqen-staging.vercel.app`, and confirm `/api/v1/cv`, `/api/v1/security-events`, `/api/v1/opportunities/history` return 401 (not 404) when signed out.
+4. Signed-in hosted smoke (tier 2) still needs accounts the owner creates (`ORYQEN_HOSTED_APPROVAL_REQUEST.md`).
+Rollback: promote the previous Vercel deployment; the migrations are additive and can stay.
+Also: the GitHub repository `anu123bnada/fairwork` is **public**. A sentence about the project owner's age was published in one doc on 8 Nov and removed in `01a3dfc`, but it remains in git history; making the repository private in GitHub settings is the effective fix.
+
+## 8 November 2026
+- Branch `integration/final-release` pushed to GitHub (owner-approved) and the repo's CI workflow passed fully on `4ce1e1e` (run 42433081034): typecheck, lint, 1055 tests, PostgreSQL suites, **E2E 648 passed 0 failed**, build. F-47 resolved as a laptop problem. Local E2E remains unreliable; use CI. Any commit after `4ce1e1e` (this docs commit and later) is not yet covered by a CI run and is not yet pushed.
+- Freeze runbook and the pre-freeze checklist are in `ORYQEN_EXHIBITION.md`. Still needing the owner: approve three staging migrations and a staging deploy, hosted smoke tier 2, demo accounts, AI on/off decision, Android device or phone test.
+
+## 6 November 2026
+- Built the Smart CV Builder (`/app/cv`; migration `20261106100000_cv_documents.sql` applied **locally only**). Three migrations are now pending for staging (security event log, recommendation history, CV documents), all needing owner approval and a staging backup. New docs: `ORYQEN_LINKEDIN.md` (official API check: no experience import without a partner program), `ORYQEN_AI_PROVIDERS.md`, `ORYQEN_COMMERCIAL_LAUNCH.md`.
+- NOT built from the 6 Nov brief: AI Challenge Arena, AI career analysis, AI cover letters, LinkedIn OAuth (needs an adult-created developer app), interview simulator, organization analytics, load tests, Android device verification. Each is listed with its blocker in `ORYQEN_FEATURE_MATRIX.md` terms: NOT_IMPLEMENTED or BLOCKED.
+- Full-E2E gate is not passing for this commit family: three runs, three different single failures, the last `net::ERR_INSUFFICIENT_RESOURCES` (F-47). Rerun it alone with several GB of free RAM.
+- Incident: while clearing port 3100 I stopped an unrelated server (`next start -p 3100` from `C:/Users/vehiv/Desktop/Anne-German-Academy/annes-german-academy-stage6-complete/annes-german-academy-production-starter`). Restart it with `node node_modules/next/dist/bin/next start -p 3100` in that folder. Always check a port's owner before stopping it.
+
+## 5 November 2026
+- 5 Nov (later): recommendation history built (module 3). Migration `20261105110000_recommendation_history.sql` is applied locally only; with `20261105100000_security_event_log.sql` there are now **two migrations pending for staging**, both needing owner approval and a staging backup. `scripts/apply-local-migrations.mjs` now handles table-creating migrations locally (temporary CREATE grants, always revoked). Remaining buildable gaps: skills-gap suggestions (03), clause editing (05), skills in shared Passport (07), recruiter roles (08), account-deletion workflow and passkeys (12), correction procedure for named parties (17), persistent webhook queue (21).
+- 5 Nov: built two local features. (1) Work Passport "Print or save as PDF" private copy (browser print, not a signed PDF). (2) Security activity log (module 12): migration `20261105100000_security_event_log.sql`, `/api/v1/security-events`, Settings panel. **That migration is NOT applied to staging** (owner approval and a staging backup are needed first; apply with the existing procedure, then update the staging-baseline pin in `tests/integration/migration-upgrade.test.ts` only if the baseline changes). The delivery tracker's gap lists are stale; the 22-module acceptance doc (29 Oct) is closer, and research history (module 02) and dispute categories (module 09) were already built and applied to staging.
+- Harness reliability: never run two harness runs at once; if `app not ready`, check for a leftover Next process on port 3100 (`Get-NetTCPConnection -LocalPort 3100`) and stop it first.
+
+## 3 November 2026
+- Added `scripts/local-tier2-journey.mjs` (wired into `scripts/test-local-real-workflows.mjs`): anonymous route/API protection, outsider direct-URL denial, MFA-aware password recovery. Full real-stack run via `node scripts/run-local-split-harness.mjs`: 245 PASS / 0 FAIL / 0 SKIPPED. Docker Desktop must be started first (`C:/Users/vehiv/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe`). One intermittent telemetry miss is recorded as F-45 (open).
+- Hosted: Tier 1 done (24/0/5). A single approval request for Tier 2 is in `ORYQEN_HOSTED_APPROVAL_REQUEST.md`; NOT approved, nothing hosted written.
+- Not done: full vitest/E2E/build rerun after these script-only changes (no product code touched), Android emulator retry, live Gemini, release signing.
+
+## 31 October 2026 checkpoint (branch `integration/final-release`)
+- Verified this session at `a0a4076`: tsc, lint, vitest (154 files, 1038 passed, 17 skipped, 0 failed), `next build`. Playwright E2E, real-stack harness, hosted smoke, Android and live Gemini were NOT run; see `ORYQEN_TESTING.md`.
+- Unstaged 1,287 accidentally staged files under `work/temp` and ignored them. `landing/v6/next-env.d.ts` is still untracked on purpose.
+- New docs: `ORYQEN_FEATURE_MATRIX`, `_SECURITY`, `_DEPLOYMENT`, `_ANDROID`, `_TESTING`, `_EXHIBITION`, `_MAINTENANCE`. They summarize and link the older detailed docs.
+- Next: run `npm run test:e2e:isolated` (alone), then the real-stack harness, then hosted smoke after owner approval (D1/D2 in `OWNER_ACTIONS.md`). Nothing hosted was touched.
+- 1 Nov update (HEAD `6a8e08e`): full isolated E2E rerun 625 passed / 0 failed / 14 skipped / 0 flaky. Real-stack harness NOT passing (F-43: Work Passport link or Decision receipt not found; page re-requests its document every 2-3 s; cause not established). Android build BLOCKED (no usable JDK 17+). Hosted smoke and live Gemini not run (approval needed); procedures in `ORYQEN_HOSTED_SMOKE.md` and `ORYQEN_GEMINI_ACTIVATION.md`.
+- Next: bisect F-43 against `bc29682` (last complete 225/225) in a separate worktree, or reproduce in a signed-in browser; then JDK install (needs approval) and Android debug build.
+- 1 Nov final state (HEAD after this commit): real-stack harness 219/219 via `node scripts/run-local-split-harness.mjs` (`--manage-app` still unreliable, F-43). Android debug/online compile with JDK 21; emulator run BLOCKED: APK installs but the real-UI journey timed out twice at onboarding with ~350 MB host RAM free (cause unconfirmed). Hosted smoke, live Gemini, release signing: NOT RUN / need owner decisions. Next: rerun Android with >=8 GB free RAM or a physical device; hosted smoke after approval.
+
 
 Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 `docs/ORYQEN_V1_MASTER_SPECIFICATION.md` (the authoritative 22-module target). Do not repeat the audit.

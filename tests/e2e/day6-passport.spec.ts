@@ -64,3 +64,24 @@ for (const locale of ["si","ta","de"] as const) {
   await expect(page.locator("body")).not.toContainText(/\bpp\.[a-zA-Z.]+\b/);
  });
 }
+
+test("print or save as PDF prints only a private, unsigned copy built from freshly authorized records, then removes it",async({context,page})=>{
+ const state=model();await session(context,state,worker);
+ await page.addInitScript(()=>{(window as unknown as {printCalls:number}).printCalls=0;window.print=()=>{(window as unknown as {printCalls:number}).printCalls++;};});
+ await page.goto("/app/passport");
+ await page.getByText("Download a private copy",{exact:true}).first().click();
+ await page.getByRole("button",{name:"Print or save as PDF"}).first().click();
+ const sheet=page.getByLabel("Printable private Work Passport");
+ await expect(sheet).toHaveCount(1);
+ await expect.poll(()=>page.evaluate(()=>(window as unknown as {printCalls:number}).printCalls)).toBe(1);
+ await page.emulateMedia({media:"print"});
+ await expect(sheet).toBeVisible();
+ await expect(sheet).toContainText("ORYQEN Work Passport (private copy)");
+ await expect(sheet).toContainText("Nimal Perera");
+ await expect(sheet).toContainText("signed certificate or live verification link");
+ await expect(page.getByRole("button",{name:"Print or save as PDF"}).first()).toBeHidden();
+ await page.emulateMedia({media:"screen"});
+ await expect(sheet).toBeHidden();
+ await page.evaluate(()=>window.dispatchEvent(new Event("afterprint")));
+ await expect(sheet).toHaveCount(0);
+});

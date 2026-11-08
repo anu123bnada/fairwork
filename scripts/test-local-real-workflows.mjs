@@ -5,8 +5,9 @@ import { chromium, expect as baseExpect } from '@playwright/test';
 const expect = baseExpect.configure({ timeout: 60000 });
 import { generateKeyPair, exportJWK } from 'jose';
 import { randomBytes, randomUUID, createHmac } from 'node:crypto';
-import { mkdirSync, writeFileSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync, readFileSync, readdirSync, openSync } from 'node:fs';
 import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { spawn, spawnSync } from 'node:child_process';
 import { checkLocalDocker } from './local-development-runtime.mjs';
 import { redactStartupOutput } from './local-development-diagnostics.mjs';
@@ -24,6 +25,7 @@ import { localRecruiterJourney } from './local-recruiter-journey.mjs';
 import { localOrgPlanJourney } from './local-orgplan-journey.mjs';
 import { localReportJourney } from './local-report-journey.mjs';
 import { localDiscoveryJourney } from './local-discovery-journey.mjs';
+import { localTier2Journey } from './local-tier2-journey.mjs';
 
 checkLocalDocker();
 if (!existsSync('test-results/activation-plan/constraints-stage-6.sql')) {
@@ -43,12 +45,16 @@ if (!process.env.ORYQEN_CREDENTIAL_SIGNING_KEY) {
   process.env.ORYQEN_CREDENTIAL_SIGNING_KEY = JSON.stringify({ ...(await exportJWK(privateKey)), kid });
   process.env.ORYQEN_CREDENTIAL_PUBLIC_KEYS = JSON.stringify({ [kid]: (({ kty, crv, x }) => ({ kty, crv, x }))(await exportJWK(publicKey)) });
 }
-process.env.ORYQEN_VAULT_LOCAL_DIR ??= `${process.cwd()}/${evidence}/vault-store`;
+// Outside the project folder: the app writes uploaded files here, and the Next development watcher reloads pages when files change under the project.
+process.env.ORYQEN_VAULT_LOCAL_DIR ??= `${tmpdir()}/oryqen-vault-${Date.now()}`;
 const record = check => { results.push({ check, status: 'PASS' }); console.log(`PASS: ${check}`); };
 const must = (value, check) => { if (!value) throw new Error(check); record(check); };
 let browser, app, stage = 'startup';
 async function startApp() {
-  app = spawn(process.execPath, ['scripts/run-local-development.mjs'], { windowsHide: true, stdio: 'ignore' });
+  // Keep the app's own output (outside the project folder, so the dev watcher ignores it) to explain page reloads or crashes.
+  const appLog = openSync(`${tmpdir()}/oryqen-local-app-${Date.now()}.log`, 'a');
+  console.log(`Local app output: ${tmpdir()}/oryqen-local-app-*.log`);
+  app = spawn(process.execPath, ['scripts/run-local-development.mjs'], { windowsHide: true, stdio: ['ignore', appLog, appLog] });
   for (let i = 0; i < 120; i++) {
     if (app.exitCode !== null) throw new Error('Owned local app process exited');
     if (await fetch(`${origin}/sign-in`).then(r => r.ok).catch(() => false)) return;
@@ -325,7 +331,8 @@ try {
   record('Real worker and employer dashboards render their persisted scoped offer lists');
   for (const [screen, query] of [['questions', `offerId=${privateOfferId}`], ['agreement-workflow', `workflowId=${ids.agreementId}`], ['work-record', `workId=${ids.workId}`], ['passport', '']]) {
     await workerPage.goto(`${origin}/app/${screen}${query ? `?${query}` : ''}`);
-    if (screen === 'passport') await expect(workerPage.getByRole('link', { name: /Synthetic integration worker/ })).toBeVisible({ timeout: 30000 });
+    if (screen === 'passport') await expect(workerPage.getByRole('link', { name: /Synthetic integration worker/ })).toBeVisible({ timeout: 30000 }).catch(async error => { await workerPage.screenshot({ path: `${evidence}/passport-link-missing.png`, fullPage: true }).catch(() => {}); writeFileSync(`${evidence}/passport-link-missing.txt`, `${workerPage.url()}
+${await workerPage.locator('body').innerText().catch(() => '')}`); throw error; });
     else if (screen === 'work-record') await expect(workerPage.getByRole('status').filter({ hasText: 'Record version' })).toContainText('Verified', { timeout: 30000 });
     else if (screen === 'questions') await expect(workerPage.locator('.fw-question-card')).toHaveCount(2, { timeout: 30000 });
     else await expect(workerPage.getByRole('status').filter({ hasText: 'Version 1' })).toContainText('Both participants confirmed', { timeout: 30000 });
@@ -398,6 +405,8 @@ try {
   await request(employer, '/api/v1/companies', { ...companyBody, expectedVersion: 2 }, [403, 404]);
   record('Revoked representative cannot edit company claims');
   must(!(await request(employer, '/api/v1/notifications')).items.some(n => ['offer_revision','agreement_decision','work_decision','work_integrity'].includes(n.kind)), 'Revoked employer cannot retain employment access through notifications');
+  stage = 'anonymous protection, direct URL isolation and password recovery';
+  await localTier2Journey({ browser, worker, outsider: approver, offerId: privateOfferId, secrets: ['Synthetic local maintenance', 'Synthetic local maintenance task', worker.email], request, record, origin, evidence, mail, totp });
   stage = 'self-service account deactivation';
   await localDeactivationJourney({worker,employer,request,record,origin,evidence,localSql,grantId:share.grantId,totp});
 } catch (error) {

@@ -16,11 +16,10 @@ test("new notifications appear without a reload, and a failed refresh keeps the 
   await page.goto("/app/notifications");
   await expect(page.getByText("First reminder")).toBeVisible();
   await expect(page.getByText("Second reminder")).toHaveCount(0);
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  await expect(page.getByText("Second reminder")).toBeVisible();
+  // The focus listener is attached after the first render; repeat the signal until it is heard instead of assuming the order.
+  await expect(async () => { await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByText("Second reminder")).toBeVisible({ timeout: 500 }); }).toPass();
   await expect(page.getByText("First reminder")).toBeVisible();
   fail = true;
-  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(async () => { await page.evaluate(() => window.dispatchEvent(new Event("focus"))); await expect(page.getByText(/Could not check for new activity/)).toBeVisible({ timeout: 500 }); }).toPass();
   await expect(page.getByText("First reminder")).toBeVisible();
-  await expect(page.getByText(/Could not check for new activity/)).toBeVisible();
 });

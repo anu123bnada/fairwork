@@ -52,7 +52,11 @@ export function assessOfferTerms(terms: Readonly<Record<string, string | number>
   const evidence = raw === undefined ? null : String(raw).trim() || null;
   let status: Item["status"] = "stated";
   if (evidence === null) status = "missing";
-  else if (unresolved.test(evidence) || (rule.valid && !rule.valid(evidence))) status = "uncertain";
+  else if (unresolved.test(evidence) || (rule.valid && !rule.valid(evidence)) ||
+    // Extraction may leave only "LKR 5000" in the fees field. An amount alone
+    // says nothing about obligation, recipient or refund terms; do not award
+    // protection points or infer misconduct from it.
+    (rule.id === "trainingDeposit" && /^(?:[A-Z]{3}\s*|[$€£]\s*)?\d[\d,.]*(?:\s*[A-Z]{3})?$/i.test(evidence))) status = "uncertain";
   // Only explicit affirmative obligations at the start of a reviewed field
   // affect points. Generic phrase matches remain unscored review suggestions.
   else if (rule.concern?.test(evidence)) status = "concern";

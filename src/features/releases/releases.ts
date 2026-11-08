@@ -50,8 +50,8 @@ export function httpsUrl(value: string | undefined): string | null {
 
 // NEXT_PUBLIC values are inlined at build time, so each must be referenced literally.
 export const releaseUrls: Record<Release["key"], string | null> = {
-  windows: httpsUrl(process.env.NEXT_PUBLIC_WINDOWS_URL),
+  windows: httpsUrl(process.env.NEXT_PUBLIC_WINDOWS_URL) ?? "https://github.com/anu123bnada/fairwork/releases/download/oryqen-preview-v0.1.0/ORYQEN-Preview-0.1.0-x64-Setup.exe",
   // The APK is small enough to ship with the site, so its link is served from this origin (verified after each deploy). The Windows installer is too large for that and
-  // stays unpublished until a release host URL is configured.
+  // is published as the verified GitHub testing preview above.
   android: httpsUrl(process.env.NEXT_PUBLIC_APK_URL) ?? "/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk",
 };

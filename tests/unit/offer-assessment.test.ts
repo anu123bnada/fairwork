@@ -1,6 +1,16 @@
 import { expect, it } from "vitest";
 import { assessOfferTerms, OFFER_ASSESSMENT_VERSION } from "@/features/offer/assessment";
+import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
 const complete={salary:80000,currency:"LKR",payPeriod:"monthly",paymentDate:"Last working day",hoursPerWeek:40,schedule:"Monday to Friday",overtime:"Optional; 1.5 times agreed hourly pay",leave:"20 paid days annually",role:"Workshop Assistant",responsibilities:"Inspect tools",employmentType:"Permanent",contractDuration:"Ongoing",probation:"Three paid months",notice:"One month by either party; final pay on last day",safety:"Employer provides training and protective equipment",documentRetention:"Worker keeps all originals",deductions:"None",trainingDeposit:"No fees or deposits",benefits:"Transport allowance",contractConditions:"None"};
+it("an extracted deposit amount requires clarification without inventing an obligation",()=>{
+ const {detectedTerms}=extractOfferTermsRuleBased("Security deposit: LKR 5000");
+ const result=assessOfferTerms(detectedTerms);
+ expect(result.items.find(item=>item.id==="trainingDeposit")).toMatchObject({evidence:"LKR 5000",status:"uncertain",points:0});
+ expect(result.concernCount).toBe(0);
+});
+it.each(["5000", "USD 1,000.50", "5000 LKR", "$200", "EUR 0"])("bare fee amount %s earns no protection points",value=>{
+ expect(assessOfferTerms({...complete,trainingDeposit:value}).score).toBe(95);
+});
 it("scores every published criterion once and exposes the exact version and limitations",()=>{
  const result=assessOfferTerms(complete);
  expect(result.score).toBe(100);expect(result.statedCount).toBe(20);

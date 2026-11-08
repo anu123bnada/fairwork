@@ -6,6 +6,7 @@ import { appRequest } from "@/features/authority/client";
 import { offerListSchema, type OfferList } from "@/features/offer/list-schema";
 import { workListSchema, type WorkList } from "@/features/work/schema";
 import { expiryList } from "@/features/offer/expiry";
+import { draftPage } from "@/features/offer/draft-schema";
 import { bcp47 } from "@/i18n";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
@@ -27,6 +28,24 @@ function useRead<T>(path: string, parse: (raw: unknown) => T): Loaded<T> {
 }
 const parseOffers = (raw: unknown): OfferList => offerListSchema.parse(raw);
 const parseRecords = (raw: unknown): WorkList => workListSchema.parse(raw);
+
+export function DashboardDrafts() {
+  const { t } = useI18n();
+  const drafts = useRead("/api/v1/offers/drafts", raw => draftPage.parse(raw));
+  return <section className="fw-list-card" aria-label={t("dr.dashboard")}>
+    <h3>{t("dr.dashboard")}</h3>
+    <p className="fw-notice">{t("dr.intro")}</p>
+    {drafts.state === "loading" && <p role="status">{t("dr.loading")}</p>}
+    {drafts.state === "failed" && <p role="alert">{t("dr.loadError")}</p>}
+    {drafts.state === "ready" && drafts.data.items.length === 0 && <p>{t("dr.none")}</p>}
+    {drafts.state === "ready" && drafts.data.items.slice(0, 3).map(item => <article className="fw-question-card" key={item.id}>
+      <strong style={{overflowWrap:"anywhere"}}>{item.content.role}</strong>
+      <p>{t("dr.itemLine", {employer:item.content.employer || t("dr.noEmployer"), revision:item.revision})}</p>
+      <Link className="fw-secondary" href={`/app/add-offer?draftId=${item.id}#private-offer-drafts`} aria-label={t("dr.open", {role:item.content.role})}>{t("dr.review")}</Link>
+    </article>)}
+    <Link className="fw-secondary" href="/app/add-offer#private-offer-drafts">{t("dr.all")}</Link>
+  </section>;
+}
 
 export function useDashboardData() {
   const offers = useRead("/api/v1/offers?context=WORKER&view=active", parseOffers);

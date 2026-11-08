@@ -222,3 +222,33 @@ test("notifications group by day, count unread, filter to unread and link to the
   await expect(page.getByRole("link",{name:"Open"}).first()).toHaveAttribute("href",`/app/work-record?workId=${id}`);
  }finally{await context.close();}
 });
+
+// At the end of a page the last content must clear the fixed primary action and the bottom navigation.
+const barRoutes:[string,string][]=[["/app/add-offer","add offer"],[`/app/check?offerId=${id}`,"check"],[`/app/questions?offerId=${id}`,"questions"],[`/app/agreement?offerId=${id}`,"agreement summary"],["/app/passport","passport"]];
+for(const [width,height] of [[375,812],[1440,900]] as const)
+for(const [route,label] of barRoutes)
+test(`the end of ${label} is not covered by the fixed action or navigation (${width}px)`,async({browser})=>{
+ const context=await browser.newContext({viewport:{width,height}});
+ try{
+  await signedIn(context);
+  await context.route("**/api/v1/offers/answers**",r=>r.fulfill({json:{data:{offerId:id,items:[]}}}));
+  const page=await context.newPage();
+  await page.goto(route);await page.waitForTimeout(1500);
+  await page.evaluate(()=>{window.scrollTo(0,document.documentElement.scrollHeight);for(const e of document.querySelectorAll<HTMLElement>("*")){const o=getComputedStyle(e).overflowY;if((o==="auto"||o==="scroll")&&e.scrollHeight>e.clientHeight+4)e.scrollTop=e.scrollHeight;}});await page.waitForTimeout(300);
+  const gap=await page.evaluate(()=>{
+   const fixed=[...document.querySelectorAll<HTMLElement>(".fw-fixed-action,.fw-demo-passport-action,.fw-bottom-nav")].filter(e=>getComputedStyle(e).position==="fixed"&&e.getBoundingClientRect().width>0&&getComputedStyle(e).display!=="none"&&e.getBoundingClientRect().top>innerHeight*0.4);
+   if(!fixed.length)return null;
+   const coverTop=Math.min(...fixed.map(e=>e.getBoundingClientRect().top));
+   let bottom=0,who="";
+   for(const e of document.querySelectorAll<HTMLElement>(".fw-product *")){
+    if(getComputedStyle(e).position==="fixed"||fixed.some(f=>f.contains(e)))continue;if(e.closest(".fw-bottom-nav"))continue;const closed=e.closest("details:not([open])");if(closed&&!e.closest("summary"))continue;
+    const r=e.getBoundingClientRect();if(r.width<2||r.height<2)continue;
+    const hasText=[...e.childNodes].some(n=>n.nodeType===3&&n.textContent!.trim());const interactive=/^(BUTTON|A|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(e.tagName);
+    if((hasText||interactive)&&r.bottom>bottom&&r.bottom<=innerHeight+1&&r.top<innerHeight){bottom=r.bottom;who=e.tagName+"."+String(e.className).slice(0,40)+" in "+(e.closest("[class]")?.parentElement?.className??"");}
+   }
+   return {coverTop,bottom,who:who+` [scrollY ${Math.round(scrollY)} inner ${innerHeight} docH ${document.documentElement.scrollHeight} bodyH ${document.body.scrollHeight}]`};
+  });
+  test.skip(gap===null,"no fixed bar on this screen");
+  expect(gap!.bottom,`last content (${gap!.who}) ends at ${gap!.bottom} but the bar starts at ${gap!.coverTop}`).toBeLessThanOrEqual(gap!.coverTop+1);
+ }finally{await context.close();}
+});

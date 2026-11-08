@@ -4,6 +4,7 @@ import { useEffect,useRef,useState } from "react";
 import { appRequest,ApiRequestError } from "@/features/authority/client";
 import { passportSchema,passportReceiptSchema,type Passport } from "@/features/work/passport-schema";
 import { collectPrivatePassportExport } from "@/features/work/passport-export";
+import { PassportPrintSheet } from "./passport-print-sheet";
 import { groupPassportByYear,summarizePassport } from "@/features/work/passport-summary";
 import { useI18n } from "@/i18n/use-i18n";
 import { toast } from "@/components/ui/toast";
@@ -14,6 +15,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
  const { t } = useI18n();
  const [passport,setPassport]=useState<Passport|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState<Error|null>(null);
  const initializeKey=useRef<string|null>(null);
+ const [sheet,setSheet]=useState<Awaited<ReturnType<typeof collectPrivatePassportExport>>|null>(null);
  const requestSequence=useRef(0);
  useEffect(()=>{
   let active=true;
@@ -46,6 +48,14 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    const link=document.createElement("a");link.href=url;link.download="oryqen-signed-passport.json";link.click();toast(t("pp.downloaded"));
    setTimeout(()=>URL.revokeObjectURL(url),1000);
   }catch(caught){setError(caught instanceof ApiRequestError&&caught.status===503?new Error(t("pp.signedUnavailable")):caught instanceof Error?caught:new Error(t("pp.downloadError")));}
+  finally{setBusy(false);}
+ }
+ // The print sheet is rendered from a freshly re-authorized export, printed once, then removed. Nothing is stored or sent anywhere.
+ useEffect(()=>{if(!sheet)return;const done=()=>setSheet(null);window.addEventListener("afterprint",done,{once:true});window.print();return()=>window.removeEventListener("afterprint",done);},[sheet]);
+ async function printPdf(){
+  if(busy)return;setBusy(true);setError(null);
+  try{setSheet(await collectPrivatePassportExport(cursor=>appRequest("/api/v1/passport"+(cursor?`?cursor=${cursor}`:"")),new Date().toISOString()));}
+  catch(caught){setPassport(null);setError(caught instanceof Error?caught:new Error(t("pp.downloadError")));}
   finally{setBusy(false);}
  }
  async function download(){
@@ -101,7 +111,8 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    <h3 className="fw-section-label">{t("pp.skills")}</h3><div className="oq-pp-empty"><span>{t("pp.skillsNote")}</span></div>
   </>}
   <button className="fw-secondary" disabled={busy} onClick={()=>void reload()}>{t("pp.reload")}</button>
-  {hasPassport&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" disabled={busy} onClick={()=>void downloadSigned()}>{t("pp.signedButton")}</button><p>{t("pp.signedNote")}</p><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
+  {hasPassport&&<details className="fw-list-card"><summary>{t("pp.downloadSummary")}</summary><p>{t("pp.downloadNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void download()}>{t("pp.downloadButton")}</button><button className="fw-secondary" disabled={busy} onClick={()=>void downloadSigned()}>{t("pp.signedButton")}</button><p>{t("pp.signedNote")}</p><button className="fw-secondary" disabled={busy} onClick={()=>void printPdf()}>{t("pp.print.button")}</button><p>{t("pp.print.note")}</p><button className="fw-secondary" onClick={()=>window.print()}>{t("pp.print")}</button><p>{t("pp.printNote")}</p></details>}
   <div className="fw-demo-passport-action"><p className="fw-disclaimer">{t("pp.preview")}</p><Link className="fw-primary" href="/app/share">{t("pp.share")}</Link></div>
+  {sheet&&<PassportPrintSheet file={sheet} name={displayName}/>}
  </div>;
 }

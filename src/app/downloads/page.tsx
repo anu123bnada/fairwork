@@ -63,16 +63,17 @@ export default function DownloadsPage() {
     <h2>Security notices</h2>
     <ul>
       <li>The Windows installer is unsigned, so SmartScreen will warn. Do not disable Windows protection globally.</li>
-      <li>The Android preview APK is signed with a debug certificate and is not a production-signed release.</li>
+      <li>The Android preview APK is debug-signed and debuggable, uses the development package ID org.fairwork.localpoc.online, and has only been tested on an emulator.</li>
       <li>Only HTTPS origins are used; cleartext traffic is disabled in the Android build.</li>
       <li>Never install a build whose checksum does not match the published manifest.</li>
     </ul>
 
     <h2>Preview limitations</h2>
     <p>
-      Live AI guidance is unavailable. New opportunity and guidance features require
-      approved backend migrations. Original document files are not stored by the text
-      importer. No cross-device production acceptance is claimed yet.
+      These packages are for synthetic test data only, require an internet connection,
+      and are not production releases. Windows retains the default Electron icon and
+      Preview product name. Live AI guidance is unavailable. Original document files
+      are not stored by the text importer. No physical Android device acceptance is claimed.
     </p>
 
     <h2>Full release documentation</h2>

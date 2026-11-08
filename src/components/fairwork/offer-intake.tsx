@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ClipboardPaste, FileText, FileType, Image as ImageIcon, PenLine } from "lucide-react";
 import { appRequest } from "@/features/authority/client";
@@ -14,10 +13,7 @@ import { OfferDocx } from "./offer-docx";
 import { OfferDrafts } from "./offer-drafts";
 import { OfferPdf } from "./offer-pdf";
 import { OfferScreenshot } from "./offer-screenshot";
-import { AssessmentDetails, DraftOfferAssessment } from "./offer-assessment";
-import { assessOfferTerms, type assessmentSchema } from "@/features/offer/assessment";
-import { draftReceipt } from "@/features/offer/draft-schema";
-import type { z } from "zod";
+import { DraftOfferAssessment } from "./offer-assessment";
 import { RuleAnalysis } from "./rule-analysis";
 import { ClauseFindings, QualificationPanel } from "./offer-intelligence";
 import { ErrorMessage, Icon, routeFor, useProduct, type OfferResult, type Role } from "./product-app";
@@ -57,12 +53,6 @@ export function AddOfferScreen() {
   const [busy, setBusy] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const requestKeys = useRef(new Map<string, string>());
-  // A worker without a linked organization still gets the real rule-based analysis, saved as a private draft.
-  const [privateResult, setPrivateResult] = useState<{ assessment: z.infer<typeof assessmentSchema>; revision: number | null } | null>(null);
-  const privateDraft = useRef<{ id: string; revision: number } | null>(null);
-  const resultRef = useRef<HTMLElement | null>(null);
-  const [finalized, setFinalized] = useState<"idle" | "saving" | "done" | "failed">("idle");
-  useEffect(() => { if (privateResult) resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }, [privateResult]);
 
   useEffect(() => {
     if (role === "WORKER" && profile?.id && !workerId) setWorkerId(profile.id);
@@ -73,35 +63,11 @@ export function AddOfferScreen() {
   // Text read from a file or image moves into the editable paste box; nothing is applied to the fields until the person asks for suggestions.
   const applyReadText = (text: string) => { setSourceText(text); setReviewed(true); setMethod("paste"); };
 
-  const openQuestions = (assessment: z.infer<typeof assessmentSchema>) => [
-    ...assessment.items.filter(i => i.status === "concern"), ...assessment.items.filter(i => i.status === "uncertain"), ...assessment.items.filter(i => i.status === "missing"),
-  ].slice(0, 8);
-
-  async function saveAndContinue() {
-    if (!privateResult || !privateDraft.current) { setFinalized("failed"); return; }
-    setFinalized("saving");
-    try {
-      const nl = String.fromCharCode(10);
-      const lines = Object.entries(terms).filter(([, value]) => value.trim()).map(([name, value]) => `${name}: ${value}`).join(nl);
-      const questions = openQuestions(privateResult.assessment).map((i, n) => `${n + 1}. ${i.recommendation} (${i.label})`).join(nl);
-      const text = [sourceText.trim(), "--- Reviewed terms ---", lines, `--- Indicator score ${privateResult.assessment.score}/100 · questions to ask ---`, questions].filter(Boolean).join(nl + nl).slice(0, 10000);
-      const receipt = draftReceipt.parse(await appRequest("/api/v1/offers/drafts", {
-        operation: "save", id: privateDraft.current.id, expectedRevision: privateDraft.current.revision, idempotencyKey: crypto.randomUUID(),
-        content: { role: String(terms.role ?? "").slice(0, 120), employer: String(terms.employerName ?? "").slice(0, 200), text },
-      }));
-      privateDraft.current = { id: receipt.id, revision: receipt.revision };
-      setPrivateResult({ ...privateResult, revision: receipt.revision });
-      setFinalized("done");
-    } catch { setFinalized("failed"); }
-  }
-
   async function analyze(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     const formElement = event.currentTarget;
-    const privatePath = role === "WORKER" && !offer && !companyId;
     const invalid = Array.from(formElement.elements).find(element =>
-      !(privatePath && (element as HTMLElement & { name?: string }).name === "companyId") &&
       (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement) && !element.validity.valid,
     ) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | undefined;
     if (invalid) {
@@ -129,26 +95,6 @@ export function AddOfferScreen() {
       const value = String(form.get(field) ?? "").trim();
       if (value) normalizedTerms[field] = field === "salary" || field === "hoursPerWeek" ? Number(value) : value;
       else delete normalizedTerms[field];
-    }
-    if (privatePath) {
-      const assessment = assessOfferTerms(normalizedTerms);
-      try {
-        const lines = Object.entries(normalizedTerms).map(([name, value]) => `${name}: ${value}`).join(String.fromCharCode(10));
-        const text = (sourceText.trim() ? [sourceText.trim(), "--- Reviewed terms ---", lines].join(String.fromCharCode(10, 10)) : lines).slice(0, 10000);
-        const current = privateDraft.current ?? { id: crypto.randomUUID(), revision: 0 };
-        const receipt = draftReceipt.parse(await appRequest("/api/v1/offers/drafts", {
-          operation: "save", id: current.id, expectedRevision: current.revision, idempotencyKey: crypto.randomUUID(),
-          content: { role: String(normalizedTerms.role).slice(0, 120), employer: String(normalizedTerms.employerName ?? "").slice(0, 200), text },
-        }));
-        privateDraft.current = { id: receipt.id, revision: receipt.revision };
-        setPrivateResult({ assessment, revision: receipt.revision });
-        setFinalized("idle");
-      } catch (caught) {
-        // The analysis is computed in the browser from the entered terms, so it is shown even when storage is unavailable.
-        setPrivateResult({ assessment, revision: null });
-        setError(caught instanceof Error ? caught : new Error("The private draft could not be saved."));
-      } finally { setBusy(false); }
-      return;
     }
     const requestBody = {
       offerId: offer?.offerId ?? ensureOfferId(),
@@ -203,7 +149,7 @@ export function AddOfferScreen() {
     <>
       <h2 className="fw-page-title">{t("add.title")}</h2>
       <p className="fw-page-subtitle">{t("add.subtitle")}</p>
-      <OfferDrafts onUse={draft => { startSeparateOffer(); setTerms({ role: draft.role, employerName: draft.employer }); setSourceText(draft.text); setExtraction(null); setError(null); requestKeys.current.clear(); router.replace("/app/add-offer"); }} />
+      <OfferDrafts current={{role:terms.role??"",employer:terms.employerName??"",text:sourceText}} onUse={draft => { startSeparateOffer(); setTerms({ role: draft.role, employerName: draft.employer }); setSourceText(draft.text); setExtraction(null); setError(null); requestKeys.current.clear(); router.replace("/app/add-offer"); }} />
       {offer && <section className="fw-card fw-offer-detail-card" aria-label="Selected offer">
         <p>{t("add.editing", { version: offer.version })}</p>
         <button type="button" className="fw-secondary" disabled={busy} onClick={() => {
@@ -275,28 +221,8 @@ export function AddOfferScreen() {
               <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
               <p className="fw-notice">{t("add.idsNote")}</p>
             </section>
-            {privateResult && <section ref={resultRef} className="fw-card fw-offer-detail-card" role="region" aria-label="Analysis result" tabIndex={-1}>
-              {privateResult.revision === null
-                ? <p role="status"><strong>Analysis below is calculated from the terms you entered. It was NOT saved</strong> — the account storage service did not confirm the save. Change any term and press Analyze offer again to see the result change.</p>
-                : <p role="status"><strong>Saved to your account as a private draft (revision {privateResult.revision}).</strong> Reload the page and open “Private offer drafts” to find it. Change any term and press Analyze offer again to see the result change.</p>}
-              <AssessmentDetails assessment={privateResult.assessment} basis="your entered terms" />
-              <div className="fw-next-steps">
-                <strong>Questions to ask before you decide</strong>
-                {(() => {
-                  const open = openQuestions(privateResult.assessment);
-                  return open.length ? <ol>{open.map(i => <li key={i.id}>{i.recommendation}<small>{i.label} · {i.status === "concern" ? "needs attention" : i.status === "uncertain" ? "unclear" : "not stated"}</small></li>)}</ol> : <p>Every checked term is stated. Still confirm each one in the written contract.</p>;
-                })()}
-              </div>
-              <div className="fw-next-steps">
-                <p role="status"><strong>Progress:</strong> ✓ 1 Add offer · ✓ 2 Review and findings · ✓ 3 Questions to ask · {finalized === "done" ? "✓" : "→"} 4 Save and continue</p>
-                <button type="button" className="fw-primary" disabled={finalized === "saving" || finalized === "done" || privateResult.revision === null} onClick={() => void saveAndContinue()}>{finalized === "saving" ? "Saving…" : finalized === "done" ? "Saved" : "Save and continue"}</button>
-                {finalized === "done" && <p role="status">Saved with your questions and score as revision {privateResult.revision}. Find it any time under “Private offer drafts” at the top of this page, or <Link href={routeFor("home")}>go to Home</Link>.</p>}
-                {finalized === "failed" && <p role="alert">Could not save. Your analysis above is still correct; try again.</p>}
-                {privateResult.revision === null && <p>Saving is unavailable right now, so this result stays on this page only.</p>}
-              </div>
-            </section>}
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
-            <div className="fw-fixed-action fw-inline-action">
+            <div className="fw-fixed-action">
               <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
             </div>
           </form>

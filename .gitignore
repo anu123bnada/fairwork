@@ -56,3 +56,6 @@ release-artifacts/**/*.apk
 
 # The preview APK served with the site (see src/features/releases/releases.ts) is deliberately tracked.
 !public/downloads/*.apk
+
+# local tool caches
+work/temp/
