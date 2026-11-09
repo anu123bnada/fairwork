@@ -75,3 +75,10 @@ Keep several GB of disk and RAM free before any gate run: a full disk stopped wo
 - **Analyze offer** on Add offer: a popup with real stages, then a clean report screen. **Without the Google key set in Vercel the report says "AI analysis is not configured" and uses on-device rules only. Do not tell visitors it is AI-powered unless the owner has completed `ORYQEN_AI_SETUP_STEPS.md` and a real analysis has been run on the staging site.** Visitors without an organization can still analyze (the report says it was not saved).
 - **Help** (menu, more): a rules-based help assistant that labels itself "not AI".
 - Full status of every module and tool, with evidence: `ORYQEN_IMPLEMENTATION_REGISTER.md`. Anything marked NOT BUILT there must be described as "planned".
+
+## Demo reset (9 Nov)
+`scripts/demo-reset.mjs` returns a DEMO account to its baseline using the account's own permissions, so it cannot touch anyone else's data. It refuses any origin except a loopback address or `https://oryqen-staging.vercel.app`, any email not ending in `@example.test`, and any profile whose display name does not contain `DEMO`. It removes the account's CVs, saved-listing history and research history, then recreates a labelled DEMO CV, three employment entries and two offer drafts (fixed ids, so re-running never duplicates). Rehearsed on the real local stack: extras removed, baseline restored, second run clean, a non-DEMO account refused.
+```bash
+node scripts/demo-reset.mjs https://oryqen-staging.vercel.app --email demo-worker@example.test
+```
+It asks for the password at a hidden prompt (or reads `DEMO_PASSWORD`). The account must already exist: the owner creates and confirms it (in the Supabase dashboard, Authentication, Users, "Add user" with auto-confirm, then sign in once and set the display name to start with `[DEMO]`). Seeding a fresh **local** account is `scripts/demo-seed.mjs` (set `DEMO_EMAIL` and `DEMO_PASSWORD`). Staging demo accounts for the employer, recruiter and administrator roles need the owner's authority grants and are NOT created.

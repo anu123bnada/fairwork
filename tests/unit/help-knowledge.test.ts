@@ -30,6 +30,8 @@ describe("Help assistant knowledge", () => {
     expect(topic("my ai agent is not working")).toBe("ai-status");
     expect(topic("are you a chatbot?")).toBe("this-assistant");
     expect(topic("how can I make a CV")).toBe("cv-builder");
+    expect(topic("how do I improve my cv score")).toBe("cv-analyzer");
+    expect(topic("what is an ats checker")).toBe("cv-analyzer");
     expect(topic("how do I share my passport")).toBe("passport-share");
     expect(topic("how to revoke access to my work passport")).toBe("passport-share");
     expect(topic("where do I upload payslips")).toBe("evidence");
