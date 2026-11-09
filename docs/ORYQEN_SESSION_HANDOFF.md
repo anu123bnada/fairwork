@@ -1,5 +1,8 @@
 # ORYQEN session handoff
 
+## 9 November 2026 (exhibition branch)
+- Work continues on `exhibition/dev-nov10` (created from checkpoint `9527bec`; `integration/final-release` stays at the checkpoint). Staging serves `release/oryqen-oct27` = `b03ff17` (content equal to `exhibition/dev-nov10` at `349eff7`, CI green). New: CV Analyzer; `scripts/demo-reset.mjs`. Still blocked on the owner: AI key and approval in Vercel (no real analysis has run on staging), the signed-in staging check, DEMO accounts on staging (employer, recruiter and administrator accounts need authority grants and are NOT created).
+
 ## 9 November 2026 (latest): Analyze offer flow and real AI
 - Deployed: `release/oryqen-oct27` is `51a6e39` (content equal to `integration/final-release` at `2682b17`, CI green, E2E 662 passed). To get real AI on the staging site the owner still has to add the Google key and approval settings in Vercel and redeploy.
 - Analyze offer now opens a real-stage popup and a new `/app/report` screen; AI runs only with configuration and the person's consent; a worker with no linked organization can analyze without saving. Real AI was verified **locally** on made-up text (API script and real browser run, `gemini-3.1-flash-lite`); the local settings leave the approval variables unset, so those were set only for the temporary test process. **Staging still has AI off**: the owner must add the Google key and the approval settings in Vercel and redeploy (`ORYQEN_AI_SETUP_STEPS.md`, use `gemini-3.1-flash-lite`). The scripts `scripts/test-hosted-worker-journeys.mjs --real-ai` and `scripts/real-ai-browser-check.mjs` make one real call each and are opt-in.
