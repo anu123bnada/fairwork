@@ -237,6 +237,35 @@ await step('17 Saved-listing history: a snapshot is stored privately, keeps only
   return 'stored, read back with outcomes only, invented content refused, deleted';
 });
 
+// ---- 18. personal records (application tracker and workroom): private, validated, revisioned
+await step('18 Application tracker and Workroom: save, read back exactly, list, update with the revision, refuse stale, invalid and foreign-owner input, delete', async () => {
+  const appId = randomUUID(), projId = randomUUID();
+  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call' }], prep: [true, false, true, false, false, false] };
+  const appBody = { id: appId, kind: 'application', title: 'Synthetic hosted application', status: 'interviewing', content: appContent, expectedRevision: 0 };
+  const projBody = { id: projId, kind: 'project', title: 'Synthetic hosted project', status: 'active', content: { description: 'Synthetic', dueOn: '2026-12-01', milestones: [{ id: randomUUID(), title: 'M1', done: false, dueOn: '2026-11-20' }], tasks: [{ id: randomUUID(), title: 'T1', done: true }, { id: randomUUID(), title: 'T2', done: false }] }, expectedRevision: 0 };
+  try {
+    if ((await call('/api/v1/records', appBody)).data.revision !== 1) throw new Error('the first application save should be revision 1');
+    if ((await call('/api/v1/records', projBody)).data.revision !== 1) throw new Error('the first project save should be revision 1');
+    const read = (await call('/api/v1/records?id=' + appId)).data;
+    if (JSON.stringify(read.content) !== JSON.stringify(appContent) || read.status !== 'interviewing') throw new Error('the application did not read back as saved');
+    const projects = (await call('/api/v1/records?kind=project')).data.items;
+    const mine = projects.find(item => item.id === projId);
+    if (!mine || mine.summary.taskCount !== 2 || mine.summary.tasksDone !== 1) throw new Error('the project list is missing or its task counts are wrong');
+    if (projects.some(item => item.id === appId)) throw new Error('the project list contains an application');
+    if ((await call('/api/v1/records', { ...appBody, status: 'offered', expectedRevision: 1 })).data.revision !== 2) throw new Error('the update should be revision 2');
+    await call('/api/v1/records', { ...appBody, expectedRevision: 1 }, { statuses: [409] });
+    await call('/api/v1/records', { ...appBody, id: randomUUID(), status: 'active' }, { statuses: [422] });
+    await call('/api/v1/records', { ...appBody, id: randomUUID(), content: { ...appContent, appliedOn: '01/11/2026' } }, { statuses: [422] });
+    await call('/api/v1/records', { ...appBody, id: randomUUID(), ownerId: randomUUID() }, { statuses: [422] });
+    await call('/api/v1/records?id=' + randomUUID(), undefined, { statuses: [404] });
+  } finally {
+    await call('/api/v1/records/remove', { id: appId }).catch(() => null);
+    await call('/api/v1/records/remove', { id: projId }).catch(() => null);
+  }
+  await call('/api/v1/records?id=' + appId, undefined, { statuses: [404] });
+  return 'both kinds saved, read back, counted, updated, stale/invalid/foreign-owner refused, then deleted (cross-user isolation is proven by the local real-stack harness and the database tests, since this run has one account)';
+});
+
 // ---- 12. notifications
 await step('12 Notifications: the feed loads for this account only', async () => { const feed = (await call('/api/v1/notifications')).data; if (!Array.isArray(feed.items)) throw new Error('unexpected feed'); return `${feed.items.length} item(s)`; });
 

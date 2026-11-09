@@ -98,6 +98,39 @@ export async function localTier2Journey({ browser, worker, outsider, offerId, se
   await request(worker, `/api/v1/cv?id=${cvId}`, undefined, [404]);
   record('Only the owner can delete a CV');
 
+  // ---- personal records (application tracker and workroom): owner-only, validated, revisioned
+  const appId = randomUUID(), projId = randomUUID();
+  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call' }], prep: [true, false, true, false, false, false] };
+  const appBody = { id: appId, kind: 'application', title: 'Synthetic applied job', status: 'interviewing', content: appContent, expectedRevision: 0 };
+  must((await request(worker, '/api/v1/records', appBody)).revision === 1, 'An application record is saved for the worker');
+  const appRead = await request(worker, `/api/v1/records?id=${appId}`);
+  must(JSON.stringify(appRead.content) === JSON.stringify(appContent) && appRead.status === 'interviewing', 'The application reads back exactly what was saved');
+  const projBody = { id: projId, kind: 'project', title: 'Synthetic project', status: 'active', content: { description: 'Synthetic', dueOn: '2026-12-01', milestones: [{ id: randomUUID(), title: 'M1', done: false, dueOn: '2026-11-20' }], tasks: [{ id: randomUUID(), title: 'T1', done: true }, { id: randomUUID(), title: 'T2', done: false }] }, expectedRevision: 0 };
+  must((await request(worker, '/api/v1/records', projBody)).revision === 1, 'A project record is saved for the worker');
+  const projList = await request(worker, '/api/v1/records?kind=project');
+  must(projList.items.some(item => item.id === projId && item.summary.taskCount === 2 && item.summary.tasksDone === 1), 'The project list reports the task counts computed by the database');
+  must(!projList.items.some(item => item.id === appId), 'The project list does not contain applications');
+  must((await request(outsider, '/api/v1/records?kind=application')).items.every(item => item.id !== appId), 'Another account cannot see the owner application list');
+  await request(outsider, `/api/v1/records?id=${appId}`, undefined, [404]);
+  await request(outsider, '/api/v1/records', { ...appBody, expectedRevision: 1 }, [404]);
+  await request(outsider, '/api/v1/records/remove', { id: appId }, [404]);
+  must((await fetch(`${origin}/api/v1/records?kind=project`)).status === 401, 'An anonymous caller is refused the records list');
+  must((await fetch(`${origin}/api/v1/records?id=${appId}`)).status === 401, 'An anonymous caller is refused a record read');
+  await request(worker, '/api/v1/records', { ...appBody, id: randomUUID(), status: 'active' }, [422]);
+  await request(worker, '/api/v1/records', { ...appBody, id: randomUUID(), content: { ...appContent, appliedOn: '01/11/2026' } }, [422]);
+  await request(worker, '/api/v1/records', { ...appBody, id: randomUUID(), content: { ...appContent, salary: 1 } }, [422]);
+  await request(worker, '/api/v1/records', { ...appBody, id: randomUUID(), ownerId: outsider.id }, [422]);
+  await request(worker, '/api/v1/records', { ...appBody, id: randomUUID(), kind: 'project' }, [422]);
+  record('The records API refuses a wrong status for the kind, a bad date, an unknown field, a client-supplied owner and a mismatched kind');
+  await request(worker, '/api/v1/records', { ...appBody, expectedRevision: 0 }, [409]);
+  must((await request(worker, '/api/v1/records', { ...appBody, status: 'offered', expectedRevision: 1 })).revision === 2, 'A record is updated only with the current revision');
+  await request(worker, '/api/v1/records', { ...appBody, expectedRevision: 1 }, [409]);
+  await request(worker, '/api/v1/records', { ...appBody, kind: 'project', status: 'active', content: projBody.content, expectedRevision: 2 }, [404, 409, 422]);
+  await request(worker, '/api/v1/records/remove', { id: appId });
+  await request(worker, '/api/v1/records/remove', { id: projId });
+  await request(worker, `/api/v1/records?id=${appId}`, undefined, [404]);
+  record('Personal records: owner-only, validated, revisioned, deletable; outsider and anonymous refused');
+
   // Password recovery end to end through the local mail sink, then old password rejected and new password accepted.
   const visitor = { context: await browser.newContext() };
   const unknown = await request(visitor, '/api/v1/auth/recovery', { email: `nobody-${randomUUID()}@example.test` }, [200, 202]);

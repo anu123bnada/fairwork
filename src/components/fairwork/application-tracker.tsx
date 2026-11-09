@@ -5,6 +5,7 @@ import { ApiRequestError, appRequest } from "@/features/authority/client";
 import { listRecordsOf, readRecordById, removeRecordById, saveRecordBody } from "@/features/records/client";
 import { applicationStatuses, emptyApplication, prepItems, type ApplicationContent, type RecordSummary } from "@/features/records/schema";
 import { opportunityPage } from "@/features/opportunities/schema";
+import { SubmittedApplications } from "./submitted-applications";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./records.css";
@@ -89,7 +90,8 @@ export function ApplicationTracker() {
         <button className="fw-secondary" disabled={busy} onClick={() => void remove(item.id)}>{t("trk.delete")}</button>
       </li>)}</ul>
       <p><Link className="fw-secondary" href="/app/opportunities">{t("trk.findListings")}</Link> <Link className="fw-secondary" href="/app/guidance">{t("trk.prepHelp")}</Link></p>
-      <p className="fw-notice">{t("trk.private")}</p>
+      <SubmittedApplications />
+    <p className="fw-notice">{t("trk.private")}</p>
     </section>;
   }
 
