@@ -1,0 +1,38 @@
+/* Offer scan: a modal scanning window whose indicators follow real stage state, and a printable report. */
+.oq-scan { display: grid; gap: 14px; }
+.oq-scan-start { display: grid; gap: 10px; }
+.oq-scan-backdrop { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 16px; background: rgba(5, 10, 25, .72); backdrop-filter: blur(4px); }
+.oq-scan-dialog { width: min(34rem, 100%); max-height: 92vh; overflow-y: auto; display: grid; gap: 12px; padding: 18px; border-radius: 18px; border: 1px solid rgba(120, 160, 255, .45); background: var(--oq-surface, #0e1530); color: var(--oq-text, #eef2ff); box-shadow: 0 20px 60px rgba(30, 60, 200, .35); }
+.oq-scan-dialog h2 { margin: 0; }
+.oq-scan-preview { position: relative; overflow: hidden; border-radius: 12px; border: 1px solid rgba(120, 160, 255, .35); max-height: 30vh; background: #000; }
+.oq-scan-preview img { display: block; width: 100%; max-height: 30vh; object-fit: contain; }
+.oq-scan-line { display: none; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, transparent, #35d0ff, #8b5cff, transparent); box-shadow: 0 0 14px #35d0ff; }
+.oq-scan-reading .oq-scan-line { display: block; animation: oq-scan-sweep 1.8s ease-in-out infinite; }
+.oq-scan-reading { outline: 2px solid #35d0ff; }
+.oq-scan-stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.oq-scan-stage { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; }
+.oq-scan-stage small { display: block; opacity: .85; }
+.oq-scan-stage em { font-style: normal; opacity: .85; }
+.oq-scan-dot { width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; border: 2px solid #7c8bb5; box-sizing: border-box; }
+.oq-scan-active .oq-scan-dot { border-color: #35d0ff; border-top-color: transparent; animation: oq-scan-spin .8s linear infinite; }
+.oq-scan-done .oq-scan-dot { background: #2fd08a; border-color: #2fd08a; }
+.oq-scan-skipped .oq-scan-dot { border-style: dashed; }
+.oq-scan-failed .oq-scan-dot { background: #ff5d6c; border-color: #ff5d6c; }
+.oq-scan-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.oq-scan-report { display: grid; gap: 14px; }
+.oq-scan-report-head h2 { margin: 0 0 4px; }
+.oq-scan-summary { padding: 14px; border-radius: 14px; border: 1px solid rgba(120, 160, 255, .4); background: linear-gradient(135deg, rgba(53, 208, 255, .10), rgba(139, 92, 255, .12)); display: grid; gap: 8px; }
+.oq-scan-summary h3 { margin: 0; }
+.oq-scan-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.oq-scan-chips li { padding: 2px 10px; border-radius: 999px; border: 1px solid rgba(120, 160, 255, .5); font-size: .85rem; }
+@keyframes oq-scan-sweep { 0% { transform: translateY(0); } 50% { transform: translateY(26vh); } 100% { transform: translateY(0); } }
+@keyframes oq-scan-spin { to { transform: rotate(360deg); } }
+/* Reduced motion: no sweeping line and no spinning; the state is still shown by colour, outline and text. */
+@media (prefers-reduced-motion: reduce) { .oq-scan-reading .oq-scan-line { animation: none; top: 50%; } .oq-scan-active .oq-scan-dot { animation: none; border-top-color: #35d0ff; } }
+@media print {
+  body * { visibility: hidden !important; }
+  .oq-scan-report, .oq-scan-report * { visibility: visible !important; }
+  .oq-scan-noprint, .oq-scan-noprint * { display: none !important; }
+  .oq-scan-report { position: absolute; inset: 0 auto auto 0; width: 100%; padding: 14mm; color: #000; background: #fff; }
+  .oq-scan-summary { background: #fff; border-color: #444; }
+}

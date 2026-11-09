@@ -15,6 +15,7 @@ const screens = new Set([
   "passport",
   "cv",
   "help",
+  "scan",
   "settings",
   "employer",
   "notifications",

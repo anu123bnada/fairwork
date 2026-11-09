@@ -8,13 +8,14 @@ export class OcrError extends Error {
   constructor(readonly kind: "unavailable" | "no_text" | "timeout" | "cancelled", message: string) { super(message); }
 }
 
-export function ocrImage(image: Blob, signal?: AbortSignal): Promise<string> {
+// `timeoutMs` defaults to the per-page limit used for PDFs; the single-screenshot scan passes a longer one because it shows live elapsed time and a Cancel button.
+export function ocrImage(image: Blob, signal?: AbortSignal, timeoutMs: number = SCAN_LIMITS.timeoutMs): Promise<string> {
   return new Promise((resolve, reject) => {
     if (signal?.aborted) { reject(new OcrError("cancelled", "Reading was cancelled.")); return; }
     const worker = new Worker("/ocr/extract-worker.js");
     const finish = (action: () => void) => { clearTimeout(timer); signal?.removeEventListener("abort", onAbort); worker.terminate(); action(); };
     const onAbort = () => finish(() => reject(new OcrError("cancelled", "Reading was cancelled.")));
-    const timer = setTimeout(() => finish(() => reject(new OcrError("timeout", "Reading a page timed out."))), SCAN_LIMITS.timeoutMs);
+    const timer = setTimeout(() => finish(() => reject(new OcrError("timeout", "Reading a page timed out."))), timeoutMs);
     signal?.addEventListener("abort", onAbort);
     worker.onerror = () => finish(() => reject(new OcrError("unavailable", "The on-device reader is unavailable.")));
     worker.onmessage = event => finish(() => {

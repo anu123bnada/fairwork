@@ -4,7 +4,7 @@
 export type HelpLink = { label: string; href: string };
 export type HelpEntry = { id: string; title: string; keywords: string[]; answer: string; links: HelpLink[] };
 
-export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
+export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/scan", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
 const link = (label: string, href: (typeof helpLinkTargets)[number]): HelpLink => ({ label, href });
 
 export const helpEntries: HelpEntry[] = [
@@ -14,6 +14,9 @@ export const helpEntries: HelpEntry[] = [
   { id: "add-offer", title: "How do I add a job offer?", keywords: ["add offer", "add a job offer", "paste offer", "new offer", "enter offer", "job offer", "offer text", "upload offer", "pdf offer", "word document"],
     answer: "Open Add offer, then choose how to add it: paste the text, read a screenshot, a PDF or a Word document on your device, or enter the details by hand. Then press \"Suggest terms with local rules\" and check every field yourself before you analyze. Reading an image is imperfect, so pasted text or a clear PDF works best.",
     links: [link("Add offer", "/app/add-offer")] },
+  { id: "scan-offer", title: "How do I scan a screenshot of an offer?", keywords: ["scan", "scan offer", "scan screenshot", "screenshot", "screenshot of offer", "scanning", "read image", "photo of offer", "image of offer", "report", "scan report"],
+    answer: "Open Scan an offer and choose a PNG or JPEG screenshot. A scanning window shows each real step as it happens: checking the image, reading the text on your device, checking readability, and checking terms and warning signs with rules. You then get a report with a summary, findings that quote the exact words, the text that was read (which you can correct), and next steps. The image never leaves your device. Real AI analysis is optional and only works once the site owner has switched it on and you consent.",
+    links: [link("Scan an offer", "/app/scan"), link("Add offer", "/app/add-offer")] },
   { id: "analyze-offer", title: "How is my offer checked?", keywords: ["analyze offer", "analyse offer", "check offer", "offer checked", "findings", "warning signs", "missing terms", "unclear terms", "questions to ask", "red flags", "scam offer"],
     answer: "ORYQEN reads your offer with fixed rules and lists what is clear, what is missing (for example pay period, hours or notice) and warning signs, each with the exact words it relied on. It also suggests questions to ask the employer. This is guidance, not legal advice, and it does not decide for you.",
     links: [link("ORYQEN Check", "/app/check"), link("Add offer", "/app/add-offer")] },
