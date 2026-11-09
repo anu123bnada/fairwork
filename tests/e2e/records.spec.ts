@@ -41,6 +41,7 @@ test("application tracker: add an application from a published listing, schedule
   await expect(list.getByText("Welder")).toHaveCount(0);
   await page.getByRole("button", { name: /^All \(1\)/ }).click();
   await page.getByRole("button", { name: "Open", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Save application" })).toBeVisible();
   await expect(page.getByLabel("Stage")).toHaveValue("interviewing");
   await expect(page.getByLabel("I researched the employer")).toBeChecked();
   await page.getByRole("button", { name: "Back to my applications" }).click();

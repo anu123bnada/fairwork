@@ -82,3 +82,32 @@ Keep several GB of disk and RAM free before any gate run: a full disk stopped wo
 node scripts/demo-reset.mjs https://oryqen-staging.vercel.app --email demo-worker@example.test
 ```
 It asks for the password at a hidden prompt (or reads `DEMO_PASSWORD`). The account must already exist: the owner creates and confirms it (in the Supabase dashboard, Authentication, Users, "Add user" with auto-confirm, then sign in once and set the display name to start with `[DEMO]`). Seeding a fresh **local** account is `scripts/demo-seed.mjs` (set `DEMO_EMAIL` and `DEMO_PASSWORD`). Staging demo accounts for the employer, recruiter and administrator roles need the owner's authority grants and are NOT created.
+
+## 10 Nov additions: Career, Opportunity and Organization studios
+
+Migrations `20261109100000`, `20261110100000` and `20261110110000` are applied to staging (owner approved; backup first; ownership, forced RLS and execute rights checked). Nothing here is production verified and none of it has been used signed in on staging yet.
+
+### Suggested demonstration sequence (about 6 minutes, with a signed-in demo account)
+1. **Career explorer** (More menu): point out the SAMPLE DATA banner. Tick a few skills, pick Welder, read the coverage and the missing skills, press "Save a roadmap", tick a milestone, save, reload.
+2. **CV Builder, then CV Analyzer**: the score is explained by rules, not AI.
+3. **Cover letter**: fill the boxes, edit the text, save, reopen. It says it is a template, not AI.
+4. **Portfolio**: add a certificate entry with an https link. It says entries are self-reported.
+5. **Job opportunities**: open a published listing and press Apply. Show the line that says only the display name and message are shared.
+6. **Application tracker**: the sent application shows its status. Add a manual application with an interview and tick the preparation checklist.
+7. **Workroom**: a project with tasks; progress is counted from ticked tasks.
+8. **Applicants** (second device or account that published the listing): see the count, open the listing, mark the applicant shortlisted; the first account sees the status change.
+
+### What is simulated or not built (say so if asked)
+- Career roles and skills are a synthetic sample written for the exhibition, not labour-market data; the person's skills for the explorer are kept in the browser on that device.
+- Cover letters are templates, not AI. No AI is configured on staging.
+- No separate Interview Tracker screen: interviews and preparation live inside the Application tracker.
+- Applicants are never verified and are not messaged by ORYQEN; employee records, organization analytics and applicant messaging are not built.
+- Applicant review needs an approved organization representative who published the listing; those demo accounts are not created yet.
+
+### 10 Nov (later): demo screens added
+- **Demo center** (More menu): says what is real and what is sample, loads 7 clearly marked (DEMO) sample records into the signed-in person's own account (3 applications with 2 interviews, a project, a cover letter, a portfolio entry, a roadmap) and removes only records marked (DEMO). Press Load first; then every screen has something to show.
+- **Interviews**: list or by-day view of the interviews inside the sample applications; edit stage, status, outcome, questions, notes and feedback.
+- **Career assistant**: DEMO, fixed rules, no AI model; uses the skills ticked in Career explorer on the same device.
+- **Sample employers**: four invented companies with SAMPLE information, user-submitted information (none) and verified facts (none) in separate panels.
+- **Add a job offer**: the "Fill in a sample offer (DEMO)" button pastes a synthetic offer with an unpaid-overtime clause, a no-notice probation, a vague contract and a deposit, so the rule-based report has findings to explain.
+- Real AI: none on staging. Real data: records, applications and applicants are real database rows typed by people and never verified.
