@@ -1,0 +1,10 @@
+/* Application Tracker and Workroom: simple, readable lists and forms. */
+.oq-rec { display: grid; gap: 12px; }
+.oq-rec-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.oq-rec-chips button[aria-pressed="true"] { outline: 2px solid #35d0ff; }
+.oq-rec-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.oq-rec-list li { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--oq-border, #8a94a6); border-radius: 12px; }
+.oq-rec-list progress { width: 100%; height: 10px; }
+.oq-rec-group { border: 1px solid var(--oq-border, #8a94a6); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+.oq-rec-check { display: flex; gap: 8px; align-items: center; }
+.oq-rec progress { accent-color: #35d0ff; }

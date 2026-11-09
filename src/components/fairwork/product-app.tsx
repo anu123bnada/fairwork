@@ -71,6 +71,8 @@ import { CvBuilder } from "./cv-builder";
 import { HelpAssistant } from "./help-assistant";
 import { ScanOfferScreen } from "./scan-offer";
 import { OfferReportScreen } from "./offer-report";
+import { ApplicationTracker } from "./application-tracker";
+import { Workroom } from "./workroom";
 import type { AnalysisRun } from "@/features/analysis/run";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
@@ -359,6 +361,8 @@ const screenTitle: Record<string, string> = {
   help: "Help",
   scan: "Scan an offer",
   report: "Offer report",
+  applications: "Application tracker",
+  workroom: "Workroom",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -382,6 +386,8 @@ const backTarget: Record<string, string> = {
   help: "home",
   scan: "home",
   report: "add-offer",
+  applications: "home",
+  workroom: "home",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -425,7 +431,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -539,6 +545,8 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "help" && profile ? <HelpAssistant /> : null}
       {screen === "scan" && profile ? <ScanOfferScreen /> : null}
       {screen === "report" && profile ? <OfferReportScreen /> : null}
+      {screen === "applications" && profile ? <ApplicationTracker /> : null}
+      {screen === "workroom" && profile ? <Workroom /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}
