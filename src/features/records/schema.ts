@@ -8,6 +8,9 @@ export const coverLetterStatuses = ["draft", "final"] as const;
 export const portfolioStatuses = ["draft", "ready"] as const;
 export const roadmapStatuses = ["active", "done", "archived"] as const;
 export const portfolioCategories = ["project", "certificate", "achievement", "work_sample"] as const;
+export const interviewStages = ["phone_screen", "technical", "panel", "final", "other"] as const;
+export const interviewStatuses = ["scheduled", "completed", "cancelled"] as const;
+export const interviewOutcomes = ["pending", "passed", "not_selected", "offer"] as const;
 export const prepItems = ["employer", "description", "examples", "questions", "logistics", "documents"] as const;
 const text = (max: number) => z.string().max(max);
 const day = z.string().regex(/^(\d{4}-\d{2}-\d{2})?$/, "Use a date like 2026-11-20");
@@ -15,7 +18,8 @@ const dateTime = z.string().regex(/^(\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?)?$/, "Use 
 
 export const applicationContent = z.strictObject({
   listingId: z.uuid().nullable(), organization: text(120), location: text(120), appliedOn: day, nextStepAt: dateTime, notes: text(2000),
-  events: z.array(z.strictObject({ id: z.uuid(), kind: z.enum(["interview", "follow_up", "note"]), at: dateTime, notes: text(500) })).max(30),
+  events: z.array(z.strictObject({ id: z.uuid(), kind: z.enum(["interview", "follow_up", "note"]), at: dateTime, notes: text(500),
+    stage: z.enum(interviewStages).default("other"), status: z.enum(interviewStatuses).default("scheduled"), outcome: z.enum(interviewOutcomes).default("pending"), questions: text(800).default(""), feedback: text(800).default("") })).max(30),
   prep: z.array(z.boolean()).max(10),
 });
 export const projectContent = z.strictObject({

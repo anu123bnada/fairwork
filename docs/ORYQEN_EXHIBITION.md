@@ -103,3 +103,11 @@ Migrations `20261109100000`, `20261110100000` and `20261110110000` are applied t
 - No separate Interview Tracker screen: interviews and preparation live inside the Application tracker.
 - Applicants are never verified and are not messaged by ORYQEN; employee records, organization analytics and applicant messaging are not built.
 - Applicant review needs an approved organization representative who published the listing; those demo accounts are not created yet.
+
+### 10 Nov (later): demo screens added
+- **Demo center** (More menu): says what is real and what is sample, loads 7 clearly marked (DEMO) sample records into the signed-in person's own account (3 applications with 2 interviews, a project, a cover letter, a portfolio entry, a roadmap) and removes only records marked (DEMO). Press Load first; then every screen has something to show.
+- **Interviews**: list or by-day view of the interviews inside the sample applications; edit stage, status, outcome, questions, notes and feedback.
+- **Career assistant**: DEMO, fixed rules, no AI model; uses the skills ticked in Career explorer on the same device.
+- **Sample employers**: four invented companies with SAMPLE information, user-submitted information (none) and verified facts (none) in separate panels.
+- **Add a job offer**: the "Fill in a sample offer (DEMO)" button pastes a synthetic offer with an unpaid-overtime clause, a no-notice probation, a vague contract and a deposit, so the rule-based report has findings to explain.
+- Real AI: none on staging. Real data: records, applications and applicants are real database rows typed by people and never verified.

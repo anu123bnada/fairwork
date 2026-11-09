@@ -234,6 +234,8 @@ export function AddOfferScreen() {
                 <label className="fw-source-label">{t("add.pasteLabel")}
                   <textarea value={sourceText} onChange={event => setSourceText(event.target.value)} placeholder={t("add.pastePlaceholder")} maxLength={10000} />
                 </label>
+                <button type="button" className="fw-secondary" onClick={() => setSourceText(t("add.sampleOfferText"))}>{t("add.sampleOffer")}</button>
+                <p className="fw-disclaimer">{t("add.sampleOfferNote")}</p>
                 <p className="fw-disclaimer">{t("add.pasteNote")}</p>
                 <button type="button" className="fw-secondary" disabled={!sourceText.trim()} onClick={() => {
                   const { detectedTerms } = extractOfferTermsRuleBased(sourceText);

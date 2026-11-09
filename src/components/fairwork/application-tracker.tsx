@@ -125,7 +125,7 @@ export function ApplicationTracker() {
       <label className="fw-field">{t("trk.ev.kind")}<select value={event.kind} onChange={e => setEvent({ ...event, kind: e.target.value as typeof event.kind })}>{(["interview", "follow_up", "note"] as const).map(kind => <option key={kind} value={kind}>{t(`trk.ek.${kind}` as MessageKey)}</option>)}</select></label>
       <label className="fw-field">{t("trk.ev.at")}<input type="datetime-local" value={event.at} onChange={e => setEvent({ ...event, at: e.target.value })} /></label>
       <label className="fw-field">{t("trk.ev.notes")}<input maxLength={500} value={event.notes} onChange={e => setEvent({ ...event, notes: e.target.value })} /></label>
-      <button type="button" className="fw-secondary" disabled={c.events.length >= 30} onClick={() => { change({ events: [...c.events, { id: crypto.randomUUID(), kind: event.kind, at: event.at, notes: event.notes.trim() }] }); setEvent({ kind: event.kind, at: "", notes: "" }); }}>{t("trk.ev.add")}</button>
+      <button type="button" className="fw-secondary" disabled={c.events.length >= 30} onClick={() => { change({ events: [...c.events, { id: crypto.randomUUID(), kind: event.kind, at: event.at, notes: event.notes.trim(), stage: "other", status: "scheduled", outcome: "pending", questions: "", feedback: "" }] }); setEvent({ kind: event.kind, at: "", notes: "" }); }}>{t("trk.ev.add")}</button>
     </fieldset>
     <button className="fw-primary" disabled={busy || !draft.title.trim()} onClick={() => void save()}>{t("trk.save")}</button>
   </section>;
