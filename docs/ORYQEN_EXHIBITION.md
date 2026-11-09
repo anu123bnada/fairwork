@@ -69,3 +69,9 @@ Keep several GB of disk and RAM free before any gate run: a full disk stopped wo
 | Android device run | NOT RUN (emulator did not boot on this RAM) |
 | Staging migrations and deployment match the code | **DONE 8 Nov** (62 migrations; `release/oryqen-oct27` at `b4d69a2` serves staging; anonymous smoke 24/0/5 and rendering 10/10 on the new build) |
 | Demo accounts and rehearsal | NOT DONE |
+
+## 9 Nov additions to what visitors may be shown
+- **Scan an offer** (menu, more): a screenshot is read on the device, a popup shows the real steps, and a report opens with findings that quote the exact words. Works with no AI.
+- **Analyze offer** on Add offer: a popup with real stages, then a clean report screen. **Without the Google key set in Vercel the report says "AI analysis is not configured" and uses on-device rules only. Do not tell visitors it is AI-powered unless the owner has completed `ORYQEN_AI_SETUP_STEPS.md` and a real analysis has been run on the staging site.** Visitors without an organization can still analyze (the report says it was not saved).
+- **Help** (menu, more): a rules-based help assistant that labels itself "not AI".
+- Full status of every module and tool, with evidence: `ORYQEN_IMPLEMENTATION_REGISTER.md`. Anything marked NOT BUILT there must be described as "planned".
