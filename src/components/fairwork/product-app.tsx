@@ -69,6 +69,7 @@ import { CaseReviewScreen } from "./case-review";
 import { WorkPassportScreen } from "./work-passport";
 import { CvBuilder } from "./cv-builder";
 import { HelpAssistant } from "./help-assistant";
+import { ScanOfferScreen } from "./scan-offer";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
 import "./visual.css";
@@ -348,6 +349,7 @@ const screenTitle: Record<string, string> = {
   passport: "Work Passport",
   cv: "CV Builder",
   help: "Help",
+  scan: "Scan an offer",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -369,6 +371,7 @@ const backTarget: Record<string, string> = {
   passport: "home",
   cv: "home",
   help: "home",
+  scan: "home",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -412,7 +415,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -524,6 +527,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "opportunities" && profile ? <OpportunitiesScreen /> : null}
       {screen === "cv" && profile ? <CvBuilder displayName={profile.displayName} /> : null}
       {screen === "help" && profile ? <HelpAssistant /> : null}
+      {screen === "scan" && profile ? <ScanOfferScreen /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}
