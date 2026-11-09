@@ -1,5 +1,8 @@
 # ORYQEN session handoff
 
+## 9 November 2026 (later): Scan an offer
+- Built and deployed `/app/scan` (screenshot scan with a real-stage scanning window and a report). `release/oryqen-oct27` is `f561eb4` (content equal to `integration/final-release` at `064bea7`, CI green, E2E 655 passed). It works end to end with rules on the device; the optional AI step reuses the existing consent panel and becomes real only after the owner follows `ORYQEN_AI_SETUP_STEPS.md` (Google key, Vercel settings, redeploy). Until then the scan says plainly that AI is not configured.
+
 ## 9 November 2026
 - Help assistant (rules-based, not AI) built and deployed to staging: `release/oryqen-oct27` is now `5730cb6` (content equal to `integration/final-release` at `ea3a75b`, CI green, E2E 651 passed). Real AI is still OFF on staging; the owner-only steps are in `ORYQEN_AI_SETUP_STEPS.md` (Google key, Vercel settings, redeploy), after which `node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app` step 3 reports the AI state. The signed-in hosted journey script (CV Builder, security activity, saved-listing history, vault, plans) was started in the owner's Terminal tab but no credentials have been entered yet, so signed-in hosted behaviour of the new features is still unverified.
 
