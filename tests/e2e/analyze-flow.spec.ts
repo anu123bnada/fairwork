@@ -135,7 +135,7 @@ test("a malformed AI answer is discarded with a plain message, never shown as a 
 
 test("a visitor with no organization can still run the analysis and the AI step; nothing is saved and the report says so", async ({ page }) => {
   const posts: Record<string, unknown>[] = [], offerPosts: Record<string, unknown>[] = [];
-  await setup(page, { configured: true, noCompany: true }, posts, offerPosts);
+  await setup(page, { configured: true, noCompany: true, delayMs: 1200 }, posts, offerPosts);
   await page.getByLabel("AI analysis choice").getByRole("checkbox").check();
   await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "Analyzing your offer" });

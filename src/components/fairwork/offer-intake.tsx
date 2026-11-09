@@ -284,12 +284,7 @@ export function AddOfferScreen() {
             {aiUsable(aiConfig)
               ? <section className="fw-card fw-offer-detail-card" aria-label={t("arun.consentAria")}>
                   <strong>{t("arun.consentTitle")}</strong>
-                  <p>{t("ai.sendIntro", { provider: t(`ai.name.${aiConfig.provider}` as MessageKey), model: aiConfig.model ?? "" })}</p>
-                  <p>{t("ai.redactNote")}</p>
-                  <p>{t("ai.region", { region: aiConfig.processingRegion ?? "", use: aiConfig.dataUse ?? "" })}</p>
-                  <p>{t("ai.noRecall")}</p>
-                  <p>{t("ai.mayBeWrong")}</p>
-                  <p>{t("ai.adultNote")}</p>
+                  <p>{t("arun.consentNotes", { provider: t(`ai.name.${aiConfig.provider}` as MessageKey), model: aiConfig.model ?? "", region: aiConfig.processingRegion ?? "", use: aiConfig.dataUse ?? "" })}</p>
                   <label className="fw-field"><input type="checkbox" checked={aiConsent} onChange={event => setAiConsent(event.target.checked)} />{t("arun.consentLabel")}</label>
                 </section>
               : <p className="fw-notice" role="status">{aiConfig ? t("arun.aiOffNote") : t("arun.aiUnknownNote")}</p>}
