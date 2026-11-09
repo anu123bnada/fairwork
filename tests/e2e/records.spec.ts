@@ -32,7 +32,7 @@ test("application tracker: add an application from a published listing, schedule
   expect(saved.content.events).toMatchObject([{ kind: "interview", notes: "Phone interview" }]);
 
   await page.getByRole("button", { name: "Back to my applications" }).click();
-  const list = page.locator(".oq-rec-list");
+  const list = page.locator(".oq-rec-list").first();
   await expect(list).toContainText("Welder");
   await expect(list).toContainText("Interviewing");
   await expect(page.getByLabel("Upcoming next steps")).toContainText("2026-11-12 09:30 · Welder");

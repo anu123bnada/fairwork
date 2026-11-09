@@ -7,6 +7,7 @@ const time = "2026-11-09T10:00:00Z";
 // Transport fixture only (a small stateful fake of the records API): the database tests and the real-stack harness prove ownership, validation and revisions.
 export async function setup(page: Page, store: Stored[], saves: Record<string, unknown>[] = [], saveStatus = 200) {
   await page.route("**/api/v1/me", route => route.fulfill({ json: { data: { id: me, displayName: "Nimal Perera", locale: "en", timeZone: "UTC", revision: 1, capabilities: [] } } }));
+  await page.route(/\/api\/v1\/applications(\?.*)?$/, route => route.fulfill({ json: { data: { items: [], limit: 100 } } }));
   await page.route("**/api/v1/opportunities**", route => route.fulfill({ json: { data: { preferences: null, preferenceVersion: 0, nextCursor: null, items: [{ id: listingId, companyId: me, companyName: "Demo Steel Works (DEMO)", version: 1,
     fields: { title: "Welder", description: "MIG welding of steel frames.", location: "Kandy", workMode: "onsite", salary: null, currency: "LKR", payPeriod: "month" }, status: "published", expiresAt: "2027-01-01T00:00:00Z", updatedAt: time, choice: "none", canEdit: false, source: "representative_submission", assurance: "demo_provisioned" }] } } }));
   await page.route(/\/api\/v1\/records(\?.*)?$/, route => {

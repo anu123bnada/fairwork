@@ -1,4 +1,5 @@
 "use client";
+import { ApplyBox } from "./apply-box";
 import { OpportunityCompare } from "./opportunity-compare";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { ApiRequestError, appRequest } from "@/features/authority/client";
@@ -103,6 +104,7 @@ export function OpportunitiesScreen() {
       <QualificationPanel jobText={item.fields.description} />
       {item.status === "published" && <div className="fw-discovery-actions"><button className="fw-secondary" disabled={busy} onClick={() => void saveChoice(item, item.choice === "saved" ? "none" : "saved")}>{item.choice === "saved" ? t("op.removeSaved") : t("op.saveListing")}</button><button className="fw-secondary" disabled={busy} onClick={() => void save({ operation: "choice", id: item.id, choice: item.choice === "hidden" ? "none" : "hidden" })}>{item.choice === "hidden" ? t("op.showAgain") : t("op.notInterested")}</button></div>}
       {item.canEdit && <button className="fw-secondary" disabled={busy} onClick={() => setEditing(item)}>{t("op.editListing")}</button>}
+      {!item.canEdit && item.status === "published" && <ApplyBox listingId={item.id} title={item.fields.title} />}
       {!item.canEdit && <ReportProblem kind="listing" subjectRef={item.id} subjectLabel={item.fields.title.slice(0, 120)} />}
     </article>)}
     {data?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void load(view, query, data.nextCursor)}>{t("op.more")}</button>}
