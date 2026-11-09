@@ -4,7 +4,7 @@
 export type HelpLink = { label: string; href: string };
 export type HelpEntry = { id: string; title: string; keywords: string[]; answer: string; links: HelpLink[] };
 
-export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/scan", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
+export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/scan", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/applications", "/app/cover-letter", "/app/workroom", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
 const link = (label: string, href: (typeof helpLinkTargets)[number]): HelpLink => ({ label, href });
 
 export const helpEntries: HelpEntry[] = [
@@ -32,6 +32,15 @@ export const helpEntries: HelpEntry[] = [
   { id: "cv-analyzer", title: "How do I check or improve my CV?", keywords: ["analyze cv", "analyse cv", "cv analyzer", "cv analyser", "check my cv", "improve my cv", "cv score", "ats", "ats checker", "applicant tracking", "skill gap", "skills gap", "job description", "keywords", "cv feedback", "matching jobs", "jobs for my skills"],
     answer: "Open CV Builder, then the section \"Analyze this CV (rules-based, not AI)\". It scores the CV you are editing out of 100 with every point explained, lists what to fix, gives applicant-tracking-system (ATS) notes, and can compare your CV with a job description you paste, showing which of the job's terms your CV does and does not mention. It also lists published listings that mention your skills. It cannot tell whether your claims are true, and you should add a missing term only if it is true for you.",
     links: [link("CV Builder", "/app/cv"), link("Job opportunities", "/app/opportunities")] },
+  { id: "cover-letter", title: "Can ORYQEN write a cover letter?", keywords: ["cover letter", "covering letter", "application letter", "write a letter", "letter for job"],
+    answer: "Open Cover letter, fill in the job, employer, your strengths and one real example, and a plain letter is assembled from your own words. It is a template, not AI: it adds no facts about you, and nothing is saved or sent. Copy it or print it, and check it before you use it.",
+    links: [link("Cover letter", "/app/cover-letter"), link("CV Builder", "/app/cv")] },
+  { id: "application-tracker", title: "How do I track the jobs I applied for?", keywords: ["application tracker", "track applications", "applied", "applied jobs", "interview date", "interview tracker", "follow up", "follow-up", "next step", "interview preparation", "interview prep", "job status", "saved jobs", "rejected", "offered"],
+    answer: "Open Application tracker and press Add an application. You can fill it yourself or pick a published listing. Set the stage (saved, applied, interviewing, offered, accepted, rejected, withdrawn), add a next step date, interviews and follow-ups, and tick the preparation checklist. It is your own private record: ORYQEN does not contact employers and does not verify what you enter.",
+    links: [link("Application tracker", "/app/applications"), link("Job opportunities", "/app/opportunities")] },
+  { id: "workroom", title: "How do I plan projects and tasks?", keywords: ["workroom", "project", "projects", "tasks", "task list", "milestone", "milestones", "progress", "plan my work", "work record"],
+    answer: "Open Workroom and press Add a project. Give it a name, a status and an optional due date, then add milestones and tasks. Progress is counted from the tasks you tick, so it is never invented. Projects are private to you and unverified; only the Work Passport shows employer-verified work.",
+    links: [link("Workroom", "/app/workroom"), link("Work Passport", "/app/passport")] },
   { id: "passport", title: "What is the Work Passport?", keywords: ["passport", "verified work", "verified hours", "work profile", "proof of work", "print passport", "download passport"],
     answer: "The Work Passport lists only work that an employer representative verified and that is not withdrawn or disputed. It is private to you until you share it. You can print or save it as a PDF, or download a copy. A printed copy is not a signed certificate and cannot be revoked once printed.",
     links: [link("Work Passport", "/app/passport")] },
