@@ -270,8 +270,9 @@ try {
   const saved = await savedOffer;
   if (saved.status() !== 200) throw new Error('Browser worker offer save failed');
   const privateOfferId = (await saved.json()).data.offerId;
-  await workerPage.waitForURL('**/app/analyzing');
-  await expect(workerPage.getByText('Checking the terms you entered.', { exact: false })).toBeVisible();
+  await workerPage.waitForURL('**/app/report');
+  await expect(workerPage.getByLabel('Offer analysis report')).toBeVisible();
+  await expect(workerPage.getByText('on-device rules only')).toBeVisible();
   await workerPage.screenshot({ path: `${evidence}/worker-rule-based-analysis.png`, fullPage: true });
   const privateOffer = await request(worker, `/api/v1/agreements?offerId=${privateOfferId}`);
   must(privateOffer.offer.unresolved.length > 0, 'Worker offer persisted with meaningful missing-term questions');

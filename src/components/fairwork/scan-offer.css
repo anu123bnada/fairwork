@@ -36,3 +36,8 @@
   .oq-scan-report { position: absolute; inset: 0 auto auto 0; width: 100%; padding: 14mm; color: #000; background: #fff; }
   .oq-scan-summary { background: #fff; border-color: #444; }
 }
+
+/* The analysis popup has no image; a slim bar shows the real "waiting for the model" state (the sweep only runs while that stage is active). */
+.oq-analysis-pulse { height: 44px; border-style: dashed; background: linear-gradient(90deg, rgba(53, 208, 255, .08), rgba(139, 92, 255, .12)); }
+.oq-analysis-pulse.oq-scan-reading .oq-scan-line { animation-name: oq-analysis-slide; }
+@keyframes oq-analysis-slide { 0% { transform: translateY(0); } 50% { transform: translateY(40px); } 100% { transform: translateY(0); } }

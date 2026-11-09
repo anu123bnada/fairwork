@@ -7,7 +7,8 @@ import { companyResultsSchema } from "@/features/authority/company-schema";
 
 // Discovery only: selection never grants representative authority. The offer
 // command still verifies the current actor, membership and participant binding.
-export function OfferCompanySelector({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+// `optionalWhenEmpty`: a worker who has no linked organization at all can still run an analysis (it just is not saved), so the field is not required for them.
+export function OfferCompanySelector({ value, onChange, optionalWhenEmpty = false }: { value: string; onChange: (id: string) => void; optionalWhenEmpty?: boolean }) {
   const [items, setItems] = useState<Array<{ companyId: string; name: string | null }>>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -41,7 +42,7 @@ export function OfferCompanySelector({ value, onChange }: { value: string; onCha
     <button type="button" className="fw-secondary" disabled={loading} onClick={() => void search()}>Search organizations</button>
     <div className="fw-field">
       <label htmlFor="offer-company">Company organization</label>
-      <select id="offer-company" name="companyId" required value={value} onChange={event => onChange(event.target.value)} aria-describedby="offer-company-help">
+      <select id="offer-company" name="companyId" required={!(optionalWhenEmpty && !loading && items.length === 0)} value={value} onChange={event => onChange(event.target.value)} aria-describedby="offer-company-help">
         <option value="">Select a linked organization</option>
         {items.map(item => <option key={item.companyId} value={item.companyId}>{item.name ?? "Organization"} · {item.companyId}</option>)}
       </select>

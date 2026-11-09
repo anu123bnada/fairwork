@@ -102,6 +102,22 @@ await step('3 Offer analysis: the AI state is reported honestly (off = not confi
   return `AI is ON (provider ${state.provider}, model ${state.model}, region ${state.processingRegion}); availability ${availability}. No text was sent. Each person must still consent in the app before any offer text leaves the server.`;
 });
 
+// ---- 3b. optional: ONE real model call on made-up text (opt-in: --real-ai). It uses the provider's quota, so it never runs by default.
+if (process.argv.includes('--real-ai')) {
+  await step('3b Real AI: one synthetic offer is analysed through the real provider, with consent, and the answer is validated and grounded', async () => {
+    const state = (await call('/api/v1/offers/analyze')).data;
+    if (state.configured !== true || !state.provider || !state.policyHash) throw new Error('AI is not configured on this server');
+    const text = 'Warehouse Picker at Example Stores\nSalary: LKR 85000 per month\n40 hours per week\nYou must pay a registration fee of LKR 5000 before you start. Guaranteed visa for everyone.';
+    const started = Date.now();
+    const ai = (await call('/api/v1/offers/analyze', { text, role: 'WORKER', consent: { provider: state.provider, noticeVersion: state.noticeVersion, policyHash: state.policyHash, transmit: true, adultConfirmed: true } })).data;
+    const seconds = ((Date.now() - started) / 1000).toFixed(1);
+    if (ai.status !== 'SUCCESS' || !ai.data) throw new Error(`the provider answered ${ai.status} after ${seconds} s: ${ai.message}${ai.retryAfterSeconds ? ` (retry after ${ai.retryAfterSeconds} s)` : ''}`);
+    const ungrounded = [ai.data.salary.quote, ai.data.workingHours.quote, ...ai.data.warningSigns.map(item => item.quote)].filter(quote => quote && !text.includes(quote));
+    if (ungrounded.length) throw new Error(`${ungrounded.length} quoted passage(s) are not in the text that was sent`);
+    return `SUCCESS from ${ai.provider} in ${seconds} s: ${ai.data.warningSigns.length} warning sign(s), ${ai.data.missingDetails.length} missing detail(s), ${ai.data.followUpQuestions.length} question(s); every quote appears in the original text`;
+  });
+}
+
 // ---- 5. Evidence Vault: real bucket, real key
 await step('5 Evidence Vault: upload, list, signed download of the same bytes, delete', async () => {
   const pdf = Buffer.from('%PDF-1.7\nSynthetic hosted check ' + randomUUID() + '\n');
