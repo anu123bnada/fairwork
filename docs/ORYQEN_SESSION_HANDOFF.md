@@ -1,5 +1,8 @@
 # ORYQEN session handoff
 
+## 9 November 2026 (latest): Analyze offer flow and real AI
+- Analyze offer now opens a real-stage popup and a new `/app/report` screen; AI runs only with configuration and the person's consent; a worker with no linked organization can analyze without saving. Real AI was verified **locally** on made-up text (API script and real browser run, `gemini-3.1-flash-lite`); the local settings leave the approval variables unset, so those were set only for the temporary test process. **Staging still has AI off**: the owner must add the Google key and the approval settings in Vercel and redeploy (`ORYQEN_AI_SETUP_STEPS.md`, use `gemini-3.1-flash-lite`). The scripts `scripts/test-hosted-worker-journeys.mjs --real-ai` and `scripts/real-ai-browser-check.mjs` make one real call each and are opt-in.
+
 ## 9 November 2026 (later): Scan an offer
 - Built and deployed `/app/scan` (screenshot scan with a real-stage scanning window and a report). `release/oryqen-oct27` is `f561eb4` (content equal to `integration/final-release` at `064bea7`, CI green, E2E 655 passed). It works end to end with rules on the device; the optional AI step reuses the existing consent panel and becomes real only after the owner follows `ORYQEN_AI_SETUP_STEPS.md` (Google key, Vercel settings, redeploy). Until then the scan says plainly that AI is not configured.
 

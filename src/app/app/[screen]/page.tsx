@@ -16,6 +16,7 @@ const screens = new Set([
   "cv",
   "help",
   "scan",
+  "report",
   "settings",
   "employer",
   "notifications",

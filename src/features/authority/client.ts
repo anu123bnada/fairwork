@@ -15,13 +15,14 @@ export class ApiRequestError extends Error {
   }
 }
 
-export async function appRequest(path: string, body?: unknown, key?: string, method: "POST" | "PATCH" = "POST") {
+// `options.timeoutMs` lets a slow, honest operation (a model call) wait longer than the 30 s default; `options.signal` lets the screen cancel it.
+export async function appRequest(path: string, body?: unknown, key?: string, method: "POST" | "PATCH" = "POST", options: { signal?: AbortSignal; timeoutMs?: number } = {}) {
   let response: Response;
   try { response = await fetch(path, {
     method: body === undefined ? "GET" : method, cache: "no-store", credentials: "same-origin",
     headers: body === undefined ? undefined : { "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: AbortSignal.timeout(30000),
+    signal: options.signal && typeof AbortSignal.any === "function" ? AbortSignal.any([AbortSignal.timeout(options.timeoutMs ?? 30000), options.signal]) : AbortSignal.timeout(options.timeoutMs ?? 30000),
   }); } catch {
     // A lost response does not establish whether a write committed. Callers
     // retain their idempotency key and explicitly retry the same operation.

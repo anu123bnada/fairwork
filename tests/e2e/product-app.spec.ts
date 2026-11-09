@@ -76,7 +76,7 @@ test("integrated product routes carry an offer through check, answer, and agreem
   expect(offerResponse.status(), await offerResponse.text()).toBe(200);
   expect(offerBody).toBeDefined();
   expect(pageErrors).toEqual([]);
-  await expect(page.getByRole("heading", { name: "Checking 5 offer details" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Offer analysis report" })).toBeVisible();
   expect(offerBody).toMatchObject({ companyId, workerId, requesterRole: "EMPLOYER", expectedVersion: 1 });
   expect(offerBody?.terms).not.toHaveProperty("responsibilities");
   expect((offerBody?.terms as Record<string, unknown>)).toMatchObject({ role: "Picker", salary: 1200, currency: "LKR", hoursPerWeek: 40 });

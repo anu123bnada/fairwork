@@ -44,7 +44,7 @@ test("add offer, review, save, check findings, answer, reopen after reload, amen
   await page.getByLabel("Company organization", { exact: true }).selectOption(company);
   await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
 
-  await expect(page.getByRole("heading", { name: /Checking \d+ offer details/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Offer analysis report" })).toBeVisible();
   expect(posts[0]).toMatchObject({ companyId: company, workerId: worker, requesterRole: "WORKER", expectedVersion: 1 });
   expect(posts[0]!.terms).toMatchObject({ role: "Warehouse Picker", salary: 86000, currency: "LKR", hoursPerWeek: 40 });
   expect(posts[0]!.terms).not.toHaveProperty("startDate"); // unknown terms are omitted so the server asks about them
@@ -74,7 +74,7 @@ test("add offer, review, save, check findings, answer, reopen after reload, amen
   await page.getByLabel("Start date", { exact: true }).fill("2026-12-01");
   await page.getByRole("textbox", { name: "Responsibilities", exact: true }).fill("Pick and pack orders");
   await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
-  await expect(page.getByRole("heading", { name: /Checking \d+ offer details/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Offer analysis report" })).toBeVisible();
   expect(posts[1]).toMatchObject({ expectedVersion: 2 });
   await page.getByRole("link", { name: /See ORYQEN Check/ }).click();
   await page.getByRole("link", { name: /Review agreement/ }).click();

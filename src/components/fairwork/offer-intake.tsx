@@ -4,6 +4,8 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { useRouter } from "next/navigation";
 import { ClipboardPaste, FileText, FileType, Image as ImageIcon, PenLine } from "lucide-react";
 import { appRequest } from "@/features/authority/client";
+import { AiAnswerFormatError, aiUsable, analysisText, fetchAiConfig, newAnalysisStages, runAiAnalysis, updateAnalysisStage, type AiConfigView, type AnalysisAi, type AnalysisStage, type AnalysisStageId } from "@/features/analysis/run";
+import { summarizeScan } from "@/features/scan/report";
 import { extractOfferTermsRuleBased } from "@/features/offer/deterministic-extractor";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
@@ -13,6 +15,7 @@ import { OfferDocx } from "./offer-docx";
 import { OfferDrafts } from "./offer-drafts";
 import { OfferPdf } from "./offer-pdf";
 import { OfferScreenshot } from "./offer-screenshot";
+import { AnalysisDialog } from "./analysis-dialog";
 import { DraftOfferAssessment } from "./offer-assessment";
 import { RuleAnalysis } from "./rule-analysis";
 import { ClauseFindings, QualificationPanel } from "./offer-intelligence";
@@ -46,13 +49,21 @@ const KEY_TERMS = ["salary", "currency", "startDate", "hoursPerWeek", "responsib
 export function AddOfferScreen() {
   const { t } = useI18n();
   const router = useRouter();
-  const { profile, offer, setOffer, terms, setTerms, companyId, setCompanyId, workerId, setWorkerId, role, setRole, sourceText, setSourceText, ensureOfferId, startSeparateOffer } = useProduct();
+  const { profile, offer, setOffer, terms, setTerms, companyId, setCompanyId, workerId, setWorkerId, role, setRole, sourceText, setSourceText, ensureOfferId, startSeparateOffer, setAnalysisRun } = useProduct();
   const [method, setMethod] = useState<Method>("paste");
   const [extraction, setExtraction] = useState<{ text: string; filled: number; preserved: number } | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [busy, setBusy] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const requestKeys = useRef(new Map<string, string>());
+  const [aiConfig, setAiConfig] = useState<AiConfigView | null>(null);
+  const [aiConsent, setAiConsent] = useState(false);
+  const [runStages, setRunStages] = useState<AnalysisStage[] | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+  const aiAbort = useRef<AbortController | null>(null);
+  // Whether AI is configured is read once, without sending any text; the consent box below only appears when it is.
+  useEffect(() => { let live = true; void fetchAiConfig().then(config => { if (live) setAiConfig(config); }); return () => { live = false; }; }, []);
+  const cancelAi = () => aiAbort.current?.abort();
 
   useEffect(() => {
     if (role === "WORKER" && profile?.id && !workerId) setWorkerId(profile.id);
@@ -83,6 +94,9 @@ export function AddOfferScreen() {
       return;
     }
     setBusy(true);
+    setRunStages(newAnalysisStages());
+    const stage = (id: AnalysisStageId, state: AnalysisStage["state"], detail = "") => setRunStages(current => current ? updateAnalysisStage(current, id, state, detail) : current);
+    stage("save", "active");
     const normalizedTerms: Record<string, string | number> = {
       // Keep persisted extension fields that this editor does not render.
       // A rendered field is removed only when the user explicitly clears it.
@@ -111,24 +125,69 @@ export function AddOfferScreen() {
       requestKeys.current.set(fingerprint, key);
     }
     try {
-      const result = await appRequest("/api/v1/offers", {
-        ...requestBody,
-        idempotencyKey: key,
-      }) as OfferResult;
-      setOffer(result);
-      setCompanyId(requestBody.companyId);
-      setWorkerId(requestBody.workerId);
-      setTerms(Object.fromEntries(Object.entries(normalizedTerms).map(([name, value]) => [name, String(value)])));
-      if (!offer) {
-        // The source text is retained only for this in-memory display. The current
-        // backend contract persists typed terms, not pasted source content.
-        setSourceText(sourceText);
+      // A worker with no linked organization can still be analysed; a saved offer needs an organization, so that case is analysed but not saved.
+      const unsaved = !requestBody.companyId && role === "WORKER" && !offer;
+      let result: OfferResult | null = null;
+      if (unsaved) {
+        stage("save", "skipped", t("arun.d.notSaved"));
+      } else {
+        result = await appRequest("/api/v1/offers", {
+          ...requestBody,
+          idempotencyKey: key,
+        }) as OfferResult;
+        setOffer(result);
+        setCompanyId(requestBody.companyId);
+        setWorkerId(requestBody.workerId);
+        setTerms(Object.fromEntries(Object.entries(normalizedTerms).map(([name, value]) => [name, String(value)])));
+        if (!offer) {
+          // The source text is retained only for this in-memory display. The current
+          // backend contract persists typed terms, not pasted source content.
+          setSourceText(sourceText);
+        }
+        stage("save", "done", t("arun.d.saved", { version: result.version }));
       }
-      router.push(routeFor("analyzing"));
+
+      // The rules run on this device on the text that will be analysed.
+      const text = analysisText(sourceText, normalizedTerms);
+      stage("rules", "active");
+      const counts = summarizeScan(text, { source: "paste" });
+      stage("rules", "done", t("scan.d.rules", { warnings: counts.warningHigh + counts.warningMedium + counts.warningLow, missing: counts.missingDetails }));
+
+      // The model is asked only when AI is configured AND the person ticked the consent box for this analysis. Failure never blocks the report.
+      let ai: AnalysisAi = { state: "not_requested" };
+      if (!aiUsable(aiConfig)) {
+        ai = { state: "not_configured" };
+        stage("ai", "skipped", t("arun.d.aiOff"));
+      } else if (!aiConsent || text.length < 10) {
+        stage("ai", "skipped", t("arun.d.aiNoConsent"));
+      } else {
+        stage("ai", "active"); setElapsed(0);
+        const started = Date.now();
+        const ticker = setInterval(() => setElapsed(Math.round((Date.now() - started) / 1000)), 1000);
+        aiAbort.current = new AbortController();
+        try {
+          const response = await runAiAnalysis({ text, role, config: aiConfig, signal: aiAbort.current.signal });
+          if (response.status === "SUCCESS" || response.data) {
+            ai = { state: "done", provider: aiConfig.provider, model: aiConfig.model ?? "", response };
+            stage("ai", "done", t("arun.d.aiDone", { seconds: Math.max(1, Math.round((Date.now() - started) / 1000)) }));
+          } else {
+            ai = { state: "failed", message: response.message };
+            stage("ai", "failed", response.message);
+          }
+        } catch (caught) {
+          const cancelled = aiAbort.current?.signal.aborted === true;
+          const message = cancelled ? t("arun.d.aiCancelled") : caught instanceof AiAnswerFormatError ? t("arun.d.aiFormat") : caught instanceof Error ? caught.message : t("ai.failed");
+          ai = cancelled ? { state: "cancelled", message } : { state: "failed", message };
+          stage("ai", cancelled ? "skipped" : "failed", message);
+        } finally { clearInterval(ticker); aiAbort.current = null; }
+      }
+      setAnalysisRun({ offerId: result?.offerId ?? "", title: String(normalizedTerms.role ?? ""), saved: result !== null, text, role, ranAt: new Date().toISOString(), ai });
+      router.push(routeFor("report"));
     } catch (caught) {
       setError(caught instanceof Error ? caught : new Error("The offer could not be checked."));
     } finally {
       setBusy(false);
+      setRunStages(null);
     }
   }
 
@@ -216,12 +275,25 @@ export function AddOfferScreen() {
                   <option value="EMPLOYER">{t("add.roleEmployer")}</option>
                 </select>
               </label>
-              {offer ? <label className="fw-field">{t("add.companyId")}<input name="companyId" readOnly value={offer.companyId} /></label> : <OfferCompanySelector value={companyId} onChange={setCompanyId} />}
+              {offer ? <label className="fw-field">{t("add.companyId")}<input name="companyId" readOnly value={offer.companyId} /></label> : <OfferCompanySelector optionalWhenEmpty={role === "WORKER"} value={companyId} onChange={setCompanyId} />}
               <label className="fw-field">{t("add.workerId")}<input name="workerId" required readOnly={role === "WORKER" || Boolean(offer)} pattern={"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"} title={t("add.workerIdTitle")} value={offer?.workerId ?? (role === "WORKER" ? profile?.id ?? "" : workerId)} onChange={event => setWorkerId(event.target.value)} /></label>
               <p className="fw-notice">{role === "WORKER" ? t("add.workerNote") : t("add.employerNote")}</p>
               <p className="fw-notice">{t("add.idsNote")}</p>
             </section>
             <p className="fw-disclaimer">{t("add.analyzeNote")}</p>
+            {aiUsable(aiConfig)
+              ? <section className="fw-card fw-offer-detail-card" aria-label={t("arun.consentAria")}>
+                  <strong>{t("arun.consentTitle")}</strong>
+                  <p>{t("ai.sendIntro", { provider: t(`ai.name.${aiConfig.provider}` as MessageKey), model: aiConfig.model ?? "" })}</p>
+                  <p>{t("ai.redactNote")}</p>
+                  <p>{t("ai.region", { region: aiConfig.processingRegion ?? "", use: aiConfig.dataUse ?? "" })}</p>
+                  <p>{t("ai.noRecall")}</p>
+                  <p>{t("ai.mayBeWrong")}</p>
+                  <p>{t("ai.adultNote")}</p>
+                  <label className="fw-field"><input type="checkbox" checked={aiConsent} onChange={event => setAiConsent(event.target.checked)} />{t("arun.consentLabel")}</label>
+                </section>
+              : <p className="fw-notice" role="status">{aiConfig ? t("arun.aiOffNote") : t("arun.aiUnknownNote")}</p>}
+            {runStages && <AnalysisDialog stages={runStages} elapsed={elapsed} onCancel={cancelAi} />}
             <div className="fw-fixed-action">
               <button className="fw-primary" type="submit" disabled={busy}>{busy ? t("add.checking") : t("add.analyze")} <Icon name="arrow" size={18} /></button>
             </div>

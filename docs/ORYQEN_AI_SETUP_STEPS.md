@@ -12,7 +12,7 @@ Technical background: `ORYQEN_AI_GATEWAY.md` and `ORYQEN_GEMINI_ACTIVATION.md`. 
 ## Step 1: create a Gemini key (Google)
 1. Go to **aistudio.google.com** and sign in with the Google account that should own the key.
 2. Choose **Get API key**, then **Create API key**. Copy it somewhere private for the next two minutes only.
-3. Look at the list of models in AI Studio and pick one whose name starts with `gemini-` (on 28 Oct, `gemini-3.1-flash-lite` answered and `gemini-3.8-flash` was overloaded; names change, so use one AI Studio shows today). The app refuses a model name that does not start with `gemini-`.
+3. Look at the list of models in AI Studio and pick one whose name starts with `gemini-`. **Use `gemini-3.1-flash-lite` if AI Studio lists it:** on 28 Oct and again on 9 Nov it answered (about 21 seconds for one offer), while `gemini-3.8-flash` was overloaded on 28 Oct and timed out on 9 Nov. Model names change, so use one AI Studio shows today. The app refuses a model name that does not start with `gemini-`.
 
 ## Step 2: find the right Vercel project
 1. Go to **vercel.com** and open your team.
@@ -48,6 +48,8 @@ Settings changes only take effect on a new deployment. In Vercel open **Deployme
 ## Step 6: check it
 - **In the app (30 seconds):** sign in, open **Add offer**. The box "Optional AI suggestions" should now show a consent request naming Google, instead of "Live AI is unavailable". Do not consent with real data.
 - **With the test script:** run `node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app` in the Terminal and type the staging email and password at the prompts (or ask the assistant to start it). Step 3 reports `AI is ON (provider gemini, model ..., region ...)`. It sends no text and uses no AI quota.
+- **One real call (optional, uses quota):** add `--real-ai` to that command. It analyses one made-up offer through the real provider and reports `SUCCESS ... every quote appears in the original text`, or the exact reason it failed (for example a timeout or quota).
+- **How a visitor uses it:** Add offer, paste or scan the offer, tick "Yes, also analyze this offer with AI", press Analyze offer. A popup shows the real stages, then the report opens on its own screen. Without the tick, nothing is sent.
 - **If it still says unavailable:** one of the settings is missing or invalid (the model name must start with `gemini-`, the approval note must be 10 to 200 characters, region at most 120, data-use at most 1000). Check the spelling of each name, redeploy again, and re-run the check.
 
 ## Turning it off again (any time)

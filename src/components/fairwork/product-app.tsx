@@ -70,6 +70,8 @@ import { WorkPassportScreen } from "./work-passport";
 import { CvBuilder } from "./cv-builder";
 import { HelpAssistant } from "./help-assistant";
 import { ScanOfferScreen } from "./scan-offer";
+import { OfferReportScreen } from "./offer-report";
+import type { AnalysisRun } from "@/features/analysis/run";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
 import "./visual.css";
@@ -122,6 +124,8 @@ type ProductContextValue = {
   setRole: (role: Role) => void;
   sourceText: string;
   setSourceText: (value: string) => void;
+  analysisRun: AnalysisRun | null;
+  setAnalysisRun: (run: AnalysisRun | null) => void;
   answered: Set<string>;
   setAnswered: (ids: Set<string>) => void;
   agreement: AgreementResult | null;
@@ -147,6 +151,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
   const [workerId, setWorkerId] = useState("");
   const [role, setRole] = useState<Role>("WORKER");
   const [sourceText, setSourceText] = useState("");
+  const [analysisRun, setAnalysisRun] = useState<AnalysisRun | null>(null);
   const [answered, setAnswered] = useState<Set<string>>(new Set());
   const [agreement, setAgreement] = useState<AgreementResult | null>(null);
   const [agreementId, setAgreementId] = useState("");
@@ -254,6 +259,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     setDraftOfferId("");
     setTerms({});
     setSourceText("");
+    setAnalysisRun(null);
     setCompanyId("");
     setWorkerId(profile?.id ?? "");
     setRole("WORKER");
@@ -276,6 +282,8 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     setRole,
     sourceText,
     setSourceText,
+    analysisRun,
+    setAnalysisRun,
     answered,
     setAnswered,
     agreement,
@@ -286,7 +294,7 @@ export function ProductProvider({ children }: { children: ReactNode }) {
     startSeparateOffer,
     loadAgreement, loadError, loadingAgreement, savedAnswers,
   }), [
-    session, profile, offer, setOffer, terms, companyId, workerId, role, sourceText,
+    session, profile, offer, setOffer, terms, companyId, workerId, role, sourceText, analysisRun,
     answered, agreement, agreementId, ensureAgreementId, ensureOfferId, startSeparateOffer, loadAgreement, loadError, loadingAgreement, savedAnswers,
   ]);
 
@@ -350,6 +358,7 @@ const screenTitle: Record<string, string> = {
   cv: "CV Builder",
   help: "Help",
   scan: "Scan an offer",
+  report: "Offer report",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -372,6 +381,7 @@ const backTarget: Record<string, string> = {
   cv: "home",
   help: "home",
   scan: "home",
+  report: "add-offer",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -528,6 +538,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "cv" && profile ? <CvBuilder displayName={profile.displayName} /> : null}
       {screen === "help" && profile ? <HelpAssistant /> : null}
       {screen === "scan" && profile ? <ScanOfferScreen /> : null}
+      {screen === "report" && profile ? <OfferReportScreen /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}

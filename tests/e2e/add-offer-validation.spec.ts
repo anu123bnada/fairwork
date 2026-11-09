@@ -40,9 +40,11 @@ test("new worker sees an honest empty organization state and a legitimate approv
   await expect(page.getByText(/No linked organizations found/)).toBeVisible();
   await expect(page.getByLabel("Worker account ID")).toHaveValue(worker);
   await expect(page.getByLabel("Worker account ID")).toHaveAttribute("readonly", "");
-  await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
-  await expect(page.locator(".fw-error[role='alert']")).toContainText("Select a linked organization");
   await expect(page.getByRole("link", { name: "Request independent organization approval" })).toHaveAttribute("href", "/app/employer");
+  // With no linked organization nothing can be saved, but the analysis still runs and the report says it was not saved (no offer write is made).
+  await page.getByRole("button", { name: "Analyze offer", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Offer analysis report" })).toBeVisible();
+  await expect(page.getByText("This analysis was not saved")).toBeVisible();
   expect(writes).toEqual([]);
   await page.setViewportSize({ width: 360, height: 800 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
