@@ -82,6 +82,7 @@ import { CareerAssistant } from "./career-assistant";
 import { EmployerDemo } from "./employer-demo";
 import { DemoCenter } from "./demo-center";
 import { DemoBanner } from "./demo-banner";
+import { OrgDemo } from "./org-demo";
 import "./records.css";
 import type { AnalysisRun } from "@/features/analysis/run";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
@@ -577,7 +578,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "cover-letter" && profile ? <CoverLetter displayName={profile.displayName} /> : null}
       {screen === "career-explorer" && profile ? <CareerExplorer /> : null}
       {screen === "portfolio" && profile ? <PortfolioBuilder /> : null}
-      {screen === "applicants" && profile ? <ApplicantManagement /> : null}
+      {screen === "applicants" && profile ? <><ApplicantManagement /><OrgDemo /></> : null}
       {screen === "interviews" && profile ? <InterviewStudio /> : null}
       {screen === "career-assistant" && profile ? <CareerAssistant /> : null}
       {screen === "employers-demo" && profile ? <EmployerDemo /> : null}

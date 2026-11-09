@@ -100,7 +100,7 @@ export async function localTier2Journey({ browser, worker, outsider, offerId, se
 
   // ---- personal records (application tracker and workroom): owner-only, validated, revisioned
   const appId = randomUUID(), projId = randomUUID();
-  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call' }], prep: [true, false, true, false, false, false] };
+  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call', stage: 'other', status: 'scheduled', outcome: 'pending', questions: '', feedback: '' }], prep: [true, false, true, false, false, false] };
   const appBody = { id: appId, kind: 'application', title: 'Synthetic applied job', status: 'interviewing', content: appContent, expectedRevision: 0 };
   must((await request(worker, '/api/v1/records', appBody)).revision === 1, 'An application record is saved for the worker');
   const appRead = await request(worker, `/api/v1/records?id=${appId}`);
