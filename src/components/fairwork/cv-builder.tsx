@@ -5,6 +5,7 @@ import { collectPrivatePassportExport } from "@/features/work/passport-export";
 import { cvDocument, cvList, cvSaved, cvTemplates, emptyCv, cvDocumentLimit, type CvContent, type CvSummary } from "@/features/cv/schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import { CvAnalyzer } from "./cv-analyzer";
 import "./cv-builder.css";
 
 type Draft = { id: string; title: string; template: (typeof cvTemplates)[number]; targetRole: string; content: CvContent; revision: number };
@@ -117,6 +118,7 @@ export function CvBuilder({ displayName }: { displayName: string }) {
       <button className="fw-primary" disabled={busy || !draft.title.trim()} onClick={() => void save()}>{t("cv.save")}</button>
       <button className="fw-secondary" disabled={busy} onClick={() => window.print()}>{t("cv.print")}</button>
       <p>{t("cv.printNote")}</p>
+      <CvAnalyzer content={c} />
     </div>
     <CvSheet draft={draft} verified={verified} />
   </section>;
