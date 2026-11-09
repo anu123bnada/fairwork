@@ -18,6 +18,7 @@ const screens = new Set([
   "scan",
   "report",
   "applications",
+  "cover-letter",
   "workroom",
   "settings",
   "employer",
