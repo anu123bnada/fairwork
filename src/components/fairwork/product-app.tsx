@@ -81,6 +81,8 @@ import { InterviewStudio } from "./interview-studio";
 import { CareerAssistant } from "./career-assistant";
 import { EmployerDemo } from "./employer-demo";
 import { DemoCenter } from "./demo-center";
+import { DemoBanner } from "./demo-banner";
+import "./records.css";
 import type { AnalysisRun } from "@/features/analysis/run";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
@@ -560,6 +562,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
   return (
     <div className={`${bodyClass}${screen === "home" && demoPreview ? " fw-home-demo-body" : ""} fw-screen-enter`} key={screen}>
       {screen !== "home" && screen !== "intro-welcome" && screen !== "settings" && screen !== "employer" && screen !== "share" && screen !== "notifications" ? <ProductHeader screen={screen} demoPreviewLink={!demoPreview && screen === "passport"} /> : null}
+      <DemoBanner screen={screen} />
       {["work-record", "passport"].includes(screen) && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {["add-offer", "analyzing", "check", "questions", "agreement"].includes(screen) && !demoPreview ? <FlowSteps screen={screen} /> : null}

@@ -8,3 +8,5 @@
 .oq-rec-group { border: 1px solid var(--oq-border, #8a94a6); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
 .oq-rec-check { display: flex; gap: 8px; align-items: center; }
 .oq-rec progress { accent-color: #35d0ff; }
+.oq-demo-banner { margin: 0 0 12px; padding: 8px 12px; border: 2px solid #f5b400; border-radius: 12px; background: rgba(245, 180, 0, 0.14); }
+.oq-demo-banner-soft { border-width: 1px; background: transparent; }
