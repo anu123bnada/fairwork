@@ -1,8 +1,8 @@
 import { appRequest } from "@/features/authority/client";
-import { recordDocument, recordList, recordSaved, type RecordDocument, type RecordSummary } from "./schema";
+import { recordDocument, recordList, recordSaved, type RecordDocument, type RecordKind, type RecordSummary } from "./schema";
 
 // Browser-side calls to the personal-records API. Every answer is validated again before the screen uses it.
-export async function listRecordsOf(kind: "application" | "project"): Promise<RecordSummary[]> {
+export async function listRecordsOf(kind: RecordKind): Promise<RecordSummary[]> {
   return recordList.parse(await appRequest(`/api/v1/records?kind=${kind}`)).items;
 }
 export async function readRecordById(id: string): Promise<RecordDocument> {

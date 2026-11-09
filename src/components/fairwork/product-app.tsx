@@ -74,6 +74,8 @@ import { OfferReportScreen } from "./offer-report";
 import { ApplicationTracker } from "./application-tracker";
 import { Workroom } from "./workroom";
 import { CoverLetter } from "./cover-letter";
+import { CareerExplorer } from "./career-explorer";
+import { PortfolioBuilder } from "./portfolio-builder";
 import type { AnalysisRun } from "@/features/analysis/run";
 import { AgreementWorkflowScreen, CreateVersionedAgreement } from "./agreement-workflow";
 import "./product.css";
@@ -365,6 +367,8 @@ const screenTitle: Record<string, string> = {
   applications: "Application tracker",
   workroom: "Workroom",
   "cover-letter": "Cover letter",
+  "career-explorer": "Career explorer",
+  portfolio: "Portfolio",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -391,6 +395,8 @@ const backTarget: Record<string, string> = {
   applications: "home",
   workroom: "home",
   "cover-letter": "home",
+  "career-explorer": "home",
+  portfolio: "home",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -434,7 +440,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["cover-letter", t("nav.coverLetter")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["cover-letter", t("nav.coverLetter")], ["career-explorer", t("nav.careerExplorer")], ["portfolio", t("nav.portfolio")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -551,6 +557,8 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "applications" && profile ? <ApplicationTracker /> : null}
       {screen === "workroom" && profile ? <Workroom /> : null}
       {screen === "cover-letter" && profile ? <CoverLetter displayName={profile.displayName} /> : null}
+      {screen === "career-explorer" && profile ? <CareerExplorer /> : null}
+      {screen === "portfolio" && profile ? <PortfolioBuilder /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}

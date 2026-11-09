@@ -4,7 +4,7 @@
 export type HelpLink = { label: string; href: string };
 export type HelpEntry = { id: string; title: string; keywords: string[]; answer: string; links: HelpLink[] };
 
-export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/scan", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/applications", "/app/cover-letter", "/app/workroom", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
+export const helpLinkTargets = ["/app/home", "/app/add-offer", "/app/scan", "/app/check", "/app/agreement-workflow", "/app/work-record", "/app/passport", "/app/share", "/app/cv", "/app/opportunities", "/app/applications", "/app/cover-letter", "/app/career-explorer", "/app/portfolio", "/app/workroom", "/app/guidance", "/app/settings", "/app/notifications", "/app/cases", "/verify", "/about"] as const;
 const link = (label: string, href: (typeof helpLinkTargets)[number]): HelpLink => ({ label, href });
 
 export const helpEntries: HelpEntry[] = [
@@ -32,6 +32,12 @@ export const helpEntries: HelpEntry[] = [
   { id: "cv-analyzer", title: "How do I check or improve my CV?", keywords: ["analyze cv", "analyse cv", "cv analyzer", "cv analyser", "check my cv", "improve my cv", "cv score", "ats", "ats checker", "applicant tracking", "skill gap", "skills gap", "job description", "keywords", "cv feedback", "matching jobs", "jobs for my skills"],
     answer: "Open CV Builder, then the section \"Analyze this CV (rules-based, not AI)\". It scores the CV you are editing out of 100 with every point explained, lists what to fix, gives applicant-tracking-system (ATS) notes, and can compare your CV with a job description you paste, showing which of the job's terms your CV does and does not mention. It also lists published listings that mention your skills. It cannot tell whether your claims are true, and you should add a missing term only if it is true for you.",
     links: [link("CV Builder", "/app/cv"), link("Job opportunities", "/app/opportunities")] },
+  { id: "portfolio", title: "How do I build a portfolio?", keywords: ["portfolio", "portfolio builder", "work samples", "certificates", "achievements", "showcase my work", "projects i did"],
+    answer: "Open Portfolio and press Add an entry. Choose a type (project, certificate, achievement or work sample), describe it, add skills and an https link if you have one, and save it as a draft or ready. Entries are private to you, typed by you, and not verified by ORYQEN. Only the Work Passport shows employer-verified work.",
+    links: [link("Portfolio", "/app/portfolio"), link("Work Passport", "/app/passport")] },
+  { id: "career-explorer", title: "How do I explore careers and see my skill gap?", keywords: ["career", "career path", "career explorer", "skill gap", "skills gap", "roadmap", "career roadmap", "what skills do i need", "next role", "career change"],
+    answer: "Open Career explorer, tick the skills you have or import them from your CV, and pick a target role. You see how many core skills you already cover, which are missing and a step-by-step roadmap. The roles and skills are a SAMPLE framework written for this demonstration, not real labour-market data, and your skills are self-reported and saved only on this device.",
+    links: [link("Career explorer", "/app/career-explorer"), link("CV Builder", "/app/cv")] },
   { id: "cover-letter", title: "Can ORYQEN write a cover letter?", keywords: ["cover letter", "covering letter", "application letter", "write a letter", "letter for job"],
     answer: "Open Cover letter, fill in the job, employer, your strengths and one real example, and a plain letter is assembled from your own words. It is a template, not AI: it adds no facts about you, and nothing is saved or sent. Copy it or print it, and check it before you use it.",
     links: [link("Cover letter", "/app/cover-letter"), link("CV Builder", "/app/cv")] },
