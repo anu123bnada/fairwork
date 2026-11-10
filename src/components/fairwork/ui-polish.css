@@ -1,0 +1,111 @@
+/* ORYQEN UI polish layer. Visual only: no markup roles, labels, data or behaviour change.
+   Loaded globally after the base design system; selectors carry `html` weight so they win over product.css regardless of chunk order. */
+:root { --ui-side: 184px; --ui-content: 1200px; --ui-ink: #0b1b33; --ui-muted: #55627d; --ui-line: rgba(22, 45, 85, .12); --ui-blue: #2454ff; --ui-ok: #0e7a52; --ui-warn: #a15c00; --ui-risk: #b42318; }
+
+/* ---- Application shell ---- */
+html .fw-product { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+html .fw-product h1, html .fw-product h2, html .fw-product h3 { letter-spacing: -.015em; text-wrap: balance; }
+html .fw-product p { text-wrap: pretty; }
+@media (min-width: 768px) {
+  html .fw-product { padding-left: var(--ui-side); }
+  html .fw-product:not(:has(.fw-bottom-nav)) { padding-left: 0; }
+  html .fw-product .fw-bottom-nav { width: var(--ui-side); padding: 22px 12px 18px; gap: 4px; scrollbar-width: thin; scrollbar-color: rgba(36, 84, 255, .25) transparent; overscroll-behavior: contain; }
+  html .fw-product .fw-nav-brand { white-space: nowrap; flex-wrap: nowrap; gap: 10px; padding: 2px 10px 18px; font-size: 14px; letter-spacing: .14em; }
+  html .fw-product .fw-nav-brand .fw-nav-mark { width: 28px; height: 28px; flex: none; }
+  html .fw-product .fw-nav-link { min-height: 44px; padding: 10px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; line-height: 1.25; transition: background-color .15s ease, color .15s ease; }
+  html .fw-product .fw-nav-link:not(.active):hover { background: rgba(36, 84, 255, .07); }
+  html .fw-product .fw-nav-link.active { font-weight: 700; }
+  html .fw-product .fw-nav-more { margin-top: 10px; padding-top: 12px; }
+  html .fw-product .fw-nav-more-title { font-size: 11px; padding: 0 12px 6px; }
+  html .fw-product .fw-nav-sub { font-size: 13px; padding: 8px 12px; border-radius: 10px; }
+  html .fw-product :is(.fw-fixed-action, .fw-demo-passport-action) { left: calc(var(--ui-side) + (100% - var(--ui-side)) / 2 - 175px); }
+  /* One content width everywhere, one scroll surface (the page itself). */
+  html .fw-product .fw-product-body { max-width: var(--ui-content); padding: 32px 40px 64px; }
+  html .fw-product .fw-product-body.fw-home-body, html .fw-product .fw-home-body { max-width: var(--ui-content); }
+}
+@media (min-width: 768px) and (max-width: 1023px) { :root { --ui-side: 176px; } html .fw-product .fw-product-body { padding-inline: 24px; } }
+
+/* No scroll containers nested inside the page: the right rail flows with the page. */
+@media (min-width: 1100px) {
+  html .fw-dash-rail, html .fw-dash-columns > .fw-dash-rail { position: static; max-height: none; overflow: visible; padding-right: 0; }
+  html .fw-dash { grid-template-columns: minmax(0, 1fr) 360px; }
+}
+
+/* Mobile navigation: safe-area aware, labels never overflow, content clears the bar. */
+@media (max-width: 767px) {
+  html .fw-product .fw-product-body { padding-bottom: calc(120px + env(safe-area-inset-bottom)); padding-inline: 16px; }
+  html .fw-product .fw-bottom-nav { padding-inline: 4px; gap: 2px; }
+  html .fw-product .fw-nav-link { min-width: 0; min-height: 48px; font-size: 11px; font-weight: 700; }
+  html .fw-product .fw-nav-link > span, html .fw-product .fw-nav-link { overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* ---- Cards and surfaces: one consistent radius, border and hover ---- */
+html .fw-product :is(.fw-card, .fw-list-card, .fw-profile-card, .fw-offer-detail-card) { border-radius: 18px; }
+html .fw-product :is(.fw-list-card, .fw-offer-detail-card) > h3 { font-size: 17px; margin-top: 0; }
+html .fw-product .fw-question-card { border-radius: 14px; border: 1px solid var(--ui-line); padding: 14px 16px; }
+html .fw-product .fw-question-card h4 { margin: 0 0 6px; font-size: 15px; }
+html .fw-product .fw-question-card blockquote { margin: 8px 0; padding: 8px 12px; border-left: 3px solid rgba(36, 84, 255, .35); background: rgba(36, 84, 255, .05); border-radius: 0 10px 10px 0; font-size: 13px; }
+html .fw-product :is(.fw-primary, .fw-secondary):focus-visible, html .fw-product :is(a, button, summary):focus-visible { outline: 2px solid var(--ui-blue); outline-offset: 2px; }
+html .fw-product meter { width: 100%; height: 8px; }
+html .fw-product details > summary { cursor: pointer; }
+
+/* ---- Dashboard ---- */
+html .fw-dash-hero { padding: 26px; border-radius: 24px; }
+html .fw-dash-hero .fw-home-greeting h2 { font-size: clamp(26px, 3vw, 36px); line-height: 1.1; }
+html .fw-dash { gap: 18px; }
+html .fw-dash-main, html .fw-dash-rail { gap: 16px; }
+html .fw-dash :is(.fw-sum-card, .fw-recent) { border-radius: 18px; }
+html .fw-dash .fw-sum-value { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+html .fw-dash .fw-recent-empty { border: 1px dashed var(--ui-line); border-radius: 14px; padding: 16px; text-align: left; }
+
+/* ---- Offer analysis ---- */
+.ui-assess { display: grid; gap: 16px; }
+.ui-assess-hero { display: flex; align-items: center; gap: 20px; padding: 18px; border-radius: 16px; background: linear-gradient(135deg, rgba(36, 84, 255, .09), rgba(18, 198, 255, .1) 60%, rgba(119, 85, 255, .08)); border: 1px solid rgba(36, 84, 255, .14); }
+.ui-assess-score { --ui-score: 0%; flex: none; width: 96px; height: 96px; border-radius: 50%; display: grid; place-content: center; text-align: center; background: radial-gradient(closest-side, #fff 78%, transparent 80% 100%), conic-gradient(var(--ui-blue) var(--ui-score), rgba(36, 84, 255, .14) 0); color: var(--ui-ink); line-height: 1; }
+.ui-assess-score strong { font-size: 30px; font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+.ui-assess-score span { font-size: 11px; color: var(--ui-muted); margin-top: 2px; }
+.ui-assess-summary { min-width: 0; display: grid; gap: 6px; }
+.ui-assess-summary p { margin: 0; }
+.ui-assess-counts { margin: 0; font-size: 13px; color: var(--ui-muted); }
+.ui-assess-cats { display: grid; gap: 10px 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.ui-assess-cat { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 13px; font-weight: 600; }
+.ui-assess-cat meter { grid-column: 1 / -1; }
+.ui-assess-group { display: grid; gap: 10px; }
+.ui-assess-group-title { margin: 6px 0 0; display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+.ui-assess-group-title span { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; font-size: 12px; color: #fff; background: var(--ui-muted); }
+.ui-assess-group.is-concern .ui-assess-group-title span { background: var(--ui-risk); }
+.ui-assess-group.is-missing .ui-assess-group-title span { background: var(--ui-warn); }
+.ui-assess-group.is-uncertain .ui-assess-group-title span { background: #5b49c8; }
+.ui-finding { border-left-width: 4px; }
+.ui-finding.is-concern { border-left-color: var(--ui-risk); }
+.ui-finding.is-missing { border-left-color: var(--ui-warn); }
+.ui-finding.is-uncertain { border-left-color: #5b49c8; }
+.ui-finding.is-stated { border-left-color: var(--ui-ok); }
+.ui-finding p { margin: 6px 0 0; font-size: 14px; line-height: 1.5; }
+.ui-finding-next { font-weight: 600; }
+.ui-finding-next::before { content: "→ "; color: var(--ui-blue); }
+.ui-assess-stated > summary { font-weight: 700; padding: 8px 0; }
+.ui-assess-stated { display: grid; gap: 10px; }
+.ui-assess-note { margin: 0; font-size: 13px; color: var(--ui-muted); padding: 10px 12px; border-radius: 12px; background: rgba(22, 45, 85, .05); }
+@media (max-width: 520px) { .ui-assess-hero { flex-direction: column; align-items: flex-start; } }
+
+/* ---- Shared records screens (tracker, applicants, vault, passport, credentials, disputes) ---- */
+html .fw-product .fw-list-row { gap: 10px; align-items: center; }
+html .fw-product :is(.fw-field input, .fw-field select, .fw-field textarea) { border-radius: 12px; }
+html .fw-product :is(.fw-field input, .fw-field select, .fw-field textarea):focus-visible { border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(36, 84, 255, .18); outline: none; }
+
+/* ---- Dark scheme ---- */
+@media (prefers-color-scheme: dark) {
+  html[data-brand="oryqen"]:not([data-theme="light"]) .fw-product .fw-nav-brand { color: #eef3ff; }
+  html[data-brand="oryqen"]:not([data-theme="light"]) .ui-assess-score { background: radial-gradient(closest-side, #12264a 78%, transparent 80% 100%), conic-gradient(#6f9bff var(--ui-score), rgba(143, 176, 255, .2) 0); color: #eef3ff; }
+  html[data-brand="oryqen"]:not([data-theme="light"]) :is(.ui-assess-score span, .ui-assess-counts, .ui-assess-note) { color: #b4c2de; }
+  html[data-brand="oryqen"]:not([data-theme="light"]) .ui-assess-note { background: rgba(143, 176, 255, .1); }
+  html[data-brand="oryqen"]:not([data-theme="light"]) .ui-assess-hero { background: rgba(143, 176, 255, .1); border-color: rgba(143, 176, 255, .24); }
+  html[data-brand="oryqen"]:not([data-theme="light"]) .fw-product .fw-question-card { border-color: rgba(143, 176, 255, .24); }
+}
+@media print { .ui-assess-hero { break-inside: avoid; } }
+.ui-assess-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.ui-assess-chips li { padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; border: 1px solid var(--ui-line); background: rgba(255, 255, 255, .6); }
+.ui-assess-group.is-concern .ui-assess-chips li { border-color: rgba(180, 35, 24, .35); }
+.ui-assess-group.is-missing .ui-assess-chips li { border-color: rgba(161, 92, 0, .35); }
+.ui-assess-group-title { margin: 6px 0 0; }

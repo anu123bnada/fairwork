@@ -9,6 +9,7 @@ import "@/components/oryqen/recovery.css";
 import "@/components/brand/brand.css";
 import "@/components/oryqen/tokens.css";
 import "@/components/oryqen/design-system.css";
+import "@/components/fairwork/ui-polish.css";
 
 export const metadata: Metadata = {
   title: { default: "ORYQEN — Your work, clearly recorded", template: "%s | ORYQEN" },
