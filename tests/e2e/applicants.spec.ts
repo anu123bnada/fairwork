@@ -72,3 +72,30 @@ test("organization side: listings with applicant counts, review applicants, stat
   await expect(page.getByLabel("My listings")).toContainText("1 applicant(s), 0 new, 1 shortlisted");
   await expect(page.getByText("ORYQEN does not message applicants and does not verify anyone.")).toBeVisible();
 });
+
+test("organization sandbox (DEMO): both sides of the workflow on this device, labelled, persisted across reload, no real API calls", async ({ page }) => {
+  const writes: string[] = [];
+  await setup(page, []);
+  await page.route(/\/api\/v1\/applications(\?.*)?$/, route => route.fulfill({ json: { data: { items: [], limit: 100 } } }));
+  page.on("request", request => { if (request.method() !== "GET" && request.url().includes("/api/")) writes.push(request.url()); });
+  await page.goto("/app/applicants");
+  const sandbox = page.getByLabel("Organization sandbox (DEMO)");
+  await expect(sandbox).toContainText("fictional applicants");
+  await expect(sandbox).toContainText("nobody is verified");
+  await sandbox.getByLabel("Your message to the sample organization (optional)").fill("Available immediately.");
+  await sandbox.getByRole("button", { name: "Apply to the sample listing" }).click();
+  await expect(sandbox).toContainText("Status set by the sample organization: Submitted.");
+  await sandbox.getByRole("button", { name: "Organization view" }).click();
+  await expect(sandbox).toContainText("5 sample applicant(s): 5 submitted, 0 reviewing, 0 shortlisted, 0 declined.");
+  await expect(sandbox.getByLabel("Sample applicants")).toContainText("You, as a sample visitor (SAMPLE)");
+  await sandbox.getByRole("button", { name: "Mark You, as a sample visitor (SAMPLE) as Shortlisted" }).click();
+  await sandbox.getByRole("button", { name: "Mark Kasun Perera (SAMPLE) as Declined" }).click();
+  await expect(sandbox).toContainText("5 sample applicant(s): 3 submitted, 0 reviewing, 1 shortlisted, 1 declined.");
+  await page.reload();
+  const again = page.getByLabel("Organization sandbox (DEMO)");
+  await again.getByRole("button", { name: "Worker view" }).click();
+  await expect(again).toContainText("Status set by the sample organization: Shortlisted.");
+  await again.getByRole("button", { name: "Reset the sandbox" }).click();
+  await expect(again.getByLabel("Your message to the sample organization (optional)")).toBeVisible();
+  expect(writes).toEqual([]);
+});

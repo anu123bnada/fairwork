@@ -240,7 +240,7 @@ await step('17 Saved-listing history: a snapshot is stored privately, keeps only
 // ---- 18. personal records (application tracker and workroom): private, validated, revisioned
 await step('18 Application tracker and Workroom: save, read back exactly, list, update with the revision, refuse stale, invalid and foreign-owner input, delete', async () => {
   const appId = randomUUID(), projId = randomUUID();
-  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call' }], prep: [true, false, true, false, false, false] };
+  const appContent = { listingId: null, organization: 'Synthetic Employer (DEMO)', location: 'Kandy', appliedOn: '2026-11-01', nextStepAt: '2026-11-12T09:30', notes: 'Synthetic note', events: [{ id: randomUUID(), kind: 'interview', at: '2026-11-12T09:30', notes: 'Phone call', stage: 'other', status: 'scheduled', outcome: 'pending', questions: '', feedback: '' }], prep: [true, false, true, false, false, false] };
   const appBody = { id: appId, kind: 'application', title: 'Synthetic hosted application', status: 'interviewing', content: appContent, expectedRevision: 0 };
   const projBody = { id: projId, kind: 'project', title: 'Synthetic hosted project', status: 'active', content: { description: 'Synthetic', dueOn: '2026-12-01', milestones: [{ id: randomUUID(), title: 'M1', done: false, dueOn: '2026-11-20' }], tasks: [{ id: randomUUID(), title: 'T1', done: true }, { id: randomUUID(), title: 'T2', done: false }] }, expectedRevision: 0 };
   try {
@@ -248,6 +248,14 @@ await step('18 Application tracker and Workroom: save, read back exactly, list, 
     if ((await call('/api/v1/records', projBody)).data.revision !== 1) throw new Error('the first project save should be revision 1');
     const read = (await call('/api/v1/records?id=' + appId)).data;
     if (JSON.stringify(read.content) !== JSON.stringify(appContent) || read.status !== 'interviewing') throw new Error('the application did not read back as saved');
+    // An older-shaped interview event (no stage/status/outcome/questions/feedback) is normalized by the server: it reads back with the defaults, never with data lost.
+    const legacyId = randomUUID();
+    const legacyEvent = { id: randomUUID(), kind: 'interview', at: '2026-11-13T10:00', notes: 'Legacy shape' };
+    await call('/api/v1/records', { ...appBody, id: legacyId, title: 'Synthetic legacy-shaped application', content: { ...appContent, events: [legacyEvent] } });
+    try {
+      const legacyRead = (await call('/api/v1/records?id=' + legacyId)).data;
+      if (JSON.stringify(legacyRead.content.events[0]) !== JSON.stringify({ ...legacyEvent, stage: 'other', status: 'scheduled', outcome: 'pending', questions: '', feedback: '' })) throw new Error('an older-shaped event did not read back with the documented defaults');
+    } finally { await call('/api/v1/records/remove', { id: legacyId }).catch(() => null); }
     const projects = (await call('/api/v1/records?kind=project')).data.items;
     const mine = projects.find(item => item.id === projId);
     if (!mine || mine.summary.taskCount !== 2 || mine.summary.tasksDone !== 1) throw new Error('the project list is missing or its task counts are wrong');

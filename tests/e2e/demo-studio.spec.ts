@@ -77,3 +77,40 @@ test("add a job offer: the sample offer button fills in a clearly labelled synth
   await expect(page.getByLabel("Paste offer text")).toHaveValue(/uniform deposit/);
   await expect(page.getByText("The sample is synthetic text written for this demonstration.")).toBeVisible();
 });
+
+test("demo mode is visible on sample screens and on screens that may hold sample records, and not on real-only screens; the journey shows real counts", async ({ page }) => {
+  const store: Stored[] = [{ id: "40000000-0000-4000-8000-0000000000e1", kind: "application", title: "Picker (DEMO)", status: "applied", revision: 1, updatedAt: "2026-11-09T10:00:00Z", content: { listingId: null, organization: "", location: "", appliedOn: "", nextStepAt: "", notes: "", events: [], prep: [] } }];
+  await setup(page, store);
+  for (const [route, kind] of [["career-explorer", "sample"], ["career-assistant", "sample"], ["employers-demo", "sample"], ["demo", "sample"], ["applications", "mixed"], ["interviews", "mixed"], ["workroom", "mixed"], ["cover-letter", "mixed"], ["portfolio", "mixed"]] as const) {
+    await page.goto(`/app/${route}`);
+    await expect(page.locator(`[data-demo="${kind}"]`), route).toBeVisible();
+    await expect(page.locator(`[data-demo="${kind}"]`), route).toContainText("DEMO MODE.");
+  }
+  await page.goto("/app/passport");
+  await expect(page.locator("[data-demo]")).toHaveCount(0);
+  await page.goto("/app/demo");
+  const journey = page.getByRole("list", { name: "Worker journey, step by step" });
+  await expect(journey).toContainText("5. Application tracker (1 saved)");
+  await expect(journey).toContainText("3. Career roadmap (0 saved)");
+  await expect(journey.getByRole("link", { name: "Open" })).toHaveCount(10);
+});
+
+test("application tracker suggests follow-ups and shows outcome counts from the person's own list", async ({ page }) => {
+  const content = (over: Record<string, unknown>) => ({ listingId: null, organization: "", location: "", appliedOn: "", nextStepAt: "", notes: "", events: [], prep: [], ...over });
+  const store: Stored[] = [
+    { id: "40000000-0000-4000-8000-0000000000f1", kind: "application", title: "Quiet job", status: "applied", revision: 1, updatedAt: "2026-11-09T10:00:00Z", content: content({ appliedOn: "2020-01-01" }) },
+    { id: "40000000-0000-4000-8000-0000000000f2", kind: "application", title: "Late step", status: "interviewing", revision: 1, updatedAt: "2026-11-09T10:00:00Z", content: content({ appliedOn: "2020-01-01", nextStepAt: "2020-02-01T09:00" }) },
+    { id: "40000000-0000-4000-8000-0000000000f3", kind: "application", title: "Done deal", status: "offered", revision: 1, updatedAt: "2026-11-09T10:00:00Z", content: content({ appliedOn: "2020-01-01" }) },
+  ];
+  await setup(page, store);
+  await page.goto("/app/applications");
+  const panel = page.getByLabel("Follow-ups and outcomes", { exact: true });
+  await expect(panel).toContainText("Your list: 3 applied, 2 reached an interview, 1 offer(s), 0 not selected.");
+  const follow = page.getByLabel("Suggested follow-ups");
+  await expect(follow).toContainText("Quiet job");
+  await expect(follow).toContainText("no reply recorded");
+  await expect(follow).toContainText("Late step");
+  await expect(follow).toContainText("the next-step date passed");
+  await expect(follow).not.toContainText("Done deal");
+  await expect(panel).toContainText("not benchmarks");
+});

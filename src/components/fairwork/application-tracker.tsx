@@ -6,6 +6,7 @@ import { listRecordsOf, readRecordById, removeRecordById, saveRecordBody } from 
 import { applicationStatuses, emptyApplication, prepItems, type ApplicationContent, type RecordSummary } from "@/features/records/schema";
 import { opportunityPage } from "@/features/opportunities/schema";
 import { SubmittedApplications } from "./submitted-applications";
+import { ApplicationInsights } from "./application-insights";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./records.css";
@@ -81,6 +82,7 @@ export function ApplicationTracker() {
         <button className="fw-secondary" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>{t("trk.all", { count: items.length })}</button>
         {applicationStatuses.map(status => <button key={status} className="fw-secondary" aria-pressed={filter === status} onClick={() => setFilter(status)}>{t(`trk.s.${status}` as MessageKey)} ({counts[status]})</button>)}
       </div>}
+      {items && <ApplicationInsights items={items} />}
       {upcoming.length > 0 && <section aria-label={t("trk.upcomingAria")}><h3>{t("trk.upcoming")}</h3><ul>{upcoming.map(item => <li key={item.id}>{item.summary.nextStepAt?.replace("T", " ")} · {item.title}{item.summary.organization ? ` · ${item.summary.organization}` : ""}</li>)}</ul></section>}
       {items && items.length === 0 && !busy && <p>{t("trk.none")}</p>}
       <ul className="oq-rec-list">{shown.map(item => <li key={item.id}>
