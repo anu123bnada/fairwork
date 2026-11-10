@@ -21,5 +21,6 @@ export function SignInScreen() {
       <AuthInformationLink />
     </div>
     <p className="fw-sign-in-employer"><Link href="/app/employer">{t("au.employerLink")}</Link></p>
+    <p className="fw-sign-in-employer"><Link href="/try">Just looking? Try the demo without an account</Link></p>
   </AuthShell>;
 }
