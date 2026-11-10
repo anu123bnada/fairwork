@@ -17,6 +17,8 @@ const ENGLISH_ON_PURPOSE: Record<string, string> = {
   "src/components/fairwork/offer-company-selector.tsx": "organization screens",
   "src/components/fairwork/organization-requests.tsx": "organization screens, listed in the note",
   "src/components/fairwork/org-plan-panel.tsx": "organization plan panel and operator form (employer workspace and operator tools, English like the screens around them)",
+  "src/components/fairwork/recruiter-check.tsx": "public exhibition demo; its rules and quoted matches are English wording patterns, so the page stays English until native review",
+  "src/components/fairwork/try-hub.tsx": "public exhibition entry page and module guide (10 Nov); English only, a translation pass needs native review",
   "src/components/fairwork/report-queue.tsx": "reviewer queue (operators), English like the other operator tools",
   "src/components/fairwork/page-shell.tsx": "layout wrapper", "src/components/fairwork/status.tsx": "layout wrapper",
   "src/components/oryqen/appearance.tsx": "appearance picker", "src/components/oryqen/cinematic-core.tsx": "landing animation", "src/components/oryqen/profile-editor.tsx": "profile editor",

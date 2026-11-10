@@ -601,6 +601,9 @@ export default function Home() {
             <span className="nav-status">
               <i /> A NEW WAY FORWARD
             </span>
+            <a href="/try" className="nav-signin">
+              TRY THE DEMO <ArrowRight size={14} />
+            </a>
             <a href="/sign-in" className="nav-signin">
               SIGN IN <ArrowRight size={14} />
             </a>
@@ -959,8 +962,10 @@ export default function Home() {
                 </h2>
                 <p>
                   Take ORYQEN with you. Windows and Android builds are preview
-                  releases; each download unlocks only when its official HTTPS
-                  link is published.
+                  releases for testing: the Windows installer is unsigned
+                  (Windows SmartScreen will warn) and the Android app is signed
+                  with a debug certificate. Check the checksum on the details
+                  page before installing.
                 </p>
                 <ul className="release-cards" aria-label="ORYQEN applications">
                   {[windowsRelease, androidRelease].map((release) => (
@@ -992,7 +997,8 @@ export default function Home() {
                 </div>
                 <p className="download-account">
                   Already have an account? <a href="/sign-in">Sign in</a> or{" "}
-                  <a href="/register">create one</a>.
+                  <a href="/register">create one</a>.{" "}
+                  Or <a href="/try">try the demo without an account</a>.
                 </p>
                 <div className="download-note">
                   <LockKeyhole size={13} /> Use only official ORYQEN release

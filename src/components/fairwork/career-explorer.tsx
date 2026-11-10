@@ -16,7 +16,7 @@ const readStored = (): { skills: string[]; careerId: string } => {
 };
 
 // Career Path Explorer and Skill Gap. The framework is a SYNTHETIC SAMPLE (labelled everywhere) and the person's skills are self-reported; nothing here is verified or real labour-market data.
-export function CareerExplorer() {
+export function CareerExplorer({ anonymous = false }: { anonymous?: boolean } = {}) {
   const { t } = useI18n();
   const [skills, setSkills] = useState<string[]>([]), [careerId, setCareerId] = useState(firstId), [typed, setTyped] = useState(""), [message, setMessage] = useState("");
   const [ready, setReady] = useState(false);
@@ -49,7 +49,7 @@ export function CareerExplorer() {
       <div className="oq-rec-chips">{allSampleSkills().map(name => <button key={name} type="button" className="fw-secondary" aria-pressed={has(name)} onClick={() => toggle(name)}>{name}</button>)}</div>
       <label className="fw-field">{t("cx.addSkill")}<input maxLength={60} value={typed} onChange={e => setTyped(e.target.value)} /></label>
       <button type="button" className="fw-secondary" disabled={!typed.trim() || skills.length >= 60} onClick={() => { const value = typed.trim(); setSkills(current => current.some(item => item.toLowerCase() === value.toLowerCase()) ? current : [...current, value]); setTyped(""); }}>{t("cx.addSkillButton")}</button>
-      <button type="button" className="fw-secondary" onClick={() => void importFromCv()}>{t("cx.importCv")}</button>
+      {!anonymous && <button type="button" className="fw-secondary" onClick={() => void importFromCv()}>{t("cx.importCv")}</button>}
       {message && <p role="status">{message}</p>}
       <p>{skills.length === 0 ? t("cx.noSkills") : t("cx.skillCount", { count: skills.length })}</p>
       <p className="fw-notice">{t("cx.deviceOnly")}</p>
@@ -67,7 +67,8 @@ export function CareerExplorer() {
       {gap.roadmap.length === 0 ? <p>{t("cx.roadmapDone")}</p> : <ol aria-label={t("cx.roadmapAria")}>{gap.roadmap.map(step => <li key={step.skill}><strong>{step.skill}</strong> ({step.weight === "core" ? t("cx.core") : t("cx.helpful")}): {step.step}</li>)}</ol>}
       {gap.nextRoles.length > 0 && <p>{t("cx.nextRoles")}: {gap.nextRoles.map(role => role.title).join(", ")}</p>}
     </div>}
-    {gap && <CareerRoadmaps careerId={gap.career.id} careerTitle={gap.career.title} steps={gap.roadmap.map(step => ({ skill: step.skill, step: step.step }))} />}
+    {gap && !anonymous && <CareerRoadmaps careerId={gap.career.id} careerTitle={gap.career.title} steps={gap.roadmap.map(step => ({ skill: step.skill, step: step.step }))} />}
+    {anonymous && <p className="fw-notice">Sign in to save a roadmap with milestone progress and to import skills from your CV.</p>}
     <p className="fw-notice">{t("cx.notice")}</p>
   </section>;
 }
