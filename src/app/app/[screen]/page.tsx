@@ -26,6 +26,7 @@ const screens = new Set([
   "career-assistant",
   "employers-demo",
   "demo",
+  "salary",
   "workroom",
   "settings",
   "employer",
