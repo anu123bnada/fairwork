@@ -92,3 +92,24 @@ service-role credential ships in any artifact above.
 Pushing commits, deploying the application, applying hosted migrations, uploading
 either binary to public storage, publishing release links, and creating signing
 credentials all require explicit approval. Nothing above was performed.
+
+## 10 Nov 2026 reconciliation: public downloads versus the new candidate builds
+
+**Decision: the existing public downloads are retained. The two new builds were not published.** Both new files are valid builds; they are kept in the shared deliverables folder as candidates.
+
+Independently measured by the release lead (SHA-256 computed on the files themselves, sizes from the filesystem, public files downloaded from their public URLs):
+
+| | Public APK | Candidate APK | Public Windows installer | Candidate Windows installer |
+|---|---|---|---|---|
+| Where | `/downloads/ORYQEN-Online-Preview-1.0.0-staging-debug.apk` on the staging site | `ORYQEN-Android.apk` (deliverables folder) | GitHub release `oryqen-preview-v0.1.0` asset | `ORYQEN-Windows-Setup.exe` (deliverables folder) |
+| Size (bytes) | 4,121,028 | 4,120,893 | 121,261,243 | 121,261,095 |
+| SHA-256 | `8d4a1e1b…53cc8f` (equals the manifest above; downloaded and hashed 10 Nov) | `b0174eb2…a50dd` (equals Agent 2's report) | `bd27ed2f…393e3` (equals the manifest above and GitHub's published digest; downloaded and hashed 10 Nov) | `e7e47eab…07aa4` (equals Agent 3's report) |
+| Opens | `https://oryqen-staging.vercel.app/sign-in` (read from the embedded `capacitor.config.json`) | the same | the staging site (per the published release notes) | the staging site (per Agent 3's `app-config.json`) |
+| Validity checks | tested on an emulator on 28 Oct (per the Android status file) | valid archive; `apksigner` verifies a v2 signature with a debug certificate; `aapt2` shows `org.fairwork.localpoc.online`, version `1.0.0-online-preview`, label `ORYQEN Online Preview`, INTERNET permission only | silent install, launch and uninstall were tested on Windows 11 (per the release notes) | valid PE file with the NSIS marker; created by Agent 3 |
+| Install tested | emulator, earlier build of the same type | **not tested** (Agent 2) | yes, per release notes | **not tested** (Agent 3 launched only the unpacked app for 12 seconds and did not inspect the page) |
+
+Reasoning: each candidate is a thin shell that opens the same staging site as the public file, so it adds no capability for visitors; each public file has the stronger evidence (documented, checksum-verified end to end, and install- or emulator-tested). Replacing them would swap tested files for untested ones. Candidates differ cosmetically (Windows product name "ORYQEN" instead of "ORYQEN Preview"; the window title still reads Preview).
+
+Both remain **preview builds**: the Android app is signed with a debug certificate and is not a release build; the Windows installer is unsigned and Windows SmartScreen will warn. Neither new candidate has been installation-tested.
+
+Correction to the Android rows above: the published APK's embedded `server.url` is the staging site, not `https://oryqen.vercel.app` (that host serves an older deployment without the exhibition features and is not the exhibition address).
