@@ -10,3 +10,11 @@
 .oq-rec progress { accent-color: #35d0ff; }
 .oq-demo-banner { margin: 0 0 12px; padding: 8px 12px; border: 2px solid #f5b400; border-radius: 12px; background: rgba(245, 180, 0, 0.14); }
 .oq-demo-banner-soft { border-width: 1px; background: transparent; }
+
+/* The shared secondary-button style stretches to the full width of its container. On these list, chip and filter screens that turns every chip, filter and row action into a full-width bar,
+   so they keep their natural size and wrap in a row instead. Primary call-to-action buttons keep their full width. */
+html .fw-product .oq-rec :is(.fw-secondary):not(.oq-rec-wide) { width: auto; max-width: 100%; flex: 0 1 auto; }
+html .fw-product .oq-rec-chips { align-items: stretch; }
+html .fw-product .oq-rec-list li > .fw-secondary { margin-inline-end: 4px; }
+html .fw-product .oq-rec progress { width: 100%; height: 10px; border-radius: 999px; overflow: hidden; }
+@media (max-width: 600px) { html .fw-product .oq-rec .oq-rec-actions-stack :is(.fw-secondary) { width: 100%; } }
