@@ -473,10 +473,10 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
           <span>{label}</span>
         </Link>
       ))}
-      {!demoPreview && <div className="fw-nav-more">
-        <span className="fw-nav-more-title">{t("nav.more")}</span>
+      {!demoPreview && <details className="fw-nav-more" open={more.some(([route]) => route === current) || undefined}>
+        <summary className="fw-nav-more-title">{t("nav.more")}</summary>
         {more.map(([route, label]) => <Link key={route} className={`fw-nav-sub${current === route ? " active" : ""}`} href={routeFor(route)} aria-current={current === route ? "page" : undefined}>{label}</Link>)}
-      </div>}
+      </details>}
     </nav>
   );
 }
@@ -566,7 +566,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
   const bodyClass = screen === "home" ? "fw-product-body fw-home-body" : "fw-product-body";
   return (
     <div className={`${bodyClass}${screen === "home" && demoPreview ? " fw-home-demo-body" : ""} fw-screen-enter`} key={screen}>
-      {screen !== "home" && screen !== "intro-welcome" && screen !== "settings" && screen !== "employer" && screen !== "share" && screen !== "notifications" ? <ProductHeader screen={screen} demoPreviewLink={!demoPreview && screen === "passport"} /> : null}
+      {screen !== "home" && screen !== "intro-welcome" && screen !== "settings" && screen !== "employer" && screen !== "share" && screen !== "notifications" ? <ProductHeader screen={screen} title={screen === "report" ? "" : undefined} demoPreviewLink={!demoPreview && screen === "passport"} /> : null}
       <DemoBanner screen={screen} />
       {["work-record", "passport"].includes(screen) && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" && demoPreview && <DemoPreviewControl screen={screen} enabled />}

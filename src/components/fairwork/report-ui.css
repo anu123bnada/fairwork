@@ -1,0 +1,74 @@
+/* Offer analysis report: a calm, light, readable result screen. Restrained ORYQEN accents (blue, cyan, violet) on a plain surface; no large gradient panels. Layout and presentation only. */
+.oq-report { display: grid; gap: 20px; max-width: 920px; margin-inline: auto; width: 100%; }
+.oq-report-head h1 { margin: 0 0 4px; font-size: clamp(22px, 3vw, 28px); line-height: 1.2; }
+.oq-report-head p { margin: 0; color: var(--oq-muted, #5a6882); font-size: 14px; }
+
+.oq-report-summary { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--oq-border, #b3c0da); border-radius: 16px; background: var(--oq-surface, #fff); box-shadow: 0 1px 0 rgba(11, 27, 51, .04), 0 8px 24px -16px rgba(30, 79, 255, .25); }
+.oq-report-summary > h2 { margin: 0; font-size: 16px; letter-spacing: .01em; }
+.oq-stats { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.oq-stat { display: grid; gap: 2px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-soft, #e9efff); border-left-width: 4px; border-left-color: var(--oq-accent, #1e4fff); }
+.oq-stat[data-tone="attention"] { border-left-color: #c46a00; }
+.oq-stat[data-tone="ok"] { border-left-color: #0b8f5a; }
+.oq-stat-label { font-size: 13px; color: var(--oq-muted, #5a6882); }
+.oq-stat-value { font-size: 24px; line-height: 1.15; color: var(--oq-text, #0b1b33); }
+.oq-stat-hint { font-size: 12.5px; color: var(--oq-muted, #5a6882); }
+
+.oq-report-callout { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--oq-border, #b3c0da); border-left: 4px solid var(--oq-violet, #7755ff); background: var(--oq-surface, #fff); font-size: 15px; line-height: 1.55; }
+.oq-report-callout strong { display: block; margin-bottom: 2px; }
+.oq-report-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.oq-report-jump a { display: inline-block; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--oq-border, #b3c0da); font-size: 13.5px; text-decoration: none; color: var(--oq-accent, #1e4fff); background: var(--oq-surface, #fff); }
+.oq-report-jump a:hover { background: var(--oq-soft, #e9efff); }
+
+.oq-report-ai { margin: 0; font-size: 14px; color: var(--oq-muted, #5a6882); }
+.oq-report-notices { display: grid; gap: 6px; margin: 0; }
+.oq-report-notices p { margin: 0; font-size: 13.5px; color: var(--oq-muted, #5a6882); }
+
+.oq-result-section { display: grid; gap: 10px; scroll-margin-top: 16px; }
+.oq-result-section > header { display: flex; align-items: center; gap: 10px; }
+.oq-result-section h3 { margin: 0; font-size: 18px; flex: 1; }
+.oq-result-letter { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--oq-accent, #1e4fff); color: var(--oq-on-accent, #fff); font-size: 14px; font-weight: 700; }
+.oq-result-count { min-width: 28px; text-align: center; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--oq-border, #b3c0da); font-weight: 700; font-size: 13.5px; background: var(--oq-surface, #fff); }
+.oq-result-intro { margin: 0; font-size: 14.5px; color: var(--oq-muted, #5a6882); }
+.oq-result-empty { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1px dashed var(--oq-border, #b3c0da); font-size: 14.5px; }
+
+.oq-finding { display: grid; gap: 6px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--oq-border, #b3c0da); border-left-width: 4px; background: var(--oq-surface, #fff); }
+.oq-finding[data-severity="high"] { border-left-color: #b3261e; }
+.oq-finding[data-severity="medium"] { border-left-color: #c46a00; }
+.oq-finding[data-severity="low"], .oq-finding[data-severity="info"] { border-left-color: var(--oq-accent, #1e4fff); }
+.oq-finding-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.oq-finding-head strong { font-size: 16px; }
+.oq-badge { padding: 2px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-soft, #e9efff); }
+.oq-badge[data-severity="high"] { color: #8a1b14; border-color: #e3a8a3; background: #fdeceb; }
+.oq-badge[data-severity="medium"] { color: #7a4300; border-color: #e6c28a; background: #fff4e2; }
+.oq-finding-summary { margin: 0; font-size: 15px; line-height: 1.55; }
+.oq-finding-more summary { cursor: pointer; font-size: 14px; color: var(--oq-accent, #1e4fff); padding: 4px 0; }
+.oq-finding-more[open] summary { margin-bottom: 6px; }
+.oq-finding-quote, .oq-finding-more blockquote { margin: 6px 0; padding: 8px 12px; border-left: 3px solid var(--oq-cyan, #12c6ff); background: var(--oq-soft, #e9efff); font-size: 14px; overflow-wrap: anywhere; }
+.oq-quote-label { font-weight: 700; margin-right: 4px; }
+.oq-finding-more p { margin: 4px 0; font-size: 14.5px; line-height: 1.55; }
+
+.oq-questions { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 15px; line-height: 1.5; }
+.oq-steps { margin: 0; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; line-height: 1.55; }
+.oq-report-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.oq-report .oq-report-actions > * { width: auto; min-width: 0; flex: 0 1 auto; }
+.oq-original { border: 1px solid var(--oq-border, #b3c0da); border-radius: 14px; padding: 10px 16px; background: var(--oq-surface, #fff); }
+.oq-original summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+.oq-original pre { margin: 8px 0 4px; white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 14px; max-height: 18rem; overflow: auto; }
+.oq-report-limits { display: grid; gap: 4px; padding: 12px 14px; border-radius: 12px; background: var(--oq-soft, #e9efff); font-size: 13.5px; color: var(--oq-muted, #5a6882); }
+.oq-report-limits ul { margin: 0; padding-left: 18px; }
+
+@media (max-width: 600px) {
+  .oq-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oq-finding { padding: 12px; }
+  .oq-report .oq-report-actions > * { flex: 1 1 100%; text-align: center; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .oq-finding, .oq-stat { transition: box-shadow .18s ease, transform .18s ease; }
+  .oq-finding:hover { box-shadow: 0 6px 18px -12px rgba(30, 79, 255, .45); }
+}
+@media print {
+  .oq-report { max-width: none; }
+  .oq-finding-more { display: block; }
+  .oq-finding-more > summary { display: none; }
+  .oq-report-jump { display: none; }
+}
