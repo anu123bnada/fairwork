@@ -82,6 +82,7 @@ import { CareerAssistant } from "./career-assistant";
 import { EmployerDemo } from "./employer-demo";
 import { DemoCenter } from "./demo-center";
 import { SalaryCompare } from "./salary-compare";
+import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
 import { OrgDemo } from "./org-demo";
 import "./records.css";
@@ -1234,7 +1235,7 @@ function NotificationsScreen() {
   return (
     <>
       <ProductHeader screen="notifications" title="" />
-      <h2 className="fw-page-title">Notifications</h2><NotificationFeed />
+      <h2 className="fw-page-title">Notifications</h2><ScheduleReminders /><NotificationFeed />
     </>
   );
 }
