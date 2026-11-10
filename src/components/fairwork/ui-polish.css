@@ -1,6 +1,6 @@
 /* ORYQEN UI polish layer. Visual only: no markup roles, labels, data or behaviour change.
    Loaded globally after the base design system; selectors carry `html` weight so they win over product.css regardless of chunk order. */
-:root { --ui-side: 232px; --ui-content: 1200px; --ui-ink: #0b1b33; --ui-muted: #55627d; --ui-line: rgba(22, 45, 85, .12); --ui-blue: #2454ff; --ui-ok: #0e7a52; --ui-warn: #a15c00; --ui-risk: #b42318; }
+:root { --ui-side: 184px; --ui-content: 1200px; --ui-ink: #0b1b33; --ui-muted: #55627d; --ui-line: rgba(22, 45, 85, .12); --ui-blue: #2454ff; --ui-ok: #0e7a52; --ui-warn: #a15c00; --ui-risk: #b42318; }
 
 /* ---- Application shell ---- */
 html .fw-product { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
@@ -23,7 +23,7 @@ html .fw-product p { text-wrap: pretty; }
   html .fw-product .fw-product-body { max-width: var(--ui-content); padding: 32px 40px 64px; }
   html .fw-product .fw-product-body.fw-home-body, html .fw-product .fw-home-body { max-width: var(--ui-content); }
 }
-@media (min-width: 768px) and (max-width: 1023px) { :root { --ui-side: 196px; } html .fw-product .fw-product-body { padding-inline: 24px; } }
+@media (min-width: 768px) and (max-width: 1023px) { :root { --ui-side: 176px; } html .fw-product .fw-product-body { padding-inline: 24px; } }
 
 /* No scroll containers nested inside the page: the right rail flows with the page. */
 @media (min-width: 1100px) {
