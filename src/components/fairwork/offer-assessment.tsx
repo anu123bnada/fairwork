@@ -43,13 +43,19 @@ export function DraftOfferAssessment({terms}:{terms:Record<string,string>}) {
 function AssessmentDetails({assessment:engine,basis}:{assessment:z.infer<typeof assessmentSchema>;basis:string}) {
  const { t } = useI18n();
  const assessment=localizeAssessment(engine,t);
- return <>
-   <p><strong>{assessment.score}/100</strong> {t("as.scoreRest",{basis})}</p>
-   <p>{assessment.meaning}</p>
-   <p>{t("as.counts",{stated:assessment.statedCount,missing:assessment.missingCount,uncertain:assessment.uncertainCount,concern:assessment.concernCount})}</p>
-   {assessment.categories.map(category=><div className="fw-list-row" key={category.label}><span>{category.label}</span><span>{category.score}/{category.maximum}</span><meter min={0} max={category.maximum} value={category.score} aria-label={category.label} /></div>)}
-   <p>{t("as.employerNote")}</p>
-   <details><summary>{t("as.detailsSummary")}</summary>{assessment.items.map(item=><article className="fw-question-card" key={item.id}><h4>{t("as.itemTitle",{label:item.label,points:item.points,status:statusLabel(item.status,t)})}</h4>{item.evidence!==null&&<blockquote style={{overflowWrap:"anywhere"}}>{item.evidence}</blockquote>}<p>{item.explanation}</p><p>{item.recommendation}</p></article>)}</details>
-   <p>{assessment.limitations}</p><small>{t("as.engine",{version:assessment.version})}</small>
- </>;
+ const card=(item:typeof assessment.items[number])=><article className={`fw-question-card ui-finding is-${item.status}`} key={item.id}><h4>{t("as.itemTitle",{label:item.label,points:item.points,status:statusLabel(item.status,t)})}</h4>{item.evidence!==null&&<blockquote style={{overflowWrap:"anywhere"}}>{item.evidence}</blockquote>}<p>{item.explanation}</p><p className="ui-finding-next">{item.recommendation}</p></article>;
+ const attention=(["concern","missing","uncertain"] as const).map(status=>({status,items:assessment.items.filter(item=>item.status===status)})).filter(group=>group.items.length>0);
+ const stated=assessment.items.filter(item=>item.status==="stated");
+ return <div className="ui-assess">
+   <div className="ui-assess-hero">
+     <div className="ui-assess-score" role="img" aria-label={`${assessment.score}/100`} style={{["--ui-score" as string]:`${Math.max(0,Math.min(100,assessment.score))}%`}}><strong>{assessment.score}</strong><span>/100</span></div>
+     <div className="ui-assess-summary"><p><strong>{t("as.scoreRest",{basis})}</strong></p><p>{assessment.meaning}</p></div>
+   </div>
+   <p className="ui-assess-counts">{t("as.counts",{stated:assessment.statedCount,missing:assessment.missingCount,uncertain:assessment.uncertainCount,concern:assessment.concernCount})}</p>
+   <div className="ui-assess-cats">{assessment.categories.map(category=><div className="ui-assess-cat" key={category.label}><span>{category.label}</span><span>{category.score}/{category.maximum}</span><meter min={0} max={category.maximum} value={category.score} aria-label={category.label} /></div>)}</div>
+   {attention.map(group=><section className={`ui-assess-group is-${group.status}`} key={group.status} aria-label={statusLabel(group.status,t)}><p className="ui-assess-group-title">{statusLabel(group.status,t)} <span>{group.items.length}</span></p><ul className="ui-assess-chips">{group.items.map(item=><li key={item.id}>{item.label}</li>)}</ul></section>)}
+   <details className="ui-assess-stated"><summary>{t("as.detailsSummary")}</summary>{[...attention.flatMap(group=>group.items),...stated].map(card)}</details>
+   <p className="ui-assess-note">{t("as.employerNote")}</p>
+   <p className="ui-assess-note">{assessment.limitations}</p><small>{t("as.engine",{version:assessment.version})}</small>
+ </div>;
 }
