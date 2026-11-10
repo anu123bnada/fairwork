@@ -81,6 +81,7 @@ import { InterviewStudio } from "./interview-studio";
 import { CareerAssistant } from "./career-assistant";
 import { EmployerDemo } from "./employer-demo";
 import { DemoCenter } from "./demo-center";
+import { SalaryCompare } from "./salary-compare";
 import { DemoBanner } from "./demo-banner";
 import { OrgDemo } from "./org-demo";
 import "./records.css";
@@ -382,6 +383,7 @@ const screenTitle: Record<string, string> = {
   "career-assistant": "Career assistant",
   "employers-demo": "Sample employers",
   demo: "Demo center",
+  salary: "Salary comparison",
   settings: "Settings",
   employer: "Employer",
   notifications: "Notifications",
@@ -415,6 +417,7 @@ const backTarget: Record<string, string> = {
   "career-assistant": "home",
   "employers-demo": "home",
   demo: "home",
+  salary: "home",
   settings: "home",
   employer: "settings",
   notifications: "home",
@@ -458,7 +461,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["cover-letter", t("nav.coverLetter")], ["career-explorer", t("nav.careerExplorer")], ["portfolio", t("nav.portfolio")], ["applicants", t("nav.applicants")], ["interviews", t("nav.interviews")], ["career-assistant", t("nav.careerAssistant")], ["employers-demo", t("nav.employersDemo")], ["demo", t("nav.demo")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["cover-letter", t("nav.coverLetter")], ["career-explorer", t("nav.careerExplorer")], ["portfolio", t("nav.portfolio")], ["applicants", t("nav.applicants")], ["interviews", t("nav.interviews")], ["career-assistant", t("nav.careerAssistant")], ["employers-demo", t("nav.employersDemo")], ["demo", t("nav.demo")], ["salary", t("nav.salary")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -583,6 +586,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "career-assistant" && profile ? <CareerAssistant /> : null}
       {screen === "employers-demo" && profile ? <EmployerDemo /> : null}
       {screen === "demo" && profile ? <DemoCenter /> : null}
+      {screen === "salary" && profile ? <SalaryCompare /> : null}
       {screen === "guidance" && profile ? <GuidanceScreen /> : null}
       {screen === "intro-welcome" ? <AuthenticatedWelcome profile={profile} /> : null}
       {screen === "add-offer" ? <AddOfferScreen /> : null}
