@@ -37,7 +37,7 @@ export function TryHub({ initialRole, initialDemo }: { initialRole: Role; initia
   const [demo, setDemo] = useState(initialDemo);
   const list = demos[role];
   const active = list.find(item => item.id === demo) ?? list[0]!;
-  return <div className="oq-rec" style={{ maxWidth: 980, margin: "0 auto", padding: "0 16px 64px" }}>
+  return <div className="oq-rec oq-try" style={{ maxWidth: 980, margin: "0 auto", padding: "0 16px 64px" }}>
     <h1>Try ORYQEN</h1>
     <p className="oq-demo-banner" role="note" data-demo="sample"><strong>EXHIBITION DEMO.</strong> No account needed. Everything on this page runs on your device with fictional or sample data, nothing is sent anywhere, and nothing here is verified. The real product needs an account and normal permissions.</p>
     <p><Link href="/sign-in">Sign in</Link> · <Link href="/register">Create an account</Link> · <Link href="/downloads">Apps and downloads</Link></p>
