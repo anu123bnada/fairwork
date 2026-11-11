@@ -86,6 +86,7 @@ import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
 import { CommandPalette, openCommandPalette } from "./command-palette";
 import "./motion.css";
+import "./app-polish.css";
 import { OrgDemo } from "./org-demo";
 import "./records.css";
 import type { AnalysisRun } from "@/features/analysis/run";
