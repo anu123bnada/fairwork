@@ -22,6 +22,7 @@ const screens: [string, string][] = [
   ["home", "/app/home"], ["add offer", "/app/add-offer"], ["offer check", `/app/check?offerId=${id}`], ["settings", "/app/settings"],
   ["landing", "/"], ["sign in", "/sign-in"], ["register", "/register"], ["credential verification", "/verify"], ["about", "/about"], ["agreement lookup", "/app/agreement-workflow"], ["questions", `/app/questions?offerId=${id}`],
   ["employer workspace", "/app/employer"], ["work record", "/app/work-record"], ["passport", "/app/passport"], ["cases", "/app/cases"],
+  ["application tracker", "/app/applications"], ["workroom", "/app/workroom"], ["career explorer", "/app/career-explorer"], ["salary comparison", "/app/salary"], ["demo center", "/app/demo"], ["interviews", "/app/interviews"], ["sample employers", "/app/employers-demo"], ["visitor demo", "/try"],
 ];
 
 for (const scheme of ["light", "dark"] as const) {

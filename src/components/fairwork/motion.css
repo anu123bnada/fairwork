@@ -1,0 +1,95 @@
+/* ORYQEN motion layer. Presentation only: no markup roles, text, data or behaviour change.
+   Rules of this file:
+   1. Everything that moves sits inside `prefers-reduced-motion: no-preference`, so people who ask for less motion get none.
+   2. Entrances animate transform only, never the opacity of text, so contrast is never reduced mid-animation.
+   3. Nothing that contains a fixed-position bar or a dialog is transformed, because a transform would re-anchor fixed children while it runs. */
+:root { --oq-ease-out: cubic-bezier(.2, .8, .2, 1); --oq-ease-spring: cubic-bezier(.34, 1.4, .64, 1); }
+
+/* ---- Session loader (shown while the private session is being checked) ---- */
+.oq-loader { display: grid; justify-items: center; gap: 18px; padding: 56px 16px; text-align: center; }
+.oq-loader-orb { width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(from 0deg, var(--oq-cyan, #12c6ff), var(--oq-accent, #1e4fff), var(--oq-violet, #7755ff), var(--oq-cyan, #12c6ff)); -webkit-mask: radial-gradient(farthest-side, transparent 62%, #000 64%); mask: radial-gradient(farthest-side, transparent 62%, #000 64%); }
+.oq-loader .fw-notice { margin: 0; }
+.oq-skeleton { display: grid; gap: 12px; width: min(560px, 100%); }
+.oq-skeleton span { display: block; height: 18px; border-radius: 10px; background: var(--oq-soft, #e9efff); }
+.oq-skeleton span:nth-child(1) { height: 72px; border-radius: 16px; }
+.oq-skeleton span:nth-child(3) { width: 72%; }
+.oq-skeleton span:nth-child(4) { width: 46%; }
+
+/* ---- Command palette ---- */
+.oq-palette-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: start center; padding: min(14vh, 120px) 16px 16px; background: rgba(11, 27, 51, .46); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.oq-palette { width: min(640px, 100%); max-height: min(70vh, 620px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; border-radius: 18px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); box-shadow: 0 30px 80px -20px rgba(11, 27, 51, .55), 0 0 0 1px rgba(30, 79, 255, .08); overflow: hidden; }
+.oq-palette-search { display: grid; gap: 6px; padding: 16px 18px 12px; border-bottom: 1px solid var(--oq-border, #b3c0da); }
+.oq-palette-label { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--oq-text-2, #5a6882); }
+.oq-palette-search input { width: 100%; border: 0; outline: 0; background: transparent; color: inherit; font: inherit; font-size: 18px; padding: 4px 0; }
+.oq-palette-search:focus-within { box-shadow: inset 0 -2px 0 var(--oq-accent, #1e4fff); }
+.oq-palette-list { list-style: none; margin: 0; padding: 8px; overflow-y: auto; overscroll-behavior: contain; }
+.oq-palette-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border-radius: 12px; cursor: pointer; font-size: 15px; }
+.oq-palette-list li small { font-size: 12px; color: var(--oq-text-2, #5a6882); }
+.oq-palette-list li.is-active { background: var(--oq-soft, #e9efff); box-shadow: inset 3px 0 0 var(--oq-accent, #1e4fff); }
+.oq-palette-empty { margin: 0; padding: 18px; font-size: 15px; }
+.oq-palette-hint { margin: 0; padding: 10px 18px; border-top: 1px solid var(--oq-border, #b3c0da); font-size: 12.5px; color: var(--oq-text-2, #5a6882); }
+.fw-nav-search { display: none; }
+.fw-header-search { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); color: inherit; cursor: pointer; }
+@media (min-width: 768px) {
+  .fw-product .fw-nav-search { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; margin: 0 0 10px; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); color: var(--oq-text-2, #5a6882); font: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+  .fw-product .fw-nav-search kbd { font: inherit; font-size: 11px; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--oq-border, #b3c0da); }
+  .fw-product .fw-nav-search:hover { color: var(--oq-accent, #1e4fff); border-color: var(--oq-accent, #1e4fff); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes oq-rise { from { transform: translateY(14px) scale(.985); } to { transform: none; } }
+  @keyframes oq-pop { from { transform: translateY(10px) scale(.96); } to { transform: none; } }
+  @keyframes oq-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes oq-spin { to { transform: rotate(360deg); } }
+  @keyframes oq-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+  /* Screen entrance: the top-level blocks of a screen settle into place when it mounts. */
+  .fw-product .fw-product-body > :is(section, article, .fw-card, .fw-list-card):not(:has(.fw-fixed-action, .fw-demo-passport-action, dialog, [role="dialog"])) { animation: oq-rise .46s var(--oq-ease-out) both; }
+  .fw-product .fw-product-body > :is(section, article, .fw-card, .fw-list-card):nth-child(2) { animation-delay: 40ms; }
+  .fw-product .fw-product-body > :is(section, article, .fw-card, .fw-list-card):nth-child(3) { animation-delay: 80ms; }
+  .fw-product .fw-product-body > :is(section, article, .fw-card, .fw-list-card):nth-child(n+4) { animation-delay: 120ms; }
+
+  /* Lists, findings and result tiles arrive one after another. */
+  :is(.oq-rec-list > li, .oq-finding, .oq-stat, .oq-result-section) { animation: oq-rise .4s var(--oq-ease-out) both; }
+  :is(.oq-rec-list > li, .oq-finding, .oq-stat):nth-child(2) { animation-delay: 45ms; }
+  :is(.oq-rec-list > li, .oq-finding, .oq-stat):nth-child(3) { animation-delay: 90ms; }
+  :is(.oq-rec-list > li, .oq-finding, .oq-stat):nth-child(4) { animation-delay: 135ms; }
+  :is(.oq-rec-list > li, .oq-finding, .oq-stat):nth-child(n+5) { animation-delay: 180ms; }
+
+  /* Pop-ups: dialogs and the command palette spring in; their backdrop fades. */
+  .fw-product dialog[open], .oq-palette { animation: oq-pop .24s var(--oq-ease-spring) both; }
+  .fw-product dialog[open]::backdrop, .oq-palette-backdrop { animation: oq-fade .2s ease both; }
+  details[open] > :not(summary) { animation: oq-rise .22s var(--oq-ease-out) both; }
+
+  /* Tactile controls. */
+  .fw-product :is(.fw-primary, .fw-secondary, .fw-nav-link, .fw-nav-sub, .fw-header-search, .fw-nav-search) { transition: transform .14s var(--oq-ease-out), box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease; }
+  .fw-product :is(.fw-primary, .fw-secondary):not(:disabled):hover { transform: translateY(-1px); }
+  .fw-product :is(.fw-primary, .fw-secondary, .fw-header-search, .fw-nav-search):not(:disabled):active { transform: scale(.97); }
+
+  /* A light sense of depth on summary tiles and cards: they tilt a degree or two toward the pointer side they are hovered from. */
+  .fw-product :is(.oq-stat, .fw-sum-card) { transition: transform .28s var(--oq-ease-out), box-shadow .28s ease; transform-style: preserve-3d; will-change: transform; }
+  .fw-product :is(.oq-stat, .fw-sum-card):hover { transform: perspective(700px) rotateX(2.5deg) rotateY(-2.5deg) translateY(-3px); box-shadow: 0 16px 34px -18px rgba(30, 79, 255, .5); }
+
+  /* Loader. */
+  .oq-loader-orb { animation: oq-spin 1.05s linear infinite; }
+  .oq-skeleton span { background: linear-gradient(90deg, var(--oq-soft, #e9efff) 25%, rgba(18, 198, 255, .28) 50%, var(--oq-soft, #e9efff) 75%); background-size: 200% 100%; animation: oq-shimmer 1.6s ease-in-out infinite; }
+
+  /* Progress bars glide to their value. */
+  .fw-product progress { transition: all .4s var(--oq-ease-out); }
+}
+
+/* Search placement by screen size: a labelled box in the desktop sidebar, a fifth item in the phone's bottom navigation. The round header button is desktop-only, because the phone
+   header has no room beside the screen title. */
+@media (min-width: 768px) { .fw-product .fw-nav-search > svg { display: none; } }
+@media (max-width: 767px) {
+  .fw-header-search { display: none; }
+  html .fw-product .fw-bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  html .fw-product .fw-nav-search { order: 9; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; min-height: 48px; margin: 0; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; }
+  html .fw-product .fw-nav-search kbd { display: none; }
+}
+
+/* Phone header: the actions column takes the width it needs and a long screen title truncates instead of running underneath the theme switch. */
+@media (max-width: 767px) {
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-product-header { grid-template-columns: 40px minmax(0, 1fr) auto; column-gap: 8px; }
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .fw-product-header h1 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

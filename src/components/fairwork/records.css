@@ -18,3 +18,61 @@ html .fw-product .oq-rec-chips { align-items: stretch; }
 html .fw-product .oq-rec-list li > .fw-secondary { margin-inline-end: 4px; }
 html .fw-product .oq-rec progress { width: 100%; height: 10px; border-radius: 999px; overflow: hidden; }
 @media (max-width: 600px) { html .fw-product .oq-rec .oq-rec-actions-stack :is(.fw-secondary) { width: 100%; } }
+
+/* ---- In-app surface design for the list, tool and studio screens (11 Nov). Styling only: same markup, text and behaviour. ---- */
+html .fw-product .oq-rec { gap: 16px; }
+/* The opening sentence of a screen reads as a lead-in panel. */
+html .fw-product .oq-rec > p:first-child:not(.fw-notice):not(.oq-demo-banner) { margin: 0; padding: 18px 20px; border-radius: 18px; font-size: 16px; line-height: 1.6; border: 1px solid rgba(30, 79, 255, .18); background: linear-gradient(135deg, rgba(30, 79, 255, .08), rgba(18, 198, 255, .09) 55%, rgba(119, 85, 255, .08)); }
+/* Section headings carry a small brand accent. */
+html .fw-product .oq-rec h3 { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; font-size: 18px; }
+html .fw-product .oq-rec h3::before { content: ""; flex: none; width: 5px; height: 20px; border-radius: 3px; background: linear-gradient(180deg, #12c6ff, #1e4fff 55%, #7755ff); }
+/* Records are cards. */
+html .fw-product .oq-rec-list { gap: 12px; }
+html .fw-product .oq-rec-list li { padding: 14px 16px; border-radius: 16px; border: 1px solid var(--oq-border, #b3c0da); border-left: 4px solid var(--oq-accent, #1e4fff); background: var(--oq-surface, #fff); box-shadow: 0 1px 0 rgba(11, 27, 51, .03), 0 12px 28px -22px rgba(30, 79, 255, .45); }
+html .fw-product .oq-rec-list li > strong { font-size: 16px; }
+html .fw-product .oq-rec-list li p { margin: 4px 0; flex-basis: 100%; }
+/* Grouped fields sit on their own surface with a pill legend. */
+html .fw-product .oq-rec-group { padding: 16px 18px; border-radius: 16px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); box-shadow: 0 12px 28px -24px rgba(30, 79, 255, .4); }
+html .fw-product .oq-rec-group > legend { padding: 4px 12px; border-radius: 999px; background: var(--oq-soft, #e9efff); border: 1px solid var(--oq-border, #b3c0da); font-size: 13px; font-weight: 700; letter-spacing: .02em; }
+/* Chips and filters: the chosen one is filled, the rest are quiet pills. */
+html .fw-product .oq-rec-chips { gap: 8px; }
+html .fw-product .oq-rec-chips > button.fw-secondary { border-radius: 999px; padding: 8px 14px; min-height: 0; font-size: 14px; }
+html .fw-product .oq-rec-chips > button[aria-pressed="true"] { color: #fff; border-color: transparent; outline: none; background: linear-gradient(135deg, #1e4fff, #4a35d6); box-shadow: 0 10px 22px -12px rgba(30, 79, 255, .8); }
+html .fw-product .oq-rec-chips > button[aria-pressed="true"]:focus-visible { outline: 2px solid var(--oq-focus, #1e4fff); outline-offset: 2px; }
+/* Fields: calmer corners and a clear focus glow. */
+html .fw-product .oq-rec .fw-field :is(input, select, textarea) { border-radius: 12px; }
+html .fw-product .oq-rec .fw-field :is(input, select, textarea):focus { border-color: var(--oq-accent, #1e4fff); box-shadow: 0 0 0 4px rgba(30, 79, 255, .16); outline: none; }
+/* Progress reads as a brand gradient. */
+html .fw-product .oq-rec progress { -webkit-appearance: none; appearance: none; border: 0; background: var(--oq-soft, #e9efff); }
+html .fw-product .oq-rec progress::-webkit-progress-bar { background: var(--oq-soft, #e9efff); border-radius: 999px; }
+html .fw-product .oq-rec progress::-webkit-progress-value { border-radius: 999px; background: linear-gradient(90deg, #12c6ff, #1e4fff 60%, #7755ff); }
+html .fw-product .oq-rec progress::-moz-progress-bar { border-radius: 999px; background: linear-gradient(90deg, #12c6ff, #1e4fff 60%, #7755ff); }
+/* Tables (module guide, what is real and what is sample). */
+html .oq-rec table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--oq-border, #b3c0da); border-radius: 14px; overflow: hidden; font-size: 14.5px; background: var(--oq-surface, #fff); }
+html .oq-rec :is(th, td) { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--oq-border, #b3c0da); overflow-wrap: anywhere; }
+html .oq-rec th { background: var(--oq-soft, #e9efff); font-size: 13px; letter-spacing: .02em; }
+html .oq-rec tr:last-child > td { border-bottom: 0; }
+/* Checklist rows. */
+html .fw-product .oq-rec-check { padding: 6px 0; }
+html .fw-product .oq-rec-check input[type="checkbox"] { width: 18px; height: 18px; accent-color: #1e4fff; }
+@media (prefers-reduced-motion: no-preference) {
+  html .fw-product .oq-rec-list li { transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s ease, border-color .2s ease; }
+  html .fw-product .oq-rec-list li:hover { transform: translateY(-2px); box-shadow: 0 1px 0 rgba(11, 27, 51, .03), 0 18px 34px -20px rgba(30, 79, 255, .6); }
+}
+@media (max-width: 600px) {
+  html .fw-product .oq-rec > p:first-child:not(.fw-notice):not(.oq-demo-banner) { padding: 14px 16px; font-size: 15px; }
+  html .oq-rec :is(th, td) { padding: 8px; font-size: 13.5px; }
+}
+
+/* Any surface that sets a themed background also sets the themed text colour, so light and dark never mix (dark text on a dark surface). */
+html :is(.oq-rec table, .oq-rec th, .oq-rec td, .oq-rec-list li, .oq-rec-group, .oq-rec-group > legend, .oq-palette, .oq-palette input) { color: var(--oq-text, #0b1b33); }
+
+/* The public visitor page follows the same light and dark palette as the app, as a whole page (canvas and text together). */
+body:has(.oq-try) { background: var(--oq-canvas, #f5f7ff); color: var(--oq-text, #0b1b33); }
+body:has(.oq-try) a { color: var(--oq-link, #1e4fff); }
+.oq-try :is(input, select, textarea) { background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); border: 1px solid var(--oq-border, #b3c0da); }
+.oq-try .fw-secondary { background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); border: 1px solid var(--oq-border, #b3c0da); }
+
+/* The chosen chip is filled. The selector carries the same weight as the shared glass button style it has to override. */
+html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .oq-rec-chips > button.fw-secondary[aria-pressed="true"],
+html .oq-try .oq-rec-chips > button.fw-secondary[aria-pressed="true"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, #1e4fff, #4a35d6); box-shadow: 0 10px 22px -12px rgba(30, 79, 255, .8); }

@@ -84,6 +84,8 @@ import { DemoCenter } from "./demo-center";
 import { SalaryCompare } from "./salary-compare";
 import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
+import { CommandPalette, openCommandPalette } from "./command-palette";
+import "./motion.css";
 import { OrgDemo } from "./org-demo";
 import "./records.css";
 import type { AnalysisRun } from "@/features/analysis/run";
@@ -437,11 +439,14 @@ function previewRouteFor(screen: string, demoPreview: boolean) {
 const REAL_BACKEND = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: string; title?: string; demoPreviewLink?: boolean }) {
   const back = backTarget[screen];
+  const { session } = useProduct();
+  const { t } = useI18n();
   return (
     <header className="fw-product-header">
       {back ? <Link className="fw-back" href={routeFor(back)} aria-label="Back"><Icon name="back" /></Link> : <span />}
       {title === "" ? <span aria-hidden="true" /> : <h1>{title ?? screenTitle[screen] ?? "ORYQEN"}</h1>}
       <span className="fw-header-actions">
+        {session === "ready" && <button type="button" className="fw-header-search" aria-label={t("cp.openAria")} onClick={openCommandPalette}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></button>}
         <ThemeToggle />
         {screen === "home" ? (
           <Link className="fw-header-icon" href={routeFor("notifications")} aria-label="Notifications"><Icon name="bell" size={20} /></Link>
@@ -467,6 +472,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
       <span className="fw-nav-brand"><BrandMark className="fw-nav-mark" /><span>ORYQEN</span></span>
+      <button type="button" className="fw-nav-search" onClick={openCommandPalette}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><span>{t("cp.open")}</span><kbd>Ctrl K</kbd></button>
       {items.map(([route, label, icon]) => (
         <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
           <Icon name={icon} size={22} />
@@ -501,7 +507,7 @@ export function ErrorMessage({ error }: { error: Error | null }) {
 
 function ProductGate({ children }: { children: ReactNode }) {
   const { session, loadError, loadingAgreement } = useProduct();
-  if (session === "loading") return <p role="status" className="fw-notice">Loading your private ORYQEN session…</p>;
+  if (session === "loading") return <div className="oq-loader"><span className="oq-loader-orb" aria-hidden="true" /><p role="status" className="fw-notice">Loading your private ORYQEN session…</p><div className="oq-skeleton" aria-hidden="true"><span /><span /><span /><span /></div></div>;
   if (session === "anonymous") {
     return <div className="fw-card" style={{ padding: 20 }}><h2>Sign in to continue</h2><p>Your offers, agreements and work records are available only to an authenticated account.</p><Link className="fw-primary" href={participantSignInPath(window.location.pathname, window.location.search)}>Sign in</Link></div>;
   }
@@ -542,6 +548,7 @@ export function FairworkScreen({ screen, demoPreview = false }: { screen: string
         <PlatformNotices />
         <ScreenContent screen={screen} demoPreview={demoPreview} />
       </ProductGate>
+      {session === "ready" && <CommandPalette />}
       {session === "ready" && !["share", "settings", "employer", "notifications", "intro-welcome"].includes(screen) && <BottomNav active={active} demoPreview={demoPreview} />}
     </main>
   );
