@@ -14,7 +14,7 @@ type Role = "worker" | "employer" | "recruiter";
 const demos: Record<Role, { id: string; label: string; render: () => React.ReactNode }[]> = {
   worker: [
     { id: "career", label: "Career explorer and skill gap", render: () => <CareerExplorer anonymous /> },
-    { id: "assistant", label: "Career assistant (DEMO)", render: () => <CareerAssistant /> },
+    { id: "assistant", label: "Career assistant (DEMO)", render: () => <CareerAssistant anonymous /> },
     { id: "salary", label: "Salary comparison", render: () => <SalaryCompare /> },
     { id: "employers", label: "Sample employers", render: () => <EmployerDemo /> },
   ],

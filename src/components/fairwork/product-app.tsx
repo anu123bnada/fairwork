@@ -84,6 +84,7 @@ import { DemoCenter } from "./demo-center";
 import { SalaryCompare } from "./salary-compare";
 import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
+import { ScreenIntro, StartHere } from "./screen-intro";
 import { CommandPalette, openCommandPalette } from "./command-palette";
 import "./motion.css";
 import "./app-polish.css";
@@ -468,7 +469,14 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["work-record", t("nav.record"), "clock"],
     ["passport", t("nav.passport"), "badge"],
   ] as const;
-  const more = [["opportunities", t("nav.opportunities")], ["agreement-workflow", t("nav.agreements")], ["cv", t("nav.cv")], ["applications", t("nav.applications")], ["workroom", t("nav.workroom")], ["cover-letter", t("nav.coverLetter")], ["career-explorer", t("nav.careerExplorer")], ["portfolio", t("nav.portfolio")], ["applicants", t("nav.applicants")], ["interviews", t("nav.interviews")], ["career-assistant", t("nav.careerAssistant")], ["employers-demo", t("nav.employersDemo")], ["demo", t("nav.demo")], ["salary", t("nav.salary")], ["scan", t("nav.scan")], ["help", t("nav.help")], ["cases", t("nav.cases")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")]] as const;
+  const groups: readonly (readonly [MessageKey, readonly (readonly [string, string])[]])[] = [
+    ["navg.findWork", [["opportunities", t("nav.opportunities")], ["applications", t("nav.applications")], ["interviews", t("nav.interviews")], ["cv", t("nav.cv")], ["cover-letter", t("nav.coverLetter")], ["portfolio", t("nav.portfolio")], ["career-explorer", t("nav.careerExplorer")], ["career-assistant", t("nav.careerAssistant")]]],
+    ["navg.offers", [["scan", t("nav.scan")], ["agreement-workflow", t("nav.agreements")], ["salary", t("nav.salary")]]],
+    ["navg.myWork", [["workroom", t("nav.workroom")], ["cases", t("nav.cases")]]],
+    ["navg.employers", [["applicants", t("nav.applicants")], ["employers-demo", t("nav.employersDemo")]]],
+    ["navg.account", [["help", t("nav.help")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")], ["demo", t("nav.demo")]]],
+  ];
+  const more = groups.flatMap(([, links]) => links);
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <nav className="fw-bottom-nav" aria-label="Main navigation">
@@ -482,7 +490,10 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
       ))}
       {!demoPreview && <details className="fw-nav-more" open={more.some(([route]) => route === current) || undefined}>
         <summary className="fw-nav-more-title">{t("nav.more")}</summary>
-        {more.map(([route, label]) => <Link key={route} className={`fw-nav-sub${current === route ? " active" : ""}`} href={routeFor(route)} aria-current={current === route ? "page" : undefined}>{label}</Link>)}
+        {groups.map(([group, links]) => <div key={group} className="fw-nav-group" role="group" aria-label={t(group)}>
+          <span className="fw-nav-group-title" aria-hidden="true">{t(group)}</span>
+          {links.map(([route, label]) => <Link key={route} className={`fw-nav-sub${current === route ? " active" : ""}`} href={routeFor(route)} aria-current={current === route ? "page" : undefined}>{label}</Link>)}
+        </div>)}
       </details>}
     </nav>
   );
@@ -550,7 +561,7 @@ export function FairworkScreen({ screen, demoPreview = false }: { screen: string
         <ScreenContent screen={screen} demoPreview={demoPreview} />
       </ProductGate>
       {session === "ready" && <CommandPalette />}
-      {session === "ready" && !["share", "settings", "employer", "notifications", "intro-welcome"].includes(screen) && <BottomNav active={active} demoPreview={demoPreview} />}
+      {session === "ready" && !["share", "employer", "intro-welcome"].includes(screen) && <BottomNav active={active} demoPreview={demoPreview} />}
     </main>
   );
 }
@@ -579,6 +590,7 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {["work-record", "passport"].includes(screen) && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {screen === "home" && demoPreview && <DemoPreviewControl screen={screen} enabled />}
       {["add-offer", "analyzing", "check", "questions", "agreement"].includes(screen) && !demoPreview ? <FlowSteps screen={screen} /> : null}
+      {!demoPreview && profile ? <ScreenIntro screen={screen} /> : null}
       {screen === "home" ? <HomeScreen profile={profile} demoPreview={demoPreview} /> : null}
       {screen === "opportunities" && profile ? <OpportunitiesScreen /> : null}
       {screen === "cv" && profile ? <CvBuilder displayName={profile.displayName} /> : null}
@@ -691,6 +703,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       </div>
       {!REAL_BACKEND && <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>}
       <DashboardHero name={name.split(" ")[0]!} data={dashboard} status={statusText} />
+      <StartHere />
       <SummaryCards data={dashboard} />
       <div className="fw-dash-columns">
         <div className="fw-dash-main">

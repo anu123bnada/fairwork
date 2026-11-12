@@ -97,6 +97,18 @@ it("accepts any safe configured model and the self-hosted provider, and still re
  for(const bad of [{provider:"gemini",model:"gpt-4o"},{provider:"gemini",model:"../other?key=x"},{provider:"openai",model:""},{provider:"anthropic",model:"claude-x"},{provider:"selfhosted",model:"a b"},{provider:"gemini",model:"x".repeat(101)}])
   await expect(rpc("authorize_ai_transmission",{...base,...bad,inputHash:"4".repeat(64)},owner),JSON.stringify(bad)).rejects.toThrow("VALIDATION_FAILED");
 });
+it("records a career-assistant question under its own consent notice and refuses any other notice",async()=>{
+ const base={provider:"gemini",model:"gemini-3.1-flash-lite",consent:true,processingRegion:"isolated fixture only",dataUse:"isolated synthetic test",policyHash:"f".repeat(64)};
+ // A fresh account, so the per-minute allowance set above is untouched.
+ const asker=randomUUID();await db.query("insert into auth.users values($1)",[asker]);await db.query("insert into private.profiles(id,display_name) values($1,$2)",[asker,"Assistant asker"]);
+ const receipt=await rpc("authorize_ai_transmission",{...base,noticeVersion:"career-assistant.v1",inputHash:"5".repeat(64)},asker) as {authorizationId:string};
+ const saved=await db.query<{notice_version:string;actor_id:string}>("select notice_version,actor_id from private.ai_transmission_authorizations where id=$1",[receipt.authorizationId]);
+ expect(saved.rows[0]).toEqual({notice_version:"career-assistant.v1",actor_id:asker});
+ for(const noticeVersion of ["career-assistant.v2","offer-analysis.v0","",null,7])
+  await expect(rpc("authorize_ai_transmission",{...base,noticeVersion,inputHash:"6".repeat(64)},owner),JSON.stringify(noticeVersion)).rejects.toThrow("VALIDATION_FAILED");
+ await expect(rpc("authorize_ai_transmission",{...base,noticeVersion:"career-assistant.v1",consent:false,inputHash:"7".repeat(64)},owner)).rejects.toThrow("VALIDATION_FAILED");
+ await expect(db.query("insert into private.ai_transmission_authorizations(actor_id,provider,model,notice_version,input_hash) values($1,'gemini','gemini-3.1-flash-lite','something-else.v1',$2)",[asker,"8".repeat(64)])).rejects.toThrow();
+});
 it.skipIf(!process.env.FAIRWORK_LOCAL_POSTGRES_PORT)("serializes simultaneous conflicting PostgreSQL commands",async()=>{
  const a=await localPostgresConnection(),b=await localPostgresConnection();const target=randomUUID();
  const commandBody=command("incident",target,0,{title:"Concurrent fixture event",category:"security",status:"open",priority:"normal",assignedTo:null});

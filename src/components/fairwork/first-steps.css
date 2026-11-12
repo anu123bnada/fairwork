@@ -1,0 +1,78 @@
+/* First-steps layer (12 Nov): a plain "what is this screen for" note on every tool screen, a Start-here launcher on Home, grouped navigation, and tidier layouts for the screens that
+   were still bare (Cases, Work record, Passport, Scan, Guidance, Settings). Presentation only. Colours come from the design tokens so light and dark both hold contrast. */
+
+/* ---- Screen intro ---- */
+.oq-intro { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 16px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--oq-border, #b3c0da); border-left: 4px solid var(--oq-accent, #1e4fff); background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); }
+.oq-intro-mark { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--oq-soft, #e9efff); color: var(--oq-link, #1e4fff); font-weight: 800; font-size: 15px; font-style: italic; font-family: Georgia, "Times New Roman", serif; }
+.oq-intro-what { margin: 2px 0 0; font-size: 15px; line-height: 1.55; color: var(--oq-text, #0b1b33); }
+.oq-intro-how { margin-top: 6px; }
+.oq-intro-how > summary { display: inline-block; cursor: pointer; font-size: 13.5px; font-weight: 700; color: var(--oq-link, #1e4fff); padding: 4px 0; list-style: none; }
+.oq-intro-how > summary::-webkit-details-marker { display: none; }
+.oq-intro-how > summary::after { content: " +"; }
+.oq-intro-how[open] > summary::after { content: " \2212"; }
+.oq-intro-how > summary:focus-visible { outline: 2px solid var(--oq-accent, #1e4fff); outline-offset: 3px; border-radius: 6px; }
+.oq-intro-how ol { margin: 6px 0 2px; padding: 0; list-style: none; counter-reset: oq-step; display: grid; gap: 8px; }
+.oq-intro-how li { counter-increment: oq-step; display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14px; line-height: 1.5; color: var(--oq-text, #0b1b33); }
+.oq-intro-how li::before { content: counter(oq-step); display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--oq-accent, #1e4fff); color: #fff; font-size: 12px; font-weight: 800; }
+@media (min-width: 900px) { .oq-intro-how ol { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
+
+/* ---- Start here (Home) ---- */
+.oq-start { margin: 18px 0; padding: 20px; border-radius: 24px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); }
+.oq-start h3 { margin: 0; font-size: 20px; letter-spacing: -.01em; color: var(--oq-text, #0b1b33); }
+.oq-start-sub { margin: 4px 0 14px; font-size: 14px; color: var(--oq-text-2, #5a6882); }
+.oq-start-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) { .oq-start-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .oq-start-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.oq-start-tile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; min-height: 76px; padding: 14px; border-radius: 16px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-canvas, #f4f7ff); color: var(--oq-text, #0b1b33); text-decoration: none; }
+.oq-start-tile:hover { border-color: var(--oq-accent, #1e4fff); }
+.oq-start-tile:focus-visible { outline: 3px solid var(--oq-accent, #1e4fff); outline-offset: 2px; }
+.oq-start-icon { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--oq-gradient, linear-gradient(135deg, #2667ff, #6d45f5)); color: #fff; }
+.oq-start-text { display: grid; gap: 2px; min-width: 0; }
+.oq-start-text strong { font-size: 15.5px; line-height: 1.3; color: var(--oq-text, #0b1b33); }
+.oq-start-text small { font-size: 13px; line-height: 1.45; color: var(--oq-text-2, #5a6882); }
+.oq-start-go { font-size: 18px; color: var(--oq-link, #1e4fff); }
+.oq-start-search { margin-top: 12px; padding: 8px 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 700; color: var(--oq-link, #1e4fff); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.oq-start-search:focus-visible { outline: 2px solid var(--oq-accent, #1e4fff); outline-offset: 3px; border-radius: 6px; }
+@media (prefers-reduced-motion: no-preference) {
+  .oq-start-tile { transition: transform .18s var(--oq-ease-out, ease), border-color .18s ease, box-shadow .18s ease; }
+  .oq-start-tile:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -18px rgba(30, 79, 255, .55); }
+  .oq-start-tile:hover .oq-start-go { transform: translateX(3px); }
+  .oq-start-go { transition: transform .18s ease; }
+}
+
+/* ---- Grouped navigation (desktop sidebar) ---- */
+.fw-product .fw-nav-group { display: grid; gap: 2px; }
+.fw-product .fw-nav-group + .fw-nav-group { margin-top: 10px; }
+.fw-product .fw-nav-group-title { padding: 4px 12px 2px; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--oq-text-2, #5a6882); }
+
+@media (min-width: 900px) {
+  /* ---- Cases, Work record, Passport: actions keep their natural width and sit in a row ---- */
+  html[data-brand="oryqen"] .fw-product .fw-product-body :is(.fw-live-cases, .fw-live-work, .fw-live-passport) > :is(a, button):is(.fw-secondary, .fw-dark-button, .fw-primary):not(.fw-fixed-action),
+  html[data-brand="oryqen"] .fw-product .fw-product-body > :is(a, button).fw-dark-button { width: auto; min-width: 220px; max-width: 100%; justify-self: start; padding-inline: 28px; }
+  html[data-brand="oryqen"] .fw-product .fw-product-body > :is(a, button).fw-dark-button { display: inline-flex; margin-right: 10px; }
+  html[data-brand="oryqen"] .fw-product .fw-live-cases { justify-items: start; }
+  html[data-brand="oryqen"] .fw-product .fw-live-cases > :is(section, form, div, p, details) { justify-self: stretch; }
+
+  /* ---- Guidance and employment history line up with the other screens ---- */
+  html[data-brand="oryqen"] .fw-product .fw-product-body > .fw-opportunities { max-width: none; margin-inline: 0; }
+
+  /* ---- Scan: the file choice reads as a drop area ---- */
+  html[data-brand="oryqen"] .fw-product .oq-scan-start > .fw-field:has(input[type="file"]) { max-width: 720px; padding: 28px; border-radius: 20px; border: 2px dashed var(--oq-border, #b3c0da); background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); font-size: 15px; }
+  html[data-brand="oryqen"] .fw-product .oq-scan-start > .fw-field:has(input[type="file"]):hover { border-color: var(--oq-accent, #1e4fff); }
+
+  /* ---- Settings and Notifications: a readable column ---- */
+  html[data-brand="oryqen"] .fw-product:is(.fw-screen-settings, .fw-screen-notifications) .fw-product-body > :is(a, button).fw-dark-button { margin-top: 12px; }
+}
+
+/* File inputs everywhere: the browser button matches the product. */
+html[data-brand="oryqen"] .fw-product input[type="file"]::file-selector-button { margin-right: 12px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--oq-border, #b3c0da); background: var(--oq-soft, #e9efff); color: var(--oq-text, #0b1b33); font: inherit; font-weight: 700; cursor: pointer; }
+
+/* Empty and unavailable states in list cards read as a calm panel instead of a stray line of text. */
+html[data-brand="oryqen"] .fw-product .fw-product-body :is(.fw-list-card, .fw-card, section) > p[role="status"]:only-of-type { color: var(--oq-text-2, #5a6882); }
+
+@media (min-width: 900px) {
+  /* Work record: the employment-history card lines up with its neighbours, the empty card is only as tall as its text, and the small note reads as a note. */
+  html[data-brand="oryqen"] .fw-product .fw-product-body > .fw-employment { max-width: none; margin-inline: 0; }
+  html[data-brand="oryqen"] .fw-product .fw-live-work .fw-work-empty-card { min-height: 0; }
+  html[data-brand="oryqen"] .fw-product .fw-live-work .fw-demo-work-note { text-align: left; font-size: 13px; color: var(--oq-text-2, #5a6882); margin: 4px 0 16px; }
+}

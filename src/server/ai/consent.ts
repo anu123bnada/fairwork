@@ -4,6 +4,7 @@ import { AppError, mapDatabaseError } from "@/lib/errors";
 import { createServerSupabase } from "@/server/supabase";
 import { aiConfiguration, type AiProviderConfig } from "./config";
 import type { AnalyzeOfferInput } from "@/features/offer/ai-schema";
+import type { AssistantAsk } from "@/features/careers/ai-schema";
 import { redactOfferForAi } from "@/features/offer/ai-redaction";
 import { z } from "zod";
 
@@ -35,4 +36,26 @@ export async function authorizeAiTransmission(input: AnalyzeOfferInput) {
   const config = assertPrimaryConsent(input);
   if (!config) return;
   return authorizeProviderTransmission(config, input.text);
+}
+
+// Career assistant: the consent must name the primary provider and carry its CURRENT policy hash, under the assistant's own notice. Returns null when AI is not configured.
+export function assertAssistantConsent(input: AssistantAsk) {
+  const config = aiConfiguration();
+  if (!config) return null;
+  if (input.consent.provider !== config.provider || input.consent.policyHash !== config.policyHash || input.consent.noticeVersion !== "career-assistant.v1" || !input.consent.transmit || input.consent.adultConfirmed !== true) throw new AppError("ACTION_FORBIDDEN", 403);
+  return config;
+}
+
+// Career assistant: the same durable receipt and budget admission, recorded under its own notice. `text` is the exact minimized text about to be sent; only its hash is stored.
+export async function authorizeAssistantTransmission(config: AiProviderConfig, text: string) {
+  const client = await createServerSupabase(true);
+  const { data, error } = await client.rpc("authorize_ai_transmission", { request: {
+    provider: config.provider, model: config.model, consent: true, noticeVersion: "career-assistant.v1",
+    processingRegion: config.processingRegion, dataUse: config.dataUse, policyHash: config.policyHash,
+    inputHash: createHash("sha256").update(text).digest("hex"),
+  } });
+  if (error) throw mapDatabaseError(error);
+  const parsed = z.strictObject({ authorizationId: z.uuid() }).safeParse(data);
+  if (!parsed.success) throw new AppError("SERVICE_UNAVAILABLE", 503);
+  return parsed.data.authorizationId;
 }
