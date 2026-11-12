@@ -40,7 +40,7 @@ afterAll(() => db.close());
 
 it("starts from the staging state: 32 migrations, with real rows present", async () => {
   expect(files.filter(file => file.split("_")[0]! <= APPLIED_ON_STAGING)).toHaveLength(32);
-  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(33);
+  expect(files.filter(file => file.split("_")[0]! > APPLIED_ON_STAGING)).toHaveLength(34);
   expect(before.profiles).toBe(2);
 });
 

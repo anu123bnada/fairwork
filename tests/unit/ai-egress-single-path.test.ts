@@ -26,6 +26,26 @@ describe("AI provider egress", () => {
     expect(route.indexOf("analyzeOfferWithGateway(")).toBeGreaterThan(route.indexOf("assertPrimaryConsent("));
     expect(route).toContain("authorize: config => authorizeProviderTransmission(");
   });
+  it("the career assistant uses the same gateway: one caller, identity first, consent second, a receipt before any provider is contacted", () => {
+    const callers = sources.filter(file => /askAssistantWithGateway\(/.test(text(file)) && file !== "src/server/ai/gateway.ts");
+    expect(callers).toEqual(["src/app/api/v1/career-assistant/route.ts"]);
+    const route = text("src/app/api/v1/career-assistant/route.ts");
+    const post = route.slice(route.indexOf("export async function POST"));
+    expect(post.indexOf("assertSameOrigin(")).toBeGreaterThan(-1);
+    expect(post.indexOf("identityCommand(\"get_me\"")).toBeGreaterThan(post.indexOf("assertSameOrigin("));
+    expect(post.indexOf("assertAssistantConsent(")).toBeGreaterThan(post.indexOf("identityCommand(\"get_me\""));
+    expect(post.indexOf("redactOfferForAi(")).toBeGreaterThan(post.indexOf("assertAssistantConsent("));
+    expect(post.indexOf("askAssistantWithGateway(")).toBeGreaterThan(post.indexOf("redactOfferForAi("));
+    expect(post).toContain("authorize: config => authorizeAssistantTransmission(config, text)");
+    const gateway = text("src/server/ai/gateway.ts");
+    const assistant = gateway.slice(gateway.indexOf("export async function askAssistantWithGateway"));
+    expect(assistant.indexOf("await hooks.authorize(config)")).toBeGreaterThan(-1);
+    expect(assistant.indexOf("runAssistantProvider(")).toBeGreaterThan(assistant.indexOf("await hooks.authorize(config)"));
+    expect(assistant).not.toMatch(/aiFallbackConfigurations/); // the consent names one provider, so no other provider is ever tried
+    // Only this route and the screen that shows the notice use the assistant's request schema; no other code can build such a request.
+    const users = sources.filter(file => /assistantAskSchema/.test(text(file))).sort();
+    expect(users).toEqual(["src/app/api/v1/career-assistant/route.ts", "src/features/careers/ai-schema.ts"]);
+  });
   it("the provider adapter is the only code that calls fetch inside the AI folder and never reads the user's session or database", () => {
     for (const file of sources.filter(f => f.startsWith("src/server/ai/") && f !== "src/server/ai/provider.ts")) expect(text(file), file).not.toMatch(/(?<![\w.])fetch\(/);
     const adapter = text("src/server/ai/provider.ts");

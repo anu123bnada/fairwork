@@ -1,7 +1,8 @@
 import "server-only";
 import { aiConfiguration, aiFallbackConfigurations, type AiProviderConfig } from "./config";
 import { breaker, ledger } from "./breaker";
-import { failureResponse, runProvider, unconfiguredResponse, type AiAttempt } from "./provider";
+import { failureResponse, runAssistantProvider, runProvider, unconfiguredResponse, type AiAttempt } from "./provider";
+import type { AssistantAnswerResponse } from "@/features/careers/ai-schema";
 import { redactOfferForAi } from "@/features/offer/ai-redaction";
 import type { AiOfferAnalysisResponse, AnalyzeOfferInput } from "@/features/offer/ai-schema";
 import type { FailureKind } from "./failure";
@@ -75,4 +76,31 @@ export async function analyzeOfferWithGateway(input: AnalyzeOfferInput, hooks: G
     ...(retryAfterSeconds !== undefined ? { retryAfterSeconds } : {}),
     ...(attempts.length > 1 || attempts[0]?.outcome === "paused" ? { attempts: attempts.map(a => ({ provider: a.provider as "gemini" | "openai" | "selfhosted", outcome: String(a.outcome) })) } : {}),
   };
+}
+
+// Career assistant: one consented question to the approved PRIMARY provider only (no fallback providers, because the consent names one provider).
+// `text` is the exact minimized text. `authorize` records the consent receipt and budget admission immediately before the provider is contacted and throws to refuse;
+// a paused or over-budget provider is skipped before anything is authorized or sent. An answer is never invented.
+export async function askAssistantWithGateway(text: string, hooks: {
+  authorize: (config: AiProviderConfig) => Promise<string | undefined>;
+  onEvent?: (event: { phase: "attempt" | "outcome"; provider: string; authorizationId?: string; kind?: "success" | FailureKind; usage?: { inputTokens?: number; outputTokens?: number } }) => Promise<void> | void;
+  sleep?: (ms: number) => Promise<void>;
+}): Promise<AssistantAnswerResponse> {
+  const config = aiConfiguration();
+  if (!config) return { status: "UNCONFIGURED", provider: null, model: null, answer: null, message: unconfiguredResponse().message, isAdvisory: true };
+  const provider = config.provider, model = config.model;
+  const failed = (kind: FailureKind, retryAfterSeconds: number | null, paused: boolean): AssistantAnswerResponse => ({
+    status: kind === "quota" ? "RATE_LIMITED" : "ERROR", provider, model, answer: null, message: failureResponse(provider, kind, retryAfterSeconds, paused).message, isAdvisory: true,
+    ...(retryAfterSeconds !== null ? { retryAfterSeconds } : {}),
+  });
+  const state = breaker.peek(provider);
+  if (state.status === "open") return failed(state.reason ?? "unavailable", state.retryAfterSeconds, true);
+  if (!ledger.withinBudget(provider, config.budget)) return failed("budget", null, false);
+  const authorizationId = await hooks.authorize(config); // may throw: a refused receipt or budget means nothing is sent
+  await hooks.onEvent?.({ phase: "attempt", provider, authorizationId });
+  let usage: { inputTokens?: number; outputTokens?: number } = {};
+  const result = await runAssistantProvider(config, text, { observeUsage: value => { usage = value; }, sleep: hooks.sleep });
+  await hooks.onEvent?.({ phase: "outcome", provider, authorizationId, kind: result.ok ? "success" : result.failure, ...(result.ok ? { usage } : {}) });
+  if (result.ok) return { status: "SUCCESS", provider, model, answer: result.answer, message: "", isAdvisory: true };
+  return failed(result.failure, result.retryAfterSeconds, !result.attempted && result.failure !== "budget");
 }
