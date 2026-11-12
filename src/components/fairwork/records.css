@@ -76,3 +76,12 @@ body:has(.oq-try) a { color: var(--oq-link, #1e4fff); }
 /* The chosen chip is filled. The selector carries the same weight as the shared glass button style it has to override. */
 html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product .oq-rec-chips > button.fw-secondary[aria-pressed="true"],
 html .oq-try .oq-rec-chips > button.fw-secondary[aria-pressed="true"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, #1e4fff, #4a35d6); box-shadow: 0 10px 22px -12px rgba(30, 79, 255, .8); }
+
+/* Public visitor demo (/try): the shared form styles ship with the signed-in shell, which this page does not load, so the recruiter message check lays out its own fields.
+   Scoped to pages without the product shell so signed-in screens are unchanged. */
+html:not(:has(.fw-product)) .oq-rec .fw-field { display: grid; gap: 7px; margin: 4px 0; max-width: 760px; font-size: 14px; font-weight: 700; color: var(--oq-text, #0b1b33); }
+html:not(:has(.fw-product)) .oq-rec .fw-field :is(input, textarea) { box-sizing: border-box; width: 100%; padding: 13px 15px; border: 1px solid var(--oq-border, #b3c0da); border-radius: 14px; background: var(--oq-surface, #fff); color: inherit; font: inherit; font-weight: 500; line-height: 1.5; }
+html:not(:has(.fw-product)) .oq-rec .fw-field textarea { min-height: 170px; resize: vertical; }
+html:not(:has(.fw-product)) .oq-rec .fw-field :is(input, textarea):focus-visible { outline: 3px solid rgba(38, 103, 255, .35); outline-offset: 1px; border-color: var(--oq-accent, #2667ff); }
+html:not(:has(.fw-product)) .oq-rec > .fw-secondary { justify-self: start; width: auto; padding: 11px 18px; border: 1px solid var(--oq-border, #b3c0da); border-radius: 12px; background: var(--oq-surface, #fff); color: var(--oq-text, #0b1b33); font: inherit; font-weight: 700; cursor: pointer; }
+html:not(:has(.fw-product)) .oq-rec > .fw-secondary:hover { border-color: var(--oq-accent, #2667ff); }
