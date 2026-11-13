@@ -101,12 +101,15 @@ export function EvidenceVault() {
     {!data && !error && <p role="status">Loading…</p>}
     {data?.items.length === 0 && <p>{t("vault.empty")}</p>}
     {data && data.items.length > 0 && <p>{data.used} of {data.limit} documents used.</p>}
-    <ul>{data?.items.map(item => <li key={item.documentId}>
-      <strong>{item.title}</strong> · {CATEGORY_LABEL[item.category]} · {item.fileName} · {size(item.byteSize)} · {day(item.createdAt)} · <span title={item.sha256}>checksum {item.sha256.slice(0, 8)}…</span>
+    <ul className="oq-doclist">{data?.items.map(item => <li key={item.documentId}>
+      <div className="oq-doc-main"><span className="oq-doc-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" /></svg></span>
+        <div><strong>{item.title}</strong><span className="oq-doc-meta">{CATEGORY_LABEL[item.category]} · {item.fileName} · {size(item.byteSize)} · {day(item.createdAt)} · <span title={item.sha256}>checksum {item.sha256.slice(0, 8)}…</span></span></div></div>
+      <div className="oq-doc-actions">
       <button type="button" className="fw-secondary" disabled={busy} onClick={() => void download(item.documentId)}>{t("vault.download")}</button>
       {confirming === item.documentId
         ? <span role="group" aria-label="Confirm deleting"> Delete permanently? <button type="button" className="fw-secondary" disabled={busy} onClick={() => void remove(item.documentId)}>Delete now</button><button type="button" className="fw-secondary" onClick={() => setConfirming(null)}>Keep</button></span>
         : <button type="button" className="fw-secondary" disabled={busy} onClick={() => setConfirming(item.documentId)}>{t("vault.delete")}</button>}
+      </div>
       <DocumentStatus documentId={item.documentId} title={item.title} status={statuses[item.documentId]} onChanged={async () => { setStatusKey(value => value + 1); }} />
     </li>)}</ul>
     <p>Files are checked by type and size, kept in private storage and never shown inside ORYQEN. They are not scanned for malware, so open downloads with care.</p>

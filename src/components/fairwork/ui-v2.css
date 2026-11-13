@@ -150,3 +150,24 @@ html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-secondary { grid-column: 2
 /* The centre action keeps a white icon whatever link colour earlier layers set. */
 html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab, html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab:visited { color: #fff; opacity: 1; background: var(--oq-gradient); }
 html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab svg { stroke: #fff; width: 26px; height: 26px; }
+
+/* ---- Evidence Vault: documents as cards, the add form as a tidy grid ---- */
+html[data-brand="oryqen"] .oq-doclist { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+html[data-brand="oryqen"] .oq-doclist > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; padding: 14px 16px; border: 1px solid var(--oq-border); border-radius: 16px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); }
+html[data-brand="oryqen"] .oq-doc-main { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+html[data-brand="oryqen"] .oq-doc-main > div { min-width: 0; display: grid; gap: 2px; }
+html[data-brand="oryqen"] .oq-doc-main strong { overflow-wrap: anywhere; color: var(--oq-text); font-size: 15px; }
+html[data-brand="oryqen"] .oq-doc-icon { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--oq-gradient); color: #fff; }
+html[data-brand="oryqen"] .oq-doc-meta { color: var(--oq-text-2); font-size: var(--oq-t-sm); overflow-wrap: anywhere; }
+html[data-brand="oryqen"] .oq-doc-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }
+html[data-brand="oryqen"] .oq-doc-actions .fw-secondary { width: auto; min-height: 40px; padding: 0 16px; border-radius: 999px; }
+html[data-brand="oryqen"] .oq-doclist > li > :not(.oq-doc-main):not(.oq-doc-actions) { grid-column: 1 / -1; }
+@media (max-width: 767px) { html[data-brand="oryqen"] .oq-doclist > li { grid-template-columns: 1fr; } html[data-brand="oryqen"] .oq-doc-actions { justify-content: flex-start; } }
+
+/* Two-column forms on wide screens: short fields side by side, long fields and actions on their own row. */
+@media (min-width: 768px) {
+  html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; align-items: end; }
+  html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form > :is(.fw-primary, .fw-secondary) { justify-self: start; width: auto; grid-column: 1 / -1; }
+  html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form > :is(p, small, fieldset, label:has(textarea), label:has(input[type="file"]), label:has(input[type="checkbox"])) { grid-column: 1 / -1; max-width: none; }
+  html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form .fw-field { margin: 4px 0; max-width: none; }
+}
