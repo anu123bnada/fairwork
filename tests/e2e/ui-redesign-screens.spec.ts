@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
+import { assessOfferTerms } from "../../src/features/offer/assessment";
 
 // Priority screens with fixture data, captured at desktop and phone widths and checked for overflow and real content. The API fixtures are transport stand-ins shaped like
 // the real replies (the schemas parse them strictly); they prove layout and rendering of real fields, not that the hosted service works.
@@ -59,5 +60,26 @@ for (const [label, width, height] of [["desktop", 1440, 900], ["phone", 390, 844
     mkdirSync("test-results/ui-redesign", { recursive: true });
     await page.waitForTimeout(600);
     await page.screenshot({ path: `test-results/ui-redesign/work-record-${label}.png`, fullPage: true, animations: "disabled" });
+  });
+}
+
+// Check screen with the real rule-based assessment engine run on a realistic offer (the engine output is genuine; only the transport is stubbed).
+const offerId = id(1);
+const terms = { role: "Workshop Assistant", salary: 80000, currency: "LKR", payPeriod: "monthly", hoursPerWeek: 60, probation: "Unpaid trial is required", noticeDays: 0, overtime: "Overtime is not paid" };
+const offerFixture = { offerId, companyId: offerId, workerId: offerId, representativeId: null, requesterId: offerId, requesterRole: "WORKER", version: 2, termHash: "a".repeat(64), snapshot: terms, changes: [], unresolved: [] };
+for (const [label, width, height] of [["desktop", 1440, 900], ["phone", 390, 844]] as const) {
+  test(`ORYQEN Check with real assessment findings, ${label}`, async ({ page }) => {
+    test.setTimeout(90_000);
+    await signedIn(page);
+    await page.route("**/api/v1/agreements?*", route => route.fulfill({ json: { data: { offer: offerFixture, agreementId: offerId, confirmation: null, answers: [], canConfirm: false } } }));
+    await page.route("**/api/v1/offers/assessment?*", route => route.fulfill({ json: { data: { offerId, offerVersion: 2, termHash: offerFixture.termHash, assessment: assessOfferTerms(terms as never) } } }));
+    await page.setViewportSize({ width, height });
+    await page.goto(`/app/check?offerId=${offerId}`);
+    const panel = page.getByRole("region", { name: "Offer fairness indicators" });
+    await expect(panel).toBeVisible();
+    expect(await noOverflow(page), `${label} overflows`).toBe(true);
+    mkdirSync("test-results/ui-redesign", { recursive: true });
+    await page.waitForTimeout(600);
+    await page.screenshot({ path: `test-results/ui-redesign/check-${label}.png`, fullPage: true, animations: "disabled" });
   });
 }
