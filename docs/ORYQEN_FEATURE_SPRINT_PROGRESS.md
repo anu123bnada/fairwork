@@ -2,11 +2,11 @@
 
 ## Preservation and scope
 
-Repository: `C:/Users/vehiv/Desktop/fairwork`; branch `release/oryqen-oct27`;
+Repository: `<USER-HOME>/Desktop/fairwork`; branch `release/oryqen-oct27`;
 starting HEAD `d780bea`. No commits, pushes, deployments or hosted mutations authorized.
 Preserve pre-existing modifications to the auth release document, confirmation/sign-in
 routes, identity/recovery/registration services, four auth test files, and untracked
-`src/lib/auth-errors.ts`, `src/server/identity.ts.bak`, `landing/v6/next-env.d.ts`.
+`src/lib/auth-errors.ts`, `src/server/identity.ts.bak`, `landing/v6/next-env.d.ts`. *(Note 13 Nov 2026: the .bak file was in fact tracked, and was removed with the owner authorization. It was byte-identical to an earlier committed identity.ts.)*
 The current request supersedes historical feature exclusions, but does not waive
 authorization, consent, privacy or release verification requirements.
 
@@ -132,7 +132,7 @@ value and restore it only if the owner approves rollback.
 Safe next commands: `git status --short`, `npm run typecheck`, `npm run lint`,
 `npm test -- tests/integration/offer-drafts-db.test.ts tests/unit/offer-drafts-api.test.ts`.
 Use the existing isolated browser runner for subsequent UI changes. Keep
-`landing/v6/next-env.d.ts` and `src/server/identity.ts.bak` untouched.
+`landing/v6/next-env.d.ts` and `src/server/identity.ts.bak` untouched. *(Note 13 Nov 2026: the .bak file was in fact tracked, and was removed with the owner authorization. It was byte-identical to an earlier committed identity.ts.)*
 
 ## Latest browser verification and completion matrix
 

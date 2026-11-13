@@ -148,7 +148,7 @@ No hosted connection, migration application, deployment, commit or push was made
 
 ## Commands and final verification
 
-Commands run from `C:\Users\vehiv\Desktop\fairwork`:
+Commands run from `<USER-HOME>\Desktop\fairwork`:
 
 ```powershell
 npm test

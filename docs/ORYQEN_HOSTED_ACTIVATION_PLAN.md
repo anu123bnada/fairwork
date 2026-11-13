@@ -224,7 +224,7 @@ snapshot can lose later audit data and needs a separate recovery approval.
 Safe local generation and authorized read-only checks:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node scripts/prepare-activation.mjs
 if ($LASTEXITCODE -ne 0) { throw 'STOP: inventory/hash mismatch' }
 node scripts/hosted-auth-readiness.mjs --network --migration-list

@@ -5,7 +5,7 @@
 The coordinated Day 4 run rebuilt the application and passed **36/36 browser
 tests**, including new populated captures at 390×844 and 378×744. Fresh Home
 `test-results/day3-visual/after/390-home-populated.png` was directly reviewed against
-`C:/Users/vehiv/Downloads/Untitled/02-Home.png`: the original vertical bell/avatar
+`<USER-HOME>/Downloads/Untitled/02-Home.png`: the original vertical bell/avatar
 and greeting geometry are restored. A navigation regression exposed overlapping
 greeting hit area; the avatar stacking fix is now verified by the original
 settings-navigation test. Real offer/profile text retains different card density
@@ -39,10 +39,10 @@ All supplied source files were read without changing them.
 
 | Source | Exact local location | Evidence |
 |---|---|---|
-| Original PNG exports | `C:/Users/vehiv/Downloads/Untitled/` | 19 full-resolution 390×844 PNGs; includes every requested family except onboarding 1 |
-| Original v4 vector source | `C:/Users/vehiv/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/svg/` | 20 original SVGs; onboarding 1 available here |
+| Original PNG exports | `<USER-HOME>/Downloads/Untitled/` | 19 full-resolution 390×844 PNGs; includes every requested family except onboarding 1 |
+| Original v4 vector source | `<USER-HOME>/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/svg/` | 20 original SVGs; onboarding 1 available here |
 | Motion/navigation source | Sibling `FIGMA-GUIDE.md` and `preview.html` | Original glass, shadow, font, timing and navigation recipes |
-| Supplied prototype recording | `C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4` | 5,105,979 bytes; 378×744; 46.466633 seconds; 12 extracted frames at 0,4,…44 seconds |
+| Supplied prototype recording | `<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4` | 5,105,979 bytes; 378×744; 46.466633 seconds; 12 extracted frames at 0,4,…44 seconds |
 
 `test-results/day3-visual/reference-inventory.json` records absolute source paths,
 sizes and SHA-256 hashes for the 40 PNG/SVG/video files. The recording includes
@@ -148,10 +148,10 @@ fixed-action issues described above.
 ## Commands used (PowerShell from repository root)
 
 ```powershell
-$visualPython = 'C:/Users/vehiv/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
-$originalVectors = 'C:/Users/vehiv/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/svg'
+$visualPython = '<USER-HOME>/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'
+$originalVectors = '<USER-HOME>/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/svg'
 & $visualPython scripts/prepare-visual-assets.py $originalVectors
-node scripts/inspect-visual-reference.mjs 'C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4'
+node scripts/inspect-visual-reference.mjs '<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4'
 node scripts/render-local-figma-reference.mjs $originalVectors
 npm test
 npm run typecheck

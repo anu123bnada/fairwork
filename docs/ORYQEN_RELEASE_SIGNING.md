@@ -45,8 +45,8 @@ using this key only as the upload key.
 ### 2. Build (PowerShell; quote every `-P` argument or PowerShell cuts it at the first dot)
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\vehiv\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1"
-$env:ANDROID_HOME = "C:\Users\vehiv\AppData\Local\Android\Sdk"
+$env:JAVA_HOME = "<USER-HOME>\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1"
+$env:ANDROID_HOME = "<USER-HOME>\AppData\Local\Android\Sdk"
 $env:ORYQEN_ANDROID_KEYSTORE_PATH = "<path to oryqen-upload.jks>"
 $env:ORYQEN_ANDROID_KEYSTORE_PASSWORD = "<store password>"
 $env:ORYQEN_ANDROID_KEY_ALIAS = "oryqen-upload"

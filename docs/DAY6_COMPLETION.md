@@ -76,7 +76,7 @@ The existing Share screen still cannot create/copy a link; the Passport is priva
 
 ## Fresh verification and exact commands
 
-Run from `C:\Users\vehiv\Desktop\fairwork` unless stated otherwise.
+Run from `<USER-HOME>\Desktop\fairwork` unless stated otherwise.
 
 | Command | Result / durable evidence |
 |---|---|
@@ -114,7 +114,7 @@ outside the sandbox. First browser attempt was 45/46; preserved in
 
 ## Visual evidence and carried gates
 
-Reference: `C:\Users\vehiv\Downloads\Untitled\09-Work-Passport.png`, 390×844.
+Reference: `<USER-HOME>\Downloads\Untitled\09-Work-Passport.png`, 390×844.
 Unmodified copy: `test-results/day6-visual/original-work-passport.png`.
 Current captures: `390-passport.png` (390×844), `378-passport.png` (378×744),
 `320-passport.png` (320×844), and `320-expired.png`, in that same evidence folder.

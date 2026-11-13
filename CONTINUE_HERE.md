@@ -251,8 +251,8 @@ only to isolated local Supabase. They are hash-pinned: do not edit applied SQL.
 All six postflight checks true; **zero admin-role assignments**. New offline
 manifest/assertion package: `test-results/stage9-release-1792459379122/` (old prefix).
 
-Founder selected existing local `vehiview@gmail.com`, UUID
-`0e699f45-09c8-4c13-9941-35cb50c6aa2c`, for **verification only**. Confirmed email
+Founder selected existing local `<founder-account>`, UUID
+`<local-account-id>`, for **verification only**. Confirmed email
 and active profile passed; verified TOTP absent. No final owner grant approval.
 Founder must personally enroll/verify MFA, then recheck and request explicit grant
 approval. Do not grant a synthetic account owner. Bootstrap script is prepared,
@@ -528,7 +528,7 @@ login/persistence is actually usable. No fake success, JWT fixtures or auth bypa
 
 Read [the exact backup/restore package](docs/ORYQEN_BACKUP_RESTORE_EXECUTION.md).
 Owner confirms Supabase **Free** and proposes
-`C:\Users\vehiv\ORYQEN-Secure-Backups`, with a separate Docker restore instance on
+`<USER-HOME>\ORYQEN-Secure-Backups`, with a separate Docker restore instance on
 proposed loopback port **55432**. Directory absent; encryption/ACLs unverified;
 restore target not provisioned. Windows encryption-status queries did not establish
 protection. Do not export until destination AND scope receive explicit approval.
@@ -1124,9 +1124,9 @@ motion choreography. Do not replace those gaps with a completion claim.
 
 Read [the visual-gate evidence and exact remaining work](docs/DAY3_VISUAL_GATE_20261013.md)
 and [the screenshot gallery](test-results/day3-visual/index.html). References:
-`C:/Users/vehiv/Downloads/Untitled/`,
-`C:/Users/vehiv/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`, and
-`C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
+`<USER-HOME>/Downloads/Untitled/`,
+`<USER-HOME>/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`, and
+`<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
 The visual pass reran 108 regression tests; the browser suite is now 32 tests.
 Typecheck/lint/production build passed. 641 existing protected files matched
 the prior hashes. No backend, migration, hosted data or Android project changes.
@@ -1233,7 +1233,7 @@ was changed. No verified production HTTPS URL exists.
 ### Exact local commands
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 npm test
 npm run lint
 npm run typecheck
@@ -1243,9 +1243,9 @@ node scripts/android-local-server.mjs
 # Another terminal, from the repository root:
 node node_modules/@playwright/test/cli.js test --config=playwright.android-local.config.ts
 
-$env:JAVA_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
-$env:ANDROID_HOME='C:\Users\vehiv\AppData\Local\Android\Sdk'
-$env:GRADLE_USER_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-gradle'
+$env:JAVA_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
+$env:ANDROID_HOME='<USER-HOME>\AppData\Local\Android\Sdk'
+$env:GRADLE_USER_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-gradle'
 node mobile/poc/scripts/doctor.mjs
 Set-Location mobile/poc
 # Only refresh generated assets/config; do NOT run cap add android:
@@ -1318,7 +1318,7 @@ production readiness for this manual slice.
 ## Start and verify locally
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 npm run typecheck
 npm run lint
 npm test

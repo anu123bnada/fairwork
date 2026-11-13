@@ -1,6 +1,6 @@
 # Parallel feature-UX branch: integration handoff (29 Oct 2026)
 
-Worktree `C:\Users\vehiv\Desktop\fairwork-ui`, branch `feature/oryqen-ui-parallel`. Not merged, not deployed, not hosted-verified. No migrations, RLS, global CSS, navigation or deployment files were touched.
+Worktree `<USER-HOME>\Desktop\fairwork-ui`, branch `feature/oryqen-ui-parallel`. Not merged, not deployed, not hosted-verified. No migrations, RLS, global CSS, navigation or deployment files were touched.
 
 ## Commits (oldest first, on top of 8057010)
 | Commit | Change |

@@ -4,12 +4,12 @@
 
 ## 0. OPERATING INSTRUCTIONS — EXECUTE, DON'T REPLAN
 
-You are continuing the actual local Windows repository `C:\Users\vehiv\Desktop\fairwork`. Work as a senior engineer, not as a planning chatbot. First ensure no other coding agent is editing this directory. Preserve all local tracked/untracked changes and built binaries. Do not recreate, delete, reset, clean, rewrite, or overwrite this project. Never modify production, push, deploy, upload sensitive data, activate paid resources, or distribute binaries without explicit human approval. Never print secret values. Use one controlled development environment, small verified increments, and real browser/service tests.
+You are continuing the actual local Windows repository `<USER-HOME>\Desktop\fairwork`. Work as a senior engineer, not as a planning chatbot. First ensure no other coding agent is editing this directory. Preserve all local tracked/untracked changes and built binaries. Do not recreate, delete, reset, clean, rewrite, or overwrite this project. Never modify production, push, deploy, upload sensitive data, activate paid resources, or distribute binaries without explicit human approval. Never print secret values. Use one controlled development environment, small verified increments, and real browser/service tests.
 
 **First commands (safe, non-destructive):**
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 Get-Location
 git rev-parse --show-toplevel
 git status --short

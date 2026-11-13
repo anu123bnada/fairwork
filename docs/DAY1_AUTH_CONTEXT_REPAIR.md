@@ -72,7 +72,7 @@ Local PGlite reports PostgreSQL **18.3**, not hosted 17.11. The SQL uses feature
 ## Required read-only hosted preflight — before approval
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 Get-Content -Raw '.\scripts\day1-auth-context-preflight.sql' | Set-Clipboard
 ```
 
@@ -87,7 +87,7 @@ If any preflight result fails or the query cannot run, **STOP and report the exa
 Use a normal interactive PowerShell terminal; retain secrets in existing credential storage or hidden prompts. Do not place passwords in commands or chat.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 $fwCli = '.\node_modules\.bin\supabase.cmd'
 Get-Content -LiteralPath '.\supabase\.temp\project-ref'
 Get-ChildItem -LiteralPath '.\supabase\migrations' -File | Select-Object Name
@@ -118,7 +118,7 @@ No include-all, role/seed inclusion, automatic yes, database reset or migration-
 4. Run a configured app in terminal A:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 npm run dev -- --port 3000
 ```
 
@@ -127,7 +127,7 @@ Keep `.env.local` configured for the same hosted project and APP_ORIGIN `http://
 5. In terminal B, run the interactive verifier directly (no piping credentials):
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node .\scripts\verify-day1-hosted.mjs
 $fwVerificationExit = $LASTEXITCODE
 Write-Output "Verification exit code: $fwVerificationExit"

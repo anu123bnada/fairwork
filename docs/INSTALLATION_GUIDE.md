@@ -37,11 +37,11 @@ Prerequisites (already provisioned on this machine): JDK 21 at
 `.tmp/android-toolchain/jdk-21.0.12.1+1`, Android SDK platform 36 and
 build-tools 36.0.0, and `sdk.dir` in `mobile/poc/android/local.properties`
 (the file is git-ignored; use forward slashes, e.g.
-`sdk.dir=C:/Users/vehiv/AppData/Local/Android/Sdk`).
+`sdk.dir=<USER-HOME>/AppData/Local/Android/Sdk`).
 
 ```powershell
-$env:JAVA_HOME='C:/Users/vehiv/Desktop/fairwork/.tmp/android-toolchain/jdk-21.0.12.1+1'
-$env:GRADLE_USER_HOME='C:/Users/vehiv/Desktop/fairwork/.tmp/android-gradle'
+$env:JAVA_HOME='<USER-HOME>/Desktop/fairwork/.tmp/android-toolchain/jdk-21.0.12.1+1'
+$env:GRADLE_USER_HOME='<USER-HOME>/Desktop/fairwork/.tmp/android-gradle'
 npm --prefix mobile/poc run build:online
 ```
 

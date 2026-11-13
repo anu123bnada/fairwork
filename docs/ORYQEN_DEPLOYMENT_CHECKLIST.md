@@ -10,7 +10,7 @@ Do not claim hosted acceptance until section 6 is completed.
 
 - [ ] Commit the working tree on a reviewed branch (currently all sprint work is
       uncommitted, including three new migrations and `package.json`/lockfile `zod`
-      pin). Remove or ignore `src/server/identity.ts.bak`.
+      pin). Remove or ignore `src/server/identity.ts.bak`. *(Done 13 Nov 2026: removed with the owner authorization.)*
 - [ ] Run: `npm ci`, `npm run typecheck`, `npm run lint`, `npx vitest run`,
       `npm run build`, and `npm run test:e2e:isolated` with
       `AUTH_REGISTRATION_ENABLED=true`. Record counts in `docs/ORYQEN_TEST_REPORT.md`.

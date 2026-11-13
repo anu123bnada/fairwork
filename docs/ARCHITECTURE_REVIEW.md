@@ -2,7 +2,7 @@
 
 Review date: 2026-10-06  
 Reviewer posture: independent pre-implementation architecture, database, security, AI, and feasibility review  
-Repository reviewed: `C:/Users/vehiv/Desktop/fairwork`
+Repository reviewed: `<USER-HOME>/Desktop/fairwork`
 
 Documents reviewed in full: `README.md`, `docs/FAIRWORK_MASTER_SPEC.md`, `docs/ARCHITECTURE.md`, `docs/DATABASE.md`, `docs/AI_SYSTEM.md`, `docs/API.md`, `docs/SECURITY.md`, and `docs/MVP_PLAN.md`. The Git working tree and history were also inspected. The existing Figma design is treated as the locked visual source of truth. This review recommends no visual redesign.
 

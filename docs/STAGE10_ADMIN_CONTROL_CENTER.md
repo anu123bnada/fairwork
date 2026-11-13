@@ -81,7 +81,7 @@ node scripts/run-local-development.mjs
 
 Use http://127.0.0.1:3100/sign-in; local mail http://127.0.0.1:55424.
 Docker Desktop is installed per-user at
-`C:\Users\vehiv\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`.
+`<USER-HOME>\AppData\Local\Programs\DockerDesktop\Docker Desktop.exe`.
 Startup preserves all volumes. Credential provisioning uses PowerShell 7 + icacls;
 initial PowerShell module/privilege and SQL delimiter failures were fixed before
 LOGIN provisioning succeeded. No credential values were printed.
@@ -90,7 +90,7 @@ LOGIN provisioning succeeded. No credential values were printed.
 
 Founder: personally sign in as the selected account and enroll/verify the
 Authenticator at /operator/authority. Then recheck with
-`node scripts/admin-owner-bootstrap.mjs --check --subject 0e699f45-09c8-4c13-9941-35cb50c6aa2c`.
+`node scripts/admin-owner-bootstrap.mjs --check --subject <local-account-id>`.
 Only after that check passes, request final explicit approval for this exact local
 owner grant. Run real privileged read/write/revocation acceptance after approval.
 Do not treat this report or “continue” as grant authorization. Production also

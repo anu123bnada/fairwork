@@ -98,9 +98,9 @@ target/compile SDK 36. SHA-256:
 Build from `mobile/poc/android`:
 
 ```powershell
-$env:JAVA_HOME = 'C:\Users\vehiv\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
-$env:ANDROID_HOME = 'C:\Users\vehiv\AppData\Local\Android\Sdk'
-$env:GRADLE_USER_HOME = 'C:\Users\vehiv\Desktop\fairwork\.tmp\android-gradle'
+$env:JAVA_HOME = '<USER-HOME>\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
+$env:ANDROID_HOME = '<USER-HOME>\AppData\Local\Android\Sdk'
+$env:GRADLE_USER_HOME = '<USER-HOME>\Desktop\fairwork\.tmp\android-gradle'
 .\gradlew.bat assembleDebug --offline --no-daemon --no-watch-fs --max-workers=1 --console=plain
 & "$env:ANDROID_HOME\build-tools\35.0.0\apksigner.bat" verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk
 & "$env:ANDROID_HOME\build-tools\35.0.0\aapt.exe" dump badging app/build/outputs/apk/debug/app-debug.apk

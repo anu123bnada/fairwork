@@ -4,8 +4,8 @@ October 20, 2026. No hosted operation is authorized. Stage 10 remains in verific
 
 ## Founder access checkpoint
 
-Founder selected the existing local account `vehiview@gmail.com`, UUID
-`0e699f45-09c8-4c13-9941-35cb50c6aa2c`, for verification only. Read-only inspection
+Founder selected the existing local account `<founder-account>`, UUID
+`<local-account-id>`, for verification only. Read-only inspection
 confirmed its email and active profile; **verified TOTP was absent**. Selection is
 not authorization to grant a role. No synthetic account may become the founder.
 
@@ -15,7 +15,7 @@ not authorization to grant a role. No synthetic account may become the founder.
    authenticator, or use `/operator/authority`. Add the private key to your own
    authenticator and verify a current code. Never paste the key/code into chat.
 3. Run the read-only check:
-   `node scripts/admin-owner-bootstrap.mjs --check --subject 0e699f45-09c8-4c13-9941-35cb50c6aa2c`.
+   `node scripts/admin-owner-bootstrap.mjs --check --subject <local-account-id>`.
    All three booleans must be true. These checks prove database enrollment status,
    not personal ownership by themselves; founder selection and personal sign-in
    are also required.
@@ -25,7 +25,7 @@ not authorization to grant a role. No synthetic account may become the founder.
    reference (letters/digits/dot/dash/underscore, 10–100 characters):
 
    ```powershell
-   node scripts/admin-owner-bootstrap.mjs --prepare --subject 0e699f45-09c8-4c13-9941-35cb50c6aa2c --approval-ref ACTUAL_FOUNDER_APPROVAL_REFERENCE
+   node scripts/admin-owner-bootstrap.mjs --prepare --subject <local-account-id> --approval-ref ACTUAL_FOUNDER_APPROVAL_REFERENCE
    node scripts/admin-owner-bootstrap.mjs --execute --authorization EXACT_PATH_PRINTED_BY_PREPARE
    ```
 

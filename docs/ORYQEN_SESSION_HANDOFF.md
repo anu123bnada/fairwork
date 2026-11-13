@@ -26,7 +26,7 @@ Still open: signed-in hosted smoke (accounts the owner creates), demo accounts a
 - Built the Smart CV Builder (`/app/cv`; migration `20261106100000_cv_documents.sql` applied **locally only**). Three migrations are now pending for staging (security event log, recommendation history, CV documents), all needing owner approval and a staging backup. New docs: `ORYQEN_LINKEDIN.md` (official API check: no experience import without a partner program), `ORYQEN_AI_PROVIDERS.md`, `ORYQEN_COMMERCIAL_LAUNCH.md`.
 - NOT built from the 6 Nov brief: AI Challenge Arena, AI career analysis, AI cover letters, LinkedIn OAuth (needs an adult-created developer app), interview simulator, organization analytics, load tests, Android device verification. Each is listed with its blocker in `ORYQEN_FEATURE_MATRIX.md` terms: NOT_IMPLEMENTED or BLOCKED.
 - Full-E2E gate is not passing for this commit family: three runs, three different single failures, the last `net::ERR_INSUFFICIENT_RESOURCES` (F-47). Rerun it alone with several GB of free RAM.
-- Incident: while clearing port 3100 I stopped an unrelated server (`next start -p 3100` from `C:/Users/vehiv/Desktop/Anne-German-Academy/annes-german-academy-stage6-complete/annes-german-academy-production-starter`). Restart it with `node node_modules/next/dist/bin/next start -p 3100` in that folder. Always check a port's owner before stopping it.
+- Incident: while clearing port 3100 I stopped an unrelated server (`next start -p 3100` from `<USER-HOME>/Desktop/Anne-German-Academy/annes-german-academy-stage6-complete/annes-german-academy-production-starter`). Restart it with `node node_modules/next/dist/bin/next start -p 3100` in that folder. Always check a port's owner before stopping it.
 
 ## 5 November 2026
 - 5 Nov (later): recommendation history built (module 3). Migration `20261105110000_recommendation_history.sql` is applied locally only; with `20261105100000_security_event_log.sql` there are now **two migrations pending for staging**, both needing owner approval and a staging backup. `scripts/apply-local-migrations.mjs` now handles table-creating migrations locally (temporary CREATE grants, always revoked). Remaining buildable gaps: skills-gap suggestions (03), clause editing (05), skills in shared Passport (07), recruiter roles (08), account-deletion workflow and passkeys (12), correction procedure for named parties (17), persistent webhook queue (21).
@@ -34,7 +34,7 @@ Still open: signed-in hosted smoke (accounts the owner creates), demo accounts a
 - Harness reliability: never run two harness runs at once; if `app not ready`, check for a leftover Next process on port 3100 (`Get-NetTCPConnection -LocalPort 3100`) and stop it first.
 
 ## 3 November 2026
-- Added `scripts/local-tier2-journey.mjs` (wired into `scripts/test-local-real-workflows.mjs`): anonymous route/API protection, outsider direct-URL denial, MFA-aware password recovery. Full real-stack run via `node scripts/run-local-split-harness.mjs`: 245 PASS / 0 FAIL / 0 SKIPPED. Docker Desktop must be started first (`C:/Users/vehiv/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe`). One intermittent telemetry miss is recorded as F-45 (open).
+- Added `scripts/local-tier2-journey.mjs` (wired into `scripts/test-local-real-workflows.mjs`): anonymous route/API protection, outsider direct-URL denial, MFA-aware password recovery. Full real-stack run via `node scripts/run-local-split-harness.mjs`: 245 PASS / 0 FAIL / 0 SKIPPED. Docker Desktop must be started first (`<USER-HOME>/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe`). One intermittent telemetry miss is recorded as F-45 (open).
 - Hosted: Tier 1 done (24/0/5). A single approval request for Tier 2 is in `ORYQEN_HOSTED_APPROVAL_REQUEST.md`; NOT approved, nothing hosted written.
 - Not done: full vitest/E2E/build rerun after these script-only changes (no product code touched), Android emulator retry, live Gemini, release signing.
 
@@ -53,9 +53,9 @@ Read `docs/ORYQEN_MASTER_DELIVERY_TRACKER.md` first (module status), then
 
 ## State
 
-- Repo `C:\Users\vehiv\Desktop\fairwork`, branch `feature/oryqen-sprint-oct25`. Nothing pushed, deployed,
+- Repo `<USER-HOME>\Desktop\fairwork`, branch `feature/oryqen-sprint-oct25`. Nothing pushed, deployed,
   or applied to hosted systems. Untracked and deliberately left alone: `src/server/identity.ts.bak`,
-  `landing/v6/next-env.d.ts`.
+  `landing/v6/next-env.d.ts`. *(Note 13 Nov 2026: the .bak file was in fact tracked, and was removed with the owner authorization. It was byte-identical to an earlier committed identity.ts.)*
 - Local Docker stack (Supabase `oryqen-local-dev`, mail on 55424) is up with 43 migrations (all local; includes entitlements, vault and developer keys); the app
   server on port 3100 is stopped. Start it with `node scripts/run-local-development.mjs`.
   Demo worker: `oryqen-demo-worker@example.test`; password in git-ignored `.tmp/demo-password.txt`.

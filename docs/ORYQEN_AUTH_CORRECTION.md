@@ -19,14 +19,14 @@ authentication request handlers are unchanged.
 
 ## Reference and capture evidence
 
-Original full-resolution PNGs: `C:/Users/vehiv/Downloads/Untitled/00-Sign-in.png`,
+Original full-resolution PNGs: `<USER-HOME>/Downloads/Untitled/00-Sign-in.png`,
 `00-OTP.png`, `00-Onboarding-2.png`, `00-Onboarding-3.png`, all **390×844**.
 Original geometry/motion instructions:
-`C:/Users/vehiv/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`
+`<USER-HOME>/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`
 (`svg/` and `FIGMA-GUIDE.md`). Onboarding 1 uses the explicitly labelled derived
 render of its supplied SVG, since an original full-resolution PNG was not found.
 The earlier recording at
-`C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`
+`<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`
 is 378×744 and is not an exact viewport or frame-timing parity reference for these
 390px captures. Static captures cannot certify motion choreography.
 

@@ -38,7 +38,7 @@ are local only. Run from the stated directories, check every exit code, and use
 the serial reported by ADB; never guess one or use `-a` to expose ADB to the LAN.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 # Stop the existing port 3100 Next dev server first; preserve local database services.
 node scripts/android-local-server.mjs --real-local
 ```
@@ -54,18 +54,18 @@ Omitting `--real-local` intentionally blanks backend configuration and returns
 verify successful authentication or persistence.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node node_modules/@playwright/test/cli.js test --config=playwright.android-local.config.ts
 ```
 
 Build tooling used in this session (portable JDK path is machine-specific):
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork\mobile\poc'
+Set-Location '<USER-HOME>\Desktop\fairwork\mobile\poc'
 npm ci --ignore-scripts
-$env:JAVA_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
-$env:ANDROID_HOME='C:\Users\vehiv\AppData\Local\Android\Sdk'
-$env:GRADLE_USER_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-gradle'
+$env:JAVA_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
+$env:ANDROID_HOME='<USER-HOME>\AppData\Local\Android\Sdk'
+$env:GRADLE_USER_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-gradle'
 node scripts/doctor.mjs
 # Doctor exits 1 if either build prerequisites or an authorized test device is missing.
 node node_modules/@capacitor/cli/bin/capacitor copy android
@@ -84,12 +84,12 @@ changed. A fresh environment needs the JDK installed/downloaded separately.
 ## Installation and native checks — conditional on a working device
 
 ```powershell
-$adb = 'C:\Users\vehiv\AppData\Local\Android\Sdk\platform-tools\adb.exe'
+$adb = '<USER-HOME>\AppData\Local\Android\Sdk\platform-tools\adb.exe'
 & $adb devices -l
 $serial = '<exact authorized serial from the preceding command>'
 & $adb -s $serial reverse tcp:3102 tcp:3102
 & $adb -s $serial reverse --list
-& $adb -s $serial install -r 'C:\Users\vehiv\Desktop\fairwork\mobile\poc\android\app\build\outputs\apk\debug\app-debug.apk'
+& $adb -s $serial install -r '<USER-HOME>\Desktop\fairwork\mobile\poc\android\app\build\outputs\apk\debug\app-debug.apk'
 & $adb -s $serial shell am start -W -n org.fairwork.localpoc/.MainActivity
 # Exercise actual Android back, not a browser history substitute:
 & $adb -s $serial shell input keyevent KEYCODE_BACK

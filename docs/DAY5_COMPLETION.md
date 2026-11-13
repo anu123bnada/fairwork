@@ -107,7 +107,7 @@ is saved at `test-results/day5-visual/index.html`.
 
 ## Visual evidence and remaining local gate
 
-References inspected: `C:/Users/vehiv/Downloads/Untitled/08-Work-record.png`
+References inspected: `<USER-HOME>/Downloads/Untitled/08-Work-record.png`
 and `09-Work-Passport.png`, both 390×844, plus existing local Figma styles/assets.
 The original recording and earlier comparison inventory remain untouched.
 

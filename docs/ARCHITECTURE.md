@@ -4,7 +4,7 @@ Revision: FAIRWORK-ARCH-1.0.0, 2026-10-07. [Approved baseline](ARCHITECTURE_BASE
 
 ## 1. Observed repository state
 
-Original inspection 2026-10-06: `C:/Users/vehiv/Desktop/fairwork` contained README.md (5,933 bytes) and Git metadata only. Main tracked origin/main, HEAD c6efc3c (“docs: define FAIRWORK 2.0 product vision”), prior5306ad1. Remote https://github.com/anu123bnada/fairwork.git. No application, dependencies, framework, schema, configuration, tests, CI or deployment. README read fully. Per-command safe.directory was needed; no global Git setting changed.
+Original inspection 2026-10-06: `<USER-HOME>/Desktop/fairwork` contained README.md (5,933 bytes) and Git metadata only. Main tracked origin/main, HEAD c6efc3c (“docs: define FAIRWORK 2.0 product vision”), prior5306ad1. Remote https://github.com/anu123bnada/fairwork.git. No application, dependencies, framework, schema, configuration, tests, CI or deployment. README read fully. Per-command safe.directory was needed; no global Git setting changed.
 
 Correction inspection 2026-10-07: seven specs and independent ARCHITECTURE_REVIEW.md are present under untracked docs; still no app. All seven documents and all 26 review findings were reread. The review is historical evidence and remains unchanged. This assessment covers this checkout, not uninspected remote branches/services. No fetch, deployment or production credential access is claimed. That was the pre-closure state; the subsequent FAIRWORK-ARCH-1.0.0 baseline closes M-01 with a documentation-only Git boundary. The original review and final verification remain unchanged historical records.
 

@@ -44,7 +44,7 @@ Keep the configured app running at `http://localhost:3000`. If it is not already
 Run in an interactive local PowerShell terminal:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node .\scripts\verify-day1.mjs
 ```
 

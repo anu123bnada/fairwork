@@ -11,7 +11,7 @@ must be separate from a future restore containing hosted data.
 | --- | --- |
 | Subscription | **Free, owner-confirmed this turn**; not independently verified through Billing API. |
 | Backup tool/version | Native PostgreSQL **17.11** `pg_dump`, `pg_dumpall`, `pg_restore`, `psql` proposed to match hosted 17.11. Not installed/found. Supabase CLI **2.120.0** installed; not upgraded. |
-| Destination | Owner-proposed **`C:\Users\vehiv\ORYQEN-Secure-Backups`**. Does not exist. Not created or approved for export; its ACL/encryption cannot yet be certified. |
+| Destination | Owner-proposed **`<USER-HOME>\ORYQEN-Secure-Backups`**. Does not exist. Not created or approved for export; its ACL/encryption cannot yet be certified. |
 | Encryption | Require a verified protected BitLocker volume for dump, review files, credentials and restored DB storage. Also package the export using installed **7-Zip 26.03**, AES-256, encrypted headers and a separate password-manager secret. Windows BitLocker status query failed; encryption remains **UNVERIFIED**. No encryption setting changed. |
 | Restore target | New local, isolated PostgreSQL 17/Supabase-compatible instance; separate persistent volume, loopback-only **55432** proposed, unique DB `oryqen_restore_check`, cluster label `oryqen-isolated-restore`, no external egress. Not provisioned; no listener/process found. Docker absent, WSL reports not installed. Must not use the development DB on 55422. |
 | Cost | No purchase or billable target created. Native local export requires no Supabase plan upgrade. Local storage/runtime installation and any Docker licensing eligibility remain owner choices. Provider clone/PITR would require separate paid-feature approval and is not the selected local route. |
@@ -67,7 +67,7 @@ Get-BitLockerVolume -MountPoint 'C:' |
   Select-Object MountPoint,VolumeStatus,ProtectionStatus,EncryptionMethod,EncryptionPercentage
 
 # Only after local directory provisioning and encryption are approved:
-$backupRoot = 'C:\Users\vehiv\ORYQEN-Secure-Backups'
+$backupRoot = '<USER-HOME>\ORYQEN-Secure-Backups'
 if (Test-Path -LiteralPath $backupRoot) { throw 'STOP: inspect existing folder; do not overwrite its ACL' }
 New-Item -ItemType Directory -Path $backupRoot -ErrorAction Stop | Out-Null
 $backupSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
@@ -110,7 +110,7 @@ verification instead of comparing changing counts.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$backupRoot = 'C:\Users\vehiv\ORYQEN-Secure-Backups'
+$backupRoot = '<USER-HOME>\ORYQEN-Secure-Backups'
 $backupDir = Join-Path $backupRoot ('export-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 if (!(Test-Path -LiteralPath $backupRoot) -or (Test-Path -LiteralPath $backupDir)) { throw 'STOP: approved protected parent/new directory required' }
 New-Item -ItemType Directory -Path $backupDir | Out-Null
