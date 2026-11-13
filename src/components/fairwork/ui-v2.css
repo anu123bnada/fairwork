@@ -1,0 +1,152 @@
+/* ORYQEN design system v2 (13 Nov 2026). Loaded last. Visual layer only: it adds tokens, chart and sheet styles and refines existing components without changing
+   behaviour, labels or data. Selectors carry `html[data-brand]` weight so they win over earlier layers regardless of chunk order. */
+
+/* ---- Tokens: chart palette, spacing, type, elevation (light and dark are two designed palettes) ---- */
+html[data-brand="oryqen"] {
+  --oq-chart-1: #2667ff; --oq-chart-2: #6d45f5; --oq-chart-3: #00b8d9; --oq-chart-4: #e8890c; --oq-chart-5: #a9b4cc;
+  --oq-s1: 4px; --oq-s2: 8px; --oq-s3: 12px; --oq-s4: 16px; --oq-s5: 24px; --oq-s6: 32px; --oq-s7: 48px;
+  --oq-t-xs: 12px; --oq-t-sm: 13px; --oq-t-md: 15px; --oq-t-lg: 18px; --oq-t-xl: 24px; --oq-t-2xl: 32px;
+  --oq-r-xl: 28px; --oq-card-pad: 20px;
+  --oq-elev-1: 0 1px 2px rgba(24, 36, 66, .05), 0 6px 18px -10px rgba(24, 36, 66, .18);
+  --oq-elev-2: 0 2px 4px rgba(24, 36, 66, .05), 0 22px 44px -22px rgba(38, 103, 255, .28);
+  --oq-navy-1: #141f3d; --oq-navy-2: #0e1630;
+}
+html[data-brand="oryqen"][data-theme="dark"] {
+  --oq-chart-1: #7ea4ff; --oq-chart-2: #a58bff; --oq-chart-3: #38d4ee; --oq-chart-4: #fbbf4a; --oq-chart-5: #6f7fa3;
+  --oq-elev-1: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 8px 20px -10px rgba(0, 0, 0, .6);
+  --oq-elev-2: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 24px 48px -22px rgba(0, 0, 0, .75);
+}
+@media (prefers-color-scheme: dark) {
+  html[data-brand="oryqen"]:not([data-theme="light"]):not([data-theme="dark"]) {
+    --oq-chart-1: #7ea4ff; --oq-chart-2: #a58bff; --oq-chart-3: #38d4ee; --oq-chart-4: #fbbf4a; --oq-chart-5: #6f7fa3;
+    --oq-elev-1: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 8px 20px -10px rgba(0, 0, 0, .6);
+    --oq-elev-2: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 24px 48px -22px rgba(0, 0, 0, .75);
+  }
+}
+.oq-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---- Insights band (real data charts) ---- */
+html[data-brand="oryqen"] .fw-dash .oq-insights { grid-column: 1 / -1; display: grid; gap: var(--oq-s4); grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); align-items: stretch; }
+html[data-brand="oryqen"] .oq-insight { display: grid; align-content: start; gap: var(--oq-s3); min-width: 0; padding: var(--oq-card-pad); border-radius: 22px; background: var(--oq-surface); border: 1px solid var(--oq-border); box-shadow: var(--oq-elev-1); color: var(--oq-text); }
+html[data-brand="oryqen"] .oq-insight header { display: flex; align-items: baseline; justify-content: space-between; gap: var(--oq-s3); }
+html[data-brand="oryqen"] .oq-insight h3 { margin: 0; font-size: 16px; letter-spacing: -.01em; color: var(--oq-text); }
+html[data-brand="oryqen"] .oq-insight header a { font-size: var(--oq-t-sm); font-weight: 700; color: var(--oq-link); text-decoration: none; white-space: nowrap; }
+html[data-brand="oryqen"] .oq-insight header a:hover { text-decoration: underline; }
+html[data-brand="oryqen"] .oq-insight .fw-sum-note { margin: 0; color: var(--oq-text-2); }
+html[data-brand="oryqen"] .oq-insight-wide { grid-column: 1 / -1; }
+html[data-brand="oryqen"] .oq-insight-empty { background: linear-gradient(160deg, var(--oq-navy-1) 0%, var(--oq-navy-2) 100%); color: #f3f6ff; border-color: transparent; box-shadow: var(--oq-elev-2); }
+html[data-brand="oryqen"] .oq-insight-empty h3 { color: #fff; font-size: 20px; }
+html[data-brand="oryqen"] .oq-insight-empty p { margin: 0; color: #dbe5fb; max-width: 62ch; }
+html[data-brand="oryqen"] .oq-empty-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+html[data-brand="oryqen"] .oq-empty-list li { padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); font-size: var(--oq-t-sm); color: #dbe5fb; }
+html[data-brand="oryqen"] .oq-insight-empty .fw-primary { justify-self: start; }
+
+.oq-donut { display: flex; flex-wrap: wrap; align-items: center; gap: var(--oq-s4); }
+.oq-donut-svg { width: 124px; height: 124px; flex: none; overflow: visible; }
+.oq-donut-track, .oq-ring .oq-donut-track { fill: none; stroke: var(--oq-soft); stroke-width: 14; }
+.oq-donut-seg { fill: none; stroke-width: 14; transition: stroke-width .15s ease; }
+.oq-donut-seg:hover { stroke-width: 17; }
+.oq-donut-seg.tone-1, .oq-legend i.tone-1 { stroke: var(--oq-chart-1); background: var(--oq-chart-1); }
+.oq-donut-seg.tone-2, .oq-legend i.tone-2 { stroke: var(--oq-chart-2); background: var(--oq-chart-2); }
+.oq-donut-seg.tone-3, .oq-legend i.tone-3 { stroke: var(--oq-chart-3); background: var(--oq-chart-3); }
+.oq-donut-seg.tone-4, .oq-legend i.tone-4 { stroke: var(--oq-chart-4); background: var(--oq-chart-4); }
+.oq-donut-seg.tone-5, .oq-legend i.tone-5 { stroke: var(--oq-chart-5); background: var(--oq-chart-5); }
+.oq-donut-seg { background: none; }
+.oq-donut-value { fill: var(--oq-text); font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.oq-donut-label { fill: var(--oq-text-2); font-size: 10.5px; font-weight: 600; }
+.oq-ring { width: 112px; height: 112px; }
+.oq-ring-fill { fill: none; stroke: var(--oq-chart-1); stroke-width: 14; stroke-linecap: round; }
+.oq-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; flex: 1 1 120px; min-width: 0; }
+.oq-legend li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto; align-items: center; gap: 8px; font-size: var(--oq-t-sm); color: var(--oq-text-2); }
+.oq-legend li span { overflow-wrap: anywhere; }
+.oq-legend li b { color: var(--oq-text); font-variant-numeric: tabular-nums; }
+.oq-legend i { width: 12px; height: 12px; border-radius: 4px; display: block; stroke: none; }
+.oq-legend i.tone-outline { background: color-mix(in srgb, var(--oq-chart-1) 14%, transparent); border: 1.5px dashed var(--oq-chart-1); }
+.oq-legend-inline { display: flex; flex-wrap: wrap; gap: 6px 16px; flex: none; }
+.oq-legend-inline li { display: inline-grid; grid-template-columns: 12px auto; }
+.oq-legend-inline .oq-unit { margin-left: auto; font-size: var(--oq-t-xs); color: var(--oq-text-2); display: block; }
+
+.oq-bars-chart { display: grid; gap: var(--oq-s2); }
+.oq-bars-svg { width: 100%; height: auto; max-height: 260px; overflow: visible; }
+.oq-axis { stroke: var(--oq-border); stroke-width: 1.5; }
+.oq-grid { stroke: var(--oq-border); stroke-width: 1; stroke-dasharray: 3 5; opacity: .9; }
+.oq-tick { fill: var(--oq-text-2); font-size: 11.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.oq-bar-primary { fill: var(--oq-chart-1); transition: filter .15s ease; }
+.oq-bar-secondary { fill: color-mix(in srgb, var(--oq-chart-1) 14%, transparent); stroke: var(--oq-chart-1); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.oq-bar:hover .oq-bar-primary { filter: brightness(1.12); }
+
+.oq-skel { min-height: 236px; border-radius: 22px; background: linear-gradient(90deg, var(--oq-soft) 25%, var(--oq-surface) 40%, var(--oq-soft) 60%); background-size: 300% 100%; animation: oq-shimmer 1.5s ease-in-out infinite; border: 1px solid var(--oq-border); }
+@keyframes oq-shimmer { from { background-position: 100% 0; } to { background-position: 0 0; } }
+@media (prefers-reduced-motion: reduce) { .oq-skel { animation: none; } .oq-donut-seg { transition: none; } }
+
+@media (max-width: 1099px) and (min-width: 768px) {
+  html[data-brand="oryqen"] .fw-dash .oq-insights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-brand="oryqen"] .oq-insight-hours { grid-column: 1 / -1; }
+}
+
+/* ---- Desktop shell refinements ---- */
+@media (min-width: 768px) {
+  html[data-brand="oryqen"] .fw-product .fw-nav-link.active { background: var(--oq-soft); color: var(--oq-accent); box-shadow: inset 3px 0 0 var(--oq-accent), var(--oq-elev-1); }
+  html[data-brand="oryqen"] .fw-product .fw-nav-link { position: relative; }
+  html[data-brand="oryqen"] .fw-header-menu, html[data-brand="oryqen"] .fw-nav-fab { display: none; }
+}
+
+/* ---- Phone experience: floating bar with a centre action, header menu, full-screen sheet ---- */
+.fw-header-menu, .fw-nav-fab { display: none; }
+@media (max-width: 767px) {
+  html[data-brand="oryqen"] .fw-product .fw-bottom-nav { box-shadow: var(--oq-elev-2); }
+  /* Floating action: the standard Android pattern, above the right edge of the bar. Absolute inside the bar because the bar (backdrop blur) is the containing block. */
+  html[data-brand="oryqen"] .fw-product .fw-nav-fab { display: grid; place-items: center; position: absolute; right: 6px; bottom: calc(100% + 14px); width: 56px; height: 56px; border-radius: 50%; color: #fff; background: var(--oq-gradient); box-shadow: 0 14px 26px -8px rgba(38, 103, 255, .6), 0 0 0 4px var(--oq-canvas); text-decoration: none; transition: transform .16s var(--oq-ease); }
+  html[data-brand="oryqen"] .fw-product .fw-product-body { padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
+  html[data-brand="oryqen"] .fw-product .fw-nav-fab:active { transform: scale(.94); }
+  html[data-brand="oryqen"] .fw-product .fw-nav-fab:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 3px; }
+  html[data-brand="oryqen"] .fw-product .fw-header-menu { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--oq-border); background: var(--oq-surface); color: var(--oq-text); cursor: pointer; }
+  html[data-brand="oryqen"] .fw-product .fw-header-menu:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 2px; }
+  html[data-brand="oryqen"] .fw-product .fw-header-actions { gap: 8px; }
+
+  /* Swipe rows: the insight cards and the summary cards scroll sideways inside their own row, never the page. */
+  html[data-brand="oryqen"] .fw-dash .oq-insights, html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-sum-grid {
+    display: flex; overflow-x: auto; gap: 12px; margin-inline: -16px; padding: 4px 16px 10px; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  }
+  html[data-brand="oryqen"] .fw-dash .oq-insights::-webkit-scrollbar, html[data-brand="oryqen"] .fw-dash .fw-sum-grid::-webkit-scrollbar { display: none; }
+  html[data-brand="oryqen"] .fw-dash .oq-insights > .oq-insight { flex: 0 0 88%; scroll-snap-align: start; }
+  html[data-brand="oryqen"] .fw-dash .oq-insights > .oq-insight-wide { flex-basis: 100%; }
+  html[data-brand="oryqen"] .fw-dash .oq-insights.is-loading > .oq-skel { flex: 0 0 88%; }
+  html[data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-dash .fw-sum-grid > .fw-sum-card { flex: 0 0 64%; scroll-snap-align: start; min-width: 0; }
+}
+
+/* Sheet */
+html.oq-sheet-open { overflow: hidden; }
+.oq-sheet-layer { position: fixed; inset: 0; z-index: 90; display: flex; align-items: flex-end; }
+.oq-sheet-scrim { position: absolute; inset: 0; border: 0; padding: 0; background: rgba(9, 15, 36, .5); backdrop-filter: blur(3px); cursor: default; }
+.oq-sheet { position: relative; width: 100%; max-height: 90dvh; overflow-y: auto; overscroll-behavior: contain; padding: 18px 20px calc(28px + env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; background: var(--oq-surface); color: var(--oq-text); box-shadow: 0 -24px 60px -20px rgba(9, 15, 36, .55); animation: oq-sheet-in .28s var(--oq-ease, cubic-bezier(.22, 1, .36, 1)); }
+.oq-sheet::before { content: ""; display: block; width: 44px; height: 5px; margin: 0 auto 12px; border-radius: 99px; background: var(--oq-border); }
+.oq-sheet header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.oq-sheet header h2 { margin: 0; font-size: 20px; }
+.oq-sheet-close { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; border: 1px solid var(--oq-border); background: var(--oq-soft); color: var(--oq-text); cursor: pointer; }
+.oq-sheet section { margin-top: 18px; }
+.oq-sheet h3 { margin: 0 0 8px; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--oq-text-2); }
+.oq-sheet ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.oq-sheet li a { display: flex; align-items: center; min-height: 48px; padding: 10px 14px; border-radius: 14px; background: var(--oq-soft); border: 1px solid transparent; color: var(--oq-text); font-size: var(--oq-t-md); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.oq-sheet li a.is-current { background: var(--oq-gradient); color: #fff; }
+.oq-sheet a:focus-visible, .oq-sheet button:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 2px; }
+@keyframes oq-sheet-in { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .oq-sheet { animation: none; } }
+@media (min-width: 768px) { .oq-sheet-layer { align-items: center; justify-content: center; } .oq-sheet { max-width: 640px; border-radius: 28px; } }
+
+/* ---- Saved offers: each row is a card with one clear action ---- */
+html[data-brand="oryqen"] .fw-dash .fw-list-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; align-items: center; padding: 14px 16px; margin: 0 0 10px; border: 1px solid var(--oq-border); border-radius: 16px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); }
+html[data-brand="oryqen"] .fw-dash .fw-list-row > label:first-child { grid-column: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; font-weight: 600; color: var(--oq-text); overflow-wrap: anywhere; }
+html[data-brand="oryqen"] .fw-dash .fw-list-row > label:first-child input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--oq-accent); }
+html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-small-action { grid-column: 2; grid-row: 1; justify-self: end; display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 18px; border-radius: 999px; background: var(--oq-gradient); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 10px 20px -12px rgba(38, 103, 255, .6); }
+html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-field { grid-column: 1; grid-row: 2; margin: 0; max-width: 360px; }
+html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-secondary { grid-column: 2; grid-row: 2; justify-self: end; width: auto; min-height: 44px; padding-inline: 18px; align-self: end; }
+@media (max-width: 767px) {
+  html[data-brand="oryqen"] .fw-dash .fw-list-row { grid-template-columns: 1fr; }
+  html[data-brand="oryqen"] .fw-dash .fw-list-row > * { grid-column: 1 !important; grid-row: auto !important; justify-self: stretch; max-width: none; }
+  html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-small-action { justify-self: start; }
+  html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-secondary { width: 100%; }
+}
+/* The centre action keeps a white icon whatever link colour earlier layers set. */
+html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab, html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab:visited { color: #fff; opacity: 1; background: var(--oq-gradient); }
+html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab svg { stroke: #fff; width: 26px; height: 26px; }

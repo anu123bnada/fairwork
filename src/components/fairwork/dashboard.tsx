@@ -54,7 +54,8 @@ export function useDashboardData() {
   const agreements = useRead("/api/v1/agreement-expiries", (raw: unknown) => expiryList.parse(raw));
   return { offers, records, agreements };
 }
-type Data = ReturnType<typeof useDashboardData>;
+export type DashboardData = ReturnType<typeof useDashboardData>;
+type Data = DashboardData;
 
 const Icon = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
 const ICONS = { offer: "M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6", record: "M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", passport: "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4", agreement: "M6 3h9l4 4v14H6zM15 3v4h4M9 12h7M9 16h5", clock: "M12 7v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", spark: "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" };

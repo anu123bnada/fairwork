@@ -1,6 +1,7 @@
 "use client";
 
 import { DashboardDrafts, DashboardHero, RecentOffers, SummaryCards, useDashboardData } from "./dashboard";
+import { DashboardInsights } from "./dashboard-insights";
 import Link from "next/link";
 import Image from "next/image";
 import { AppBrandHeader, BrandLogo, BrandMark, ExistingBrand } from "@/components/brand/brand";
@@ -86,6 +87,7 @@ import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
 import { ScreenIntro, StartHere } from "./screen-intro";
 import { CommandPalette, openCommandPalette } from "./command-palette";
+import { NavMenuSheet, openNavMenu } from "./menu-sheet";
 import "./motion.css";
 import "./app-polish.css";
 import { OrgDemo } from "./org-demo";
@@ -450,6 +452,7 @@ function ProductHeader({ screen, title, demoPreviewLink = false }: { screen: str
       <span className="fw-header-actions">
         {session === "ready" && <button type="button" className="fw-header-search" aria-label={t("cp.openAria")} onClick={openCommandPalette}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></button>}
         <ThemeToggle />
+        {session === "ready" && <button type="button" className="fw-header-menu" aria-label={t("v2.menu")} aria-haspopup="dialog" onClick={openNavMenu}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" /></svg></button>}
         {screen === "home" ? (
           <Link className="fw-header-icon" href={routeFor("notifications")} aria-label="Notifications"><Icon name="bell" size={20} /></Link>
         ) : demoPreviewLink && !REAL_BACKEND ? (
@@ -479,10 +482,18 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
   const more = groups.flatMap(([, links]) => links);
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
+    <>
     <nav className="fw-bottom-nav" aria-label="Main navigation">
       <span className="fw-nav-brand"><BrandMark className="fw-nav-mark" /><span>ORYQEN</span></span>
       <button type="button" className="fw-nav-search" onClick={openCommandPalette}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><span>{t("cp.open")}</span><kbd>Ctrl K</kbd></button>
-      {items.map(([route, label, icon]) => (
+      {items.slice(0, 2).map(([route, label, icon]) => (
+        <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
+          <Icon name={icon} size={22} />
+          <span>{label}</span>
+        </Link>
+      ))}
+      {!demoPreview && current !== "add-offer" && <Link className="fw-nav-fab" href={routeFor("add-offer")} aria-label={t("v2.addOffer")}><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg></Link>}
+      {items.slice(2).map(([route, label, icon]) => (
         <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
           <Icon name={icon} size={22} />
           <span>{label}</span>
@@ -496,6 +507,8 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
         </div>)}
       </details>}
     </nav>
+    {!demoPreview && <NavMenuSheet groups={groups} />}
+    </>
   );
 }
 
@@ -697,6 +710,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <div className="fw-dash-top">
         <span className="fw-eyebrow">{t("home.eyebrow")}</span>
         <div className="fw-home-actions">
+          <button type="button" className="fw-header-menu" aria-label={t("v2.menu")} aria-haspopup="dialog" onClick={openNavMenu}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10" /></svg></button>
           <Link className="fw-alert-dot" href={routeFor("notifications")} aria-label={t("home.notifications")}><Icon name="bell" size={20} /></Link>
           <Link className="fw-avatar fw-home-avatar" href={routeFor("settings")} aria-label={t("home.openSettings")}>{name.slice(0, 1).toUpperCase()}</Link>
         </div>
@@ -705,6 +719,7 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
       <DashboardHero name={name.split(" ")[0]!} data={dashboard} status={statusText} />
       <StartHere />
       <SummaryCards data={dashboard} />
+      <DashboardInsights data={dashboard} />
       <div className="fw-dash-columns">
         <div className="fw-dash-main">
           <RecentOffers data={dashboard} />
