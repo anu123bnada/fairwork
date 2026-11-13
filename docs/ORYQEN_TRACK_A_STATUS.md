@@ -67,7 +67,7 @@ Install Docker Desktop and start its Linux engine. `docker version` must show a
 working Server section. Then in a new ordinary PowerShell:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node scripts/prepare-local-development.mjs
 if ($LASTEXITCODE) { throw 'Local preparation failed' }
 node scripts/start-local-development.mjs

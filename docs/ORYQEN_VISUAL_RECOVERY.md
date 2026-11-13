@@ -52,11 +52,11 @@ or original Figma asset is changed. Protected-source hashes are verified in
 
 - Original Figma: https://www.figma.com/design/5mFuLmt00uZP7Osp3ezM0z/Untitled?node-id=0-1.
   Recovery uses the locally supplied exports; no new connector render is claimed.
-- Nineteen original PNGs: `C:/Users/vehiv/Downloads/Untitled/`, 390×844.
+- Nineteen original PNGs: `<USER-HOME>/Downloads/Untitled/`, 390×844.
 - Original SVG pack and `FIGMA-GUIDE.md`:
-  `C:/Users/vehiv/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`.
+  `<USER-HOME>/Downloads/fairwork-figma-pack-v4/fairwork-figma-pack-v4/`.
 - Original recording:
-  `C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
+  `<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
   It is 378×744, 46.466633 seconds. Existing extracted frames were inspected.
   Four-second sampling shows navigation, not exact interpolation of short motion.
 - Onboarding 1 has no supplied PNG. Its existing, explicitly labelled
@@ -177,9 +177,9 @@ The previous green-brand APK remains in the pre-recovery backup.
 Exact commands, from `mobile/poc/android`:
 
 ```powershell
-$env:JAVA_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
-$env:ANDROID_HOME='C:\Users\vehiv\AppData\Local\Android\Sdk'
-$env:GRADLE_USER_HOME='C:\Users\vehiv\Desktop\fairwork\.tmp\android-gradle'
+$env:JAVA_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-toolchain\jdk-21.0.12.1+1'
+$env:ANDROID_HOME='<USER-HOME>\AppData\Local\Android\Sdk'
+$env:GRADLE_USER_HOME='<USER-HOME>\Desktop\fairwork\.tmp\android-gradle'
 .\gradlew.bat assembleDebug --offline --no-daemon --no-watch-fs --max-workers=1 --console=plain
 & "$env:ANDROID_HOME\build-tools\35.0.0\apksigner.bat" verify --verbose --print-certs app/build/outputs/apk/debug/app-debug.apk
 ```

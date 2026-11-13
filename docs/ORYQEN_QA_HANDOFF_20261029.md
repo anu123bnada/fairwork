@@ -1,6 +1,6 @@
 # ORYQEN QA handoff (Agent 3), 29 October 2026
 
-Worktree `C:\Users\vehiv\Desktop\fairwork-qa`, branch `feature/oryqen-qa-parallel`, baseline `8057010`. Nothing was pushed, merged, deployed or applied to any database.
+Worktree `<USER-HOME>\Desktop\fairwork-qa`, branch `feature/oryqen-qa-parallel`, baseline `8057010`. Nothing was pushed, merged, deployed or applied to any database.
 
 ## Defect found and fixed
 

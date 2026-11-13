@@ -34,7 +34,7 @@ The installed CLI 2.120.0 help says `db query --linked` uses the Management API.
 PowerShell copy commands (run each separately immediately before pasting):
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 Get-Content -Raw '.\scripts\day1-auth-grant-authority.sql' | Set-Clipboard
 ```
 
@@ -66,7 +66,7 @@ If both grants are already true and the repair is absent, skip the administrativ
 Reconcile by **actually rerunning the unchanged migration through the CLI**, not by manually marking it applied:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 $fwCli = '.\node_modules\.bin\supabase.cmd'
 & $fwCli migration list --linked
 if ($LASTEXITCODE -ne 0) { throw 'History check failed; stop.' }

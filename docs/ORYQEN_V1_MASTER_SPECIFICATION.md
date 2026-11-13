@@ -24,7 +24,7 @@ auditable decisions; understandable errors; verify with executable tests and nev
 no production-readiness claims without evidence; **no push, deployment, hosted migration,
 published download or live AI processing of real user data without explicit approval.**
 Preserve `src/server/identity.ts.bak` and `landing/v6/next-env.d.ts` (never delete, overwrite or
-commit them without authorization).
+commit them without authorization). *(Authorized and superseded 13 Nov 2026: the .bak file was removed in the repository privacy cleanup; it was byte-identical to an earlier identity.ts.)*
 
 ## Signature innovation: the ORYQEN Trust Chain
 

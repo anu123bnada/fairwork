@@ -119,9 +119,9 @@ New Day 7 files are additive. Existing uncommitted/untracked work was retained.
 
 ## Visual evidence
 
-Supplied original: `C:/Users/vehiv/Downloads/Untitled/08-Work-record.png`, 390×844;
+Supplied original: `<USER-HOME>/Downloads/Untitled/08-Work-record.png`, 390×844;
 the original prototype recording remains at
-`C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
+`<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`.
 Screenshots: `test-results/day7-visual/390-case.png`, `378-case.png`, `320-case.png`.
 These are populated HTTP-fixture UI captures, not real adjudications. Full-page
 captures include the fixed bottom navigation at its viewport position; that alone

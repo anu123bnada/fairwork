@@ -24,7 +24,7 @@ SQL integration suite ran on disposable PGlite.
 
 1. `assembleOnline` failed with `SdkLocator ... IOException` — cause was a malformed
    escape in the git-ignored `mobile/poc/android/local.properties`, not source code.
-   Fixed by writing `sdk.dir=C:/Users/vehiv/AppData/Local/Android/Sdk`.
+   Fixed by writing `sdk.dir=<USER-HOME>/AppData/Local/Android/Sdk`.
 2. `tests/unit/brand.test.ts` failed on `src/app/downloads/page.tsx`: that page did
    not reach the shared brand module. It now renders `AppBrandHeader` (which is
    intentionally empty until approved artwork exists). No assertion was relaxed.

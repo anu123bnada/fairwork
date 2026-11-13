@@ -34,7 +34,7 @@ Final command results are recorded in `DAY2_VERIFICATION.md`.
 3. In PowerShell, inspect the linked target and the proposed queue:
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 npx supabase migration list --linked --skip-vault
 if ($LASTEXITCODE -ne 0) { throw 'Migration history inspection failed' }
 npx supabase db push --linked --dry-run --skip-vault

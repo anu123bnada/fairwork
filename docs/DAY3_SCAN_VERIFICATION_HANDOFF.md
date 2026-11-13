@@ -1,7 +1,7 @@
 # FAIRWORK 2.0 — independent scan verification and local repair handoff
 
 Date: 12 October 2026 (Asia/Colombo)  
-Repository: `C:\Users\vehiv\Desktop\fairwork`  
+Repository: `<USER-HOME>\Desktop\fairwork`  
 Scope: the seven findings supplied in the referenced “vishion nex” conversation.
 
 ## Outcome

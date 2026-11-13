@@ -39,7 +39,7 @@ only a restricted TCP relay publishes ports on **127.0.0.1**. `.env.local` remai
 unchanged; the launcher supplies local connection settings in process memory.
 
 ```powershell
-Set-Location C:\Users\vehiv\Desktop\fairwork
+Set-Location <USER-HOME>\Desktop\fairwork
 # Start Docker Desktop first. These commands use the unlinked LOCAL project only.
 node scripts/prepare-local-development.mjs
 node scripts/start-local-development.mjs
@@ -307,5 +307,5 @@ decisions. No AI keys or external model calls were introduced here.
 
 Backup plan remains [stopped at approval](ORYQEN_BACKUP_RESTORE_EXECUTION.md).
 Owner confirms Supabase **Free** and proposes
-`C:\Users\vehiv\ORYQEN-Secure-Backups`; encryption/ACLs/restore target are not ready.
+`<USER-HOME>\ORYQEN-Secure-Backups`; encryption/ACLs/restore target are not ready.
 No hosted export, restore, migration, Auth change, deployment, commit or push.

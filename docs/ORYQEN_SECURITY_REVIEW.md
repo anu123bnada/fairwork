@@ -47,7 +47,7 @@ and are marked as such.
 7. **AI prompt injection** is mitigated (untrusted-input rules, schema and grounding
    validation) but not eliminated; output is advisory and never changes verification.
 8. **Redaction is heuristic**; names in free text may be sent if AI is ever enabled.
-9. **Untracked backup file** `src/server/identity.ts.bak` sits in the source tree;
+9. **Untracked backup file** `src/server/identity.ts.bak` sits in the source tree; *(Update 13 Nov 2026: it was in fact tracked; removed with the owner authorization. Its content was byte-identical to an earlier committed identity.ts.)*
    remove or ignore it before release (left alone because it predates this work).
 10. **Corrupted local container config** (NUL bytes) suggests unclean Docker shutdown;
     local only, but back up the volume before reusing it for important demo data.

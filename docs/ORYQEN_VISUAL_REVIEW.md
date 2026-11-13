@@ -8,9 +8,9 @@ of this proposed direction is pending. Historical Day 3–7 parity is not certif
 
 Reference inventory:
 
-- Original full-resolution exports: `C:/Users/vehiv/Downloads/Untitled/`, including
+- Original full-resolution exports: `<USER-HOME>/Downloads/Untitled/`, including
   Home, Work Record and Work Passport, 390×844.
-- Prototype: `C:/Users/vehiv/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`,
+- Prototype: `<USER-HOME>/Videos/Screen Recordings/Screen Recording 2026-10-11 014452.mp4`,
   378×744. Earlier motion comparison remains partial; not reclassified as complete.
 - Original SVG pack and all `public/figma` files remain preserved.
 - Existing visual test output directories: `test-results/day7-visual/` and Day 3–6

@@ -131,7 +131,7 @@ Target: Supabase project **`oryqen-staging`**, ref **`jpvgsmzomlmowarlfkdl`** (a
 
 ### F1. Preflight (safe to run any time)
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 git status --short                                  # only the two known untracked files may appear
 git log --oneline -1                                # record this hash
 Get-Content supabase\.temp\project-ref              # MUST print jpvgsmzomlmowarlfkdl
@@ -191,7 +191,7 @@ Do not set `ORYQEN_VAULT_LOCAL_DIR`, `SUPABASE_SERVICE_ROLE_KEY` or any `NEXT_PU
 ### F6b. Effective-configuration preflight (run this before the push; prints no values)
 Vercel applies a branch-specific Preview entry in preference to a shared Production + Preview entry of the same name. The reliable way to see what the branch will really get is to pull exactly that set and check it:
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 npx vercel env pull .env.preview.staging --environment=preview --git-branch=release/oryqen-oct27     # .env* is git-ignored; delete the file afterwards
 node scripts/preflight-staging-env.mjs .env.preview.staging
 Remove-Item .env.preview.staging
@@ -206,7 +206,7 @@ Supabase side (re-read 28 Oct after the migration): Site URL `https://oryqen-sta
 
 **Validate the real Vault key without showing it.** Get the key from Supabase: project `oryqen-staging` > Project Settings > API Keys > the **secret** key (not the publishable one). Copy it, then in PowerShell:
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 $env:ORYQEN_VAULT_STORAGE_URL = 'https://jpvgsmzomlmowarlfkdl.supabase.co'
 $secure = Read-Host 'Paste the Vault secret key (input is hidden)' -AsSecureString
 $env:ORYQEN_VAULT_STORAGE_SERVICE_KEY = [System.Net.NetworkCredential]::new('', $secure).Password
@@ -261,7 +261,7 @@ You approved: apply the 19 pending migrations to `oryqen-staging` (`jpvgsmzomlmo
 - **Vault key:** two Preview entries exist for `ORYQEN_VAULT_STORAGE_SERVICE_KEY` (one for all Preview branches, one for `release/oryqen-oct27`), both listed as created 19 h ago. The branch-scoped one wins. I cannot tell whether it holds the newly validated key or the revoked one. If uploads fail with a storage error, re-save the validated key into the branch-scoped entry and redeploy.
 - **Authenticated journeys on hosted** need your account, so run this yourself (password typed at a hidden prompt, never printed or stored; it writes one synthetic PDF that it deletes again, one private job preference, and, only if the signing key is set, one developer key that it revokes):
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app --email <your staging test account email>
 ```
 It covers features 1, 3, 5, 7, 10, 12, 13 and 14 for one ordinary account (sign-in, authenticator step if enrolled, profile, plan, "AI not configured", Vault upload/download/delete, job preferences, notifications, signing status, developer key, sign-out) and prints NOT RUN for 2, 4, 6, 8, 9 and 11, which need a second account or an operator capability. Rehearsed against the local stack: PASS 11, FAIL 0, NOT RUN 6 (it found and I fixed two bugs in the script itself).

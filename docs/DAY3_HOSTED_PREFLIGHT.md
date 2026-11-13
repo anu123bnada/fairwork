@@ -39,7 +39,7 @@ The known hosted state below is supplied by the project owner/context and was no
 3. Using the already-linked local checkout, inspect remote migration history and dry-run:
 
    ```powershell
-   Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+   Set-Location '<USER-HOME>\Desktop\fairwork'
    npx supabase migration list --linked --skip-vault
    if ($LASTEXITCODE -ne 0) { throw 'Stop: migration history inspection failed.' }
    npx supabase db push --linked --dry-run --skip-vault

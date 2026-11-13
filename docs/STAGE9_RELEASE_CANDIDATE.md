@@ -67,7 +67,7 @@ Before any hosted mutation:
    Compare exact applied versions and stored migration statements where available;
    do not infer hosted file hashes from version numbers. Abort on drift/unknown files.
 2. Approve backup destination, full scope, operator, encryption, retention and restore
-   target. Owner-proposed `C:\Users\vehiv\ORYQEN-Secure-Backups` is still **not approved
+   target. Owner-proposed `<USER-HOME>\ORYQEN-Secure-Backups` is still **not approved
    or verified encrypted**. Development DB on 55422 is never a restore target.
 3. Execute the separately approved export/rehearsal procedure in
    [ORYQEN_BACKUP_RESTORE_EXECUTION.md](ORYQEN_BACKUP_RESTORE_EXECUTION.md), including

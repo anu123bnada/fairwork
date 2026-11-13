@@ -52,7 +52,7 @@ tests/e2e/                    Unconfigured production-build Chromium smoke tests
 Use Node satisfying `^22.13.0 || ^24.0.0 || >=26.0.0` and npm. This pass ran on Node 26.3.0 / npm 11.16.0. Node 24 is a suitable supported line; a hosted runtime must be verified separately.
 
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 npm ci
 Copy-Item .env.example .env.local
 npm run dev
@@ -106,7 +106,7 @@ Read-only inspection of file `5mFuLmt00uZP7Osp3ezM0z`, sign-in node `68:6613`, r
 
 | Check | Result |
 |---|---|
-| Dependency installation | Fresh `npm ci` passed in `C:\Users\vehiv\Desktop\fairwork` with locked exact versions |
+| Dependency installation | Fresh `npm ci` passed in `<USER-HOME>\Desktop\fairwork` with locked exact versions |
 | Typecheck | Passed, strict TypeScript and generated Next route types |
 | Lint | Passed, zero warnings |
 | Unit | 10 tests passed: config, hostile input, CSRF, body bounds, safe errors, Auth token/identity boundary |
@@ -168,12 +168,12 @@ New verification files: `scripts/verify-day1-hosted.mjs` and `scripts/day1-hoste
 Keep the configured Next.js application running at APP_ORIGIN (currently localhost:3000). In another interactive PowerShell terminal:
 
 ```powershell
-cd C:\Users\vehiv\Desktop\fairwork
+cd <USER-HOME>\Desktop\fairwork
 npx playwright install chromium
 node scripts/verify-day1-hosted.mjs
 ```
 
-The browser install command is only needed once. If reusing this agent's existing browser download, set `PLAYWRIGHT_BROWSERS_PATH` to `C:\Users\vehiv\Documents\Codex\2026-10-06\files-mentioned-by-the-user-fairwork\work\playwright-browsers` instead. Enter two distinct ordinary synthetic users, preferably without existing profiles, into the **hidden email/password prompts**. Never put their values in command arguments, source, `.env`, shell history or chat. Do not run under a terminal transcript, debugger, request recorder or HTTP capture. No screenshots, tracing, storage-state files or credential reports are enabled. JavaScript secrets live only in process memory; the runner does not claim cryptographic memory erasure.
+The browser install command is only needed once. If reusing this agent's existing browser download, set `PLAYWRIGHT_BROWSERS_PATH` to `<USER-HOME>\Documents\Codex\2026-10-06\files-mentioned-by-the-user-fairwork\work\playwright-browsers` instead. Enter two distinct ordinary synthetic users, preferably without existing profiles, into the **hidden email/password prompts**. Never put their values in command arguments, source, `.env`, shell history or chat. Do not run under a terminal transcript, debugger, request recorder or HTTP capture. No screenshots, tracing, storage-state files or credential reports are enabled. JavaScript secrets live only in process memory; the runner does not claim cryptographic memory erasure.
 
 The interactive run exercises real browser cookie login/reload, two independent profiles, updates/replays/stale revisions, cross-user selector/mutation rejection, direct RPC injection, authenticated schema enumeration, user-metadata escalation with a freshly refreshed JWT, app sign-out and refresh-token revocation. It only asserts the fixed DTO/denial behavior; hosted catalog predicates still require the separate query. Existing profiles cause creation to be marked UNVERIFIED, so use fresh synthetic accounts to cover that check.
 

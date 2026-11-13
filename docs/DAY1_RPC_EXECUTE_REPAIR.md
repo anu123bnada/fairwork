@@ -41,7 +41,7 @@ Unchanged SHA256: foundation `6D76BAFDBA1D8A4F61C9881068AC56B5071B51CB0212146C92
 The commands below have not been executed against hosted Supabase by this review. Use an interactive PowerShell terminal. Keep secrets in existing storage or hidden prompts.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 $fwCli = '.\node_modules\.bin\supabase.cmd'
 Get-Content -LiteralPath '.\supabase\.temp\project-ref'
 Get-ChildItem -LiteralPath '.\supabase\migrations' -File | Select-Object Name
@@ -98,14 +98,14 @@ Get-Content -Raw '.\scripts\day1-hosted-catalog.sql' | Set-Clipboard
 4. In terminal A, run the app using its existing configuration for the same project. Keep `.env.local`; ensure APP_ORIGIN is localhost:3000 and the page confirms Supabase is configured. Do not reuse the synthetic verification build for hosted checks.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 npm run dev -- --port 3000
 ```
 
 5. In terminal B, run the interactive verifier. Use two distinct ordinary synthetic accounts without operator capabilities, preferably fresh profiles. Enter credentials only in hidden prompts. The runner mutates synthetic profiles/metadata and attempts cleanup/sign-out; new profiles remain and revisions advance.
 
 ```powershell
-Set-Location 'C:\Users\vehiv\Desktop\fairwork'
+Set-Location '<USER-HOME>\Desktop\fairwork'
 node .\scripts\verify-day1-hosted.mjs
 $fwVerificationExit = $LASTEXITCODE
 Write-Output "Verification exit code: $fwVerificationExit"
