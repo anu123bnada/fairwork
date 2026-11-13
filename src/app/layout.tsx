@@ -10,6 +10,7 @@ import "@/components/brand/brand.css";
 import "@/components/oryqen/tokens.css";
 import "@/components/oryqen/design-system.css";
 import "@/components/fairwork/ui-polish.css";
+import "@/components/fairwork/ui-v2.css";
 
 export const metadata: Metadata = {
   title: { default: "ORYQEN — Your work, clearly recorded", template: "%s | ORYQEN" },
