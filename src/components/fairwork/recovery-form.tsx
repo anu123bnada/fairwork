@@ -6,6 +6,7 @@ import { participantAuthQuery } from "@/features/offer/participant-path";
 import { appRequest, ApiRequestError } from "@/features/authority/client";
 import { createRecoveryStore } from "./verification-store";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
   const { t } = useI18n();
   const [step, setStep] = useState(confirm ? "confirm" : "request");
@@ -51,7 +52,7 @@ export function RecoveryForm({ confirm = false }: { confirm?: boolean }) {
       else if (step === "password" && caught instanceof ApiRequestError && caught.code === "WEAK_PASSWORD") setError(t("au.rec.weakPassword"));
       // The reset session ended (timed out, or was revoked) before the new password was saved: only a new email can continue, so say so and offer one.
       else if (step === "password" && caught instanceof ApiRequestError && ["RESET_EXPIRED", "AUTH_REQUIRED"].includes(caught.code)) { link.clear(); setError(""); setStep("confirm"); }
-      else setError(caught instanceof Error ? caught.message : t("au.rec.failed"));
+      else setError(userMessage(caught, t("au.rec.failed")));
     }
     finally { setBusy(false); }
   }

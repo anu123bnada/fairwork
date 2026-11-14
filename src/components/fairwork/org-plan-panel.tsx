@@ -4,6 +4,7 @@ import { z } from "zod";
 import { appRequest } from "@/features/authority/client";
 import { companyResultsSchema } from "@/features/authority/company-schema";
 import { orgPlanIds, orgPlanIdSchema, orgPlans, type OrgPlanId } from "@/features/entitlements/catalog";
+import { userMessage } from "@/lib/user-error";
 
 type Summary = { plan: { id: string; name: string; summary: string }; assignedAt: string | null; degraded: boolean; limits: { key: string; limit: number; used: number; remaining: number }[]; billing: { note: string } };
 const LIMIT_LABEL: Record<string, string> = { liveListings: "Live opportunity listings" };
@@ -48,7 +49,7 @@ export function OrgPlanAssignment() {
       key.current ??= crypto.randomUUID();
       const result = await appRequest("/api/v1/operator/org-entitlements", { companyId: company.trim(), plan, reason: reason.trim(), idempotencyKey: key.current }) as { plan: string; replayed: boolean };
       key.current = null; setDone(`Organization plan set to ${orgPlans[result.plan as OrgPlanId]?.name ?? result.plan}${result.replayed ? " (already applied)" : ""}.`); setReason("");
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The plan could not be assigned."); }
+    } catch (caught) { setError(userMessage(caught, "The plan could not be assigned.")); }
     finally { setBusy(false); }
   }
   return <form className="fw-list-card" onSubmit={event => void submit(event)} aria-label="Assign an organization plan">

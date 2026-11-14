@@ -7,6 +7,7 @@ import { AnalysisHistory } from "./analysis-history";
 import { JurisdictionCheck } from "./jurisdiction-check";
 import { localizeAssessment, statusLabel } from "@/features/offer/localize-text";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 
 export function OfferAssessment({offerId,version,termHash,hoursPerWeek}:{offerId:string;version:number;termHash:string;hoursPerWeek?:unknown}) {
  const { t } = useI18n();
@@ -18,7 +19,7 @@ export function OfferAssessment({offerId,version,termHash,hoursPerWeek}:{offerId
    const parsed=savedAssessmentSchema.parse(raw);
    if(parsed.offerId!==offerId||parsed.offerVersion!==version||parsed.termHash!==termHash)throw new Error(t("as.changed"));
    if(active)setResult(parsed);
-  }).catch(e=>{if(active)setError(e instanceof Error?e.message:t("as.unavailable"));});
+  }).catch(e=>{if(active)setError(userMessage(e, t("as.unavailable")));});
   return()=>{active=false;};
  },[offerId,version,termHash,attempt,t]);
  const assessment=result?.offerId===offerId&&result.offerVersion===version&&result.termHash===termHash?result.assessment:null;

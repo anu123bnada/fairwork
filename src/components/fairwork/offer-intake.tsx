@@ -21,6 +21,7 @@ import { RuleAnalysis } from "./rule-analysis";
 import { ClauseFindings, QualificationPanel } from "./offer-intelligence";
 import { ErrorMessage, Icon, routeFor, useProduct, type OfferResult, type Role } from "./product-app";
 import "./offer-intake.css";
+import { userMessage } from "@/lib/user-error";
 
 type Method = "paste" | "screenshot" | "pdf" | "word" | "manual";
 const METHODS: Array<{ id: Method; label: MessageKey; hint: MessageKey; icon: ReactNode }> = [
@@ -176,7 +177,7 @@ export function AddOfferScreen() {
           }
         } catch (caught) {
           const cancelled = aiAbort.current?.signal.aborted === true;
-          const message = cancelled ? t("arun.d.aiCancelled") : caught instanceof AiAnswerFormatError ? t("arun.d.aiFormat") : caught instanceof Error ? caught.message : t("ai.failed");
+          const message = cancelled ? t("arun.d.aiCancelled") : caught instanceof AiAnswerFormatError ? t("arun.d.aiFormat") : userMessage(caught, t("ai.failed"));
           ai = cancelled ? { state: "cancelled", message } : { state: "failed", message };
           stage("ai", cancelled ? "skipped" : "failed", message);
         } finally { clearInterval(ticker); aiAbort.current = null; }

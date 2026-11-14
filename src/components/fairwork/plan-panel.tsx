@@ -4,6 +4,7 @@ import { z } from "zod";
 import { appRequest } from "@/features/authority/client";
 import { planIds, planIdSchema, plans, type PlanId } from "@/features/entitlements/catalog";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 
 const summary = z.object({
   plan: z.object({ id: planIdSchema, name: z.string(), summary: z.string() }), assignedAt: z.string().nullable(), degraded: z.boolean(),
@@ -52,7 +53,7 @@ export function PlanAssignment() {
       key.current ??= crypto.randomUUID();
       const result = await appRequest("/api/v1/operator/entitlements", { subjectId: subject.trim(), plan, reason: reason.trim(), idempotencyKey: key.current }) as { plan: string; replayed: boolean };
       key.current = null; setDone(`Plan set to ${plans[result.plan as PlanId]?.name ?? result.plan}${result.replayed ? " (already applied)" : ""}.`); setReason("");
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The plan could not be assigned."); }
+    } catch (caught) { setError(userMessage(caught, "The plan could not be assigned.")); }
     finally { setBusy(false); }
   }
   return <form className="fw-list-card" onSubmit={event => void submit(event)} aria-label="Assign a plan">

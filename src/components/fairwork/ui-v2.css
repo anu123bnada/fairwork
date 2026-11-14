@@ -151,6 +151,23 @@ html[data-brand="oryqen"] .fw-dash .fw-list-row > .fw-secondary { grid-column: 2
 html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab, html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab:visited { color: #fff; opacity: 1; background: var(--oq-gradient); }
 html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab svg { stroke: #fff; width: 26px; height: 26px; }
 
+/* ---- Saved offers inside the employer workspace: same card rows ---- */
+html[data-brand="oryqen"] .oq-emp .fw-list-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 12px; align-items: center; padding: 14px 16px; margin: 0 0 10px; border: 1px solid var(--oq-border); border-radius: 16px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); }
+html[data-brand="oryqen"] .oq-emp .fw-list-row > label:first-child { grid-column: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; font-weight: 600; color: var(--oq-text); overflow-wrap: anywhere; }
+html[data-brand="oryqen"] .oq-emp .fw-list-row > label:first-child input[type="checkbox"] { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--oq-accent); }
+html[data-brand="oryqen"] .oq-emp .fw-list-row > .fw-small-action { grid-column: 2; grid-row: 1; justify-self: end; display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 0 18px; border-radius: 999px; background: var(--oq-gradient); color: #fff; font-size: 13px; font-weight: 700; text-decoration: none; box-shadow: 0 10px 20px -12px rgba(38, 103, 255, .6); }
+html[data-brand="oryqen"] .oq-emp .fw-list-row > .fw-field { grid-column: 1; grid-row: 2; margin: 0; max-width: 360px; }
+html[data-brand="oryqen"] .oq-emp .fw-list-row > .fw-secondary { grid-column: 2; grid-row: 2; justify-self: end; width: auto; min-height: 44px; padding-inline: 18px; align-self: end; }
+@media (max-width: 767px) {
+  html[data-brand="oryqen"] .oq-emp .fw-list-row { grid-template-columns: 1fr; }
+  html[data-brand="oryqen"] .oq-emp .fw-list-row > * { grid-column: 1 !important; grid-row: auto !important; justify-self: stretch; max-width: none; }
+  html[data-brand="oryqen"] .oq-emp .fw-list-row > .fw-small-action { justify-self: start; }
+  html[data-brand="oryqen"] .oq-emp .fw-list-row > .fw-secondary { width: 100%; }
+}
+/* The centre action keeps a white icon whatever link colour earlier layers set. */
+html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab, html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab:visited { color: #fff; opacity: 1; background: var(--oq-gradient); }
+html[data-brand="oryqen"] .fw-product .fw-bottom-nav a.fw-nav-fab svg { stroke: #fff; width: 26px; height: 26px; }
+
 /* ---- Evidence Vault: documents as cards, the add form as a tidy grid ---- */
 html[data-brand="oryqen"] .oq-doclist { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
 html[data-brand="oryqen"] .oq-doclist > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; align-items: center; padding: 14px 16px; border: 1px solid var(--oq-border); border-radius: 16px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); }
@@ -171,3 +188,57 @@ html[data-brand="oryqen"] .oq-doclist > li > :not(.oq-doc-main):not(.oq-doc-acti
   html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form > :is(p, small, fieldset, label:has(textarea), label:has(input[type="file"]), label:has(input[type="checkbox"])) { grid-column: 1 / -1; max-width: none; }
   html[data-brand="oryqen"] .fw-product :is(section[aria-label="Evidence Vault"], .fw-live-work) form .fw-field { margin: 4px 0; max-width: none; }
 }
+
+/* ---- FAIRWORK Check: numbered reading order with a jump bar ---- */
+html[data-brand="oryqen"] .oq-ck-jump { margin: 4px 0 14px; }
+html[data-brand="oryqen"] .oq-ck-jump ul { list-style: none; margin: 0; padding: 2px 0 6px; display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; }
+html[data-brand="oryqen"] .oq-ck-jump ul::-webkit-scrollbar { display: none; }
+html[data-brand="oryqen"] .oq-ck-jump a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--oq-border); background: var(--oq-surface); color: var(--oq-text); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; scroll-snap-align: start; }
+html[data-brand="oryqen"] .oq-ck-jump a:hover { border-color: var(--oq-accent); color: var(--oq-accent); }
+html[data-brand="oryqen"] .oq-ck-jump a:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 2px; }
+html[data-brand="oryqen"] .oq-ck-group { margin: 0 0 16px; border: 1px solid var(--oq-border); border-radius: 22px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); scroll-margin-top: 84px; }
+html[data-brand="oryqen"] .oq-ck-group > header, html[data-brand="oryqen"] .oq-ck-group > summary { display: flex; align-items: center; gap: 12px; padding: 16px 18px 12px; }
+html[data-brand="oryqen"] .oq-ck-group > summary { cursor: pointer; list-style: none; min-height: 56px; }
+html[data-brand="oryqen"] .oq-ck-group > summary::-webkit-details-marker { display: none; }
+html[data-brand="oryqen"] .oq-ck-group > summary::after { content: ""; margin-left: auto; width: 10px; height: 10px; border-right: 2px solid var(--oq-text-2); border-bottom: 2px solid var(--oq-text-2); transform: rotate(45deg); transition: transform .16s var(--oq-ease); flex: none; }
+html[data-brand="oryqen"] .oq-ck-group[open] > summary::after { transform: rotate(-135deg); }
+html[data-brand="oryqen"] .oq-ck-group > summary:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: -3px; border-radius: 22px; }
+html[data-brand="oryqen"] .oq-ck-step { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--oq-gradient); color: #fff; font-size: 14px; font-weight: 800; }
+html[data-brand="oryqen"] .oq-ck-titles { display: grid; gap: 1px; min-width: 0; }
+html[data-brand="oryqen"] .oq-ck-titles h3 { margin: 0; font-size: 17px; line-height: 1.25; color: var(--oq-text); }
+html[data-brand="oryqen"] .oq-ck-hint { color: var(--oq-text-2); font-size: var(--oq-t-sm); }
+html[data-brand="oryqen"] .oq-ck-body { padding: 0 18px 16px; display: grid; gap: 12px; min-width: 0; }
+/* Sections keep their own content but lose the second card frame, so each group reads as one card. */
+html[data-brand="oryqen"] .oq-ck-body > :is(.fw-card, .fw-list-card, section) { margin: 0; }
+html[data-brand="oryqen"] .oq-ck-body > :is(.fw-card, .fw-list-card):not(.fw-check-summary) { box-shadow: none; }
+@media (min-width: 900px) {
+  html[data-brand="oryqen"] .oq-ck-body .fw-check-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
+}
+@media (max-width: 767px) {
+  html[data-brand="oryqen"] .oq-ck-group { border-radius: 18px; }
+  html[data-brand="oryqen"] .oq-ck-group > header, html[data-brand="oryqen"] .oq-ck-group > summary { padding: 14px 14px 10px; }
+  html[data-brand="oryqen"] .oq-ck-body { padding: 0 14px 14px; }
+}
+
+/* ---- Employer overview figures ---- */
+html[data-brand="oryqen"] .oq-ek { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
+html[data-brand="oryqen"] .oq-ek-tile { display: grid; gap: 4px; align-content: start; padding: 16px 18px; border: 1px solid var(--oq-border); border-radius: 20px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); min-width: 0; }
+html[data-brand="oryqen"] .oq-ek-label { color: var(--oq-text-2); font-size: var(--oq-t-sm); font-weight: 600; }
+html[data-brand="oryqen"] .oq-ek-value { font-size: 34px; line-height: 1.1; font-weight: 800; color: var(--oq-text); font-variant-numeric: tabular-nums; }
+html[data-brand="oryqen"] .oq-ek-skel { display: block; height: 36px; width: 72px; border-radius: 10px; }
+html[data-brand="oryqen"] .oq-ek-note { color: var(--oq-text-2); font-size: var(--oq-t-sm); min-height: 1.4em; }
+html[data-brand="oryqen"] .oq-ek-tile a { margin-top: 6px; font-size: 13px; font-weight: 700; color: var(--oq-accent); text-decoration: none; min-height: 28px; display: inline-flex; align-items: center; }
+html[data-brand="oryqen"] .oq-ek-tile a:focus-visible { outline: 3px solid var(--oq-focus); outline-offset: 2px; border-radius: 6px; }
+@media (max-width: 767px) { html[data-brand="oryqen"] .oq-ek { grid-template-columns: 1fr; gap: 10px; } html[data-brand="oryqen"] .oq-ek-tile { padding: 14px 16px; } html[data-brand="oryqen"] .oq-ek-value { font-size: 30px; } }
+
+/* ---- Work Passport: verified hours by year ---- */
+html[data-brand="oryqen"] .oq-pp-chart { margin: 0 0 14px; padding: 16px 18px 12px; border: 1px solid var(--oq-border); border-radius: 20px; background: var(--oq-surface); box-shadow: var(--oq-elev-1); }
+html[data-brand="oryqen"] .oq-pp-chart h3 { margin: 0 0 8px; font-size: 16px; color: var(--oq-text); }
+
+/* Summary card inside a Check group: keep text contrast at or above 4.5:1 in both themes (older greys only met it under the previous page structure). */
+html[data-brand="oryqen"] .oq-ck-body .fw-check-count small { color: var(--oq-text-2); font-size: 12.5px; }
+html[data-brand="oryqen"] .oq-ck-body .fw-check-basis { color: var(--oq-text-2); font-size: 12px; }
+
+/* Assessment chips: the light translucent fill is only right on a light card. On dark, use a dark fill with the theme text colour (contrast >= 4.5:1). */
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .ui-assess-chips li { background: rgba(255, 255, 255, .08); color: var(--oq-text); } }
+html[data-theme="dark"] .ui-assess-chips li { background: rgba(255, 255, 255, .08); color: var(--oq-text); }

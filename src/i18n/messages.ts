@@ -2909,6 +2909,24 @@ export const en = {
   "v2.state.invalidated": "Retracted",
   "v2.state.superseded": "Replaced by a correction",
   "v2.addOffer": "Add offer",
+  // FAIRWORK Check reading order (14 Nov 2026). Other languages fall back to English until reviewed.
+  "v2.ck.jump": "Sections of this check",
+  "v2.ck.summary": "Summary", "v2.ck.summaryHint": "What was stated and what was not",
+  "v2.ck.score": "Fairness score", "v2.ck.scoreHint": "Reviewed terms, scored by published rules",
+  "v2.ck.risks": "Main risks", "v2.ck.risksHint": "Wording that deserves a closer look",
+  "v2.ck.missing": "Missing information", "v2.ck.missingHint": "Each term, stated or still unclear",
+  "v2.ck.questions": "Questions to ask", "v2.ck.questionsHint": "Take these to the employer",
+  "v2.ck.clauses": "Clause analysis", "v2.ck.clausesHint": "The wording behind each flag",
+  "v2.ck.support": "Supporting tools and limits", "v2.ck.supportHint": "Summary file, notes, recruiter check, what changed",
+  "v2.err.unreadable": "ORYQEN received a reply it could not read, so nothing was changed on your side. Try again. If it keeps happening, tell support.",
+  // Employer overview figures (14 Nov 2026). Other languages fall back to English until reviewed.
+  "v2.emp.kpiAria": "Employer overview figures",
+  "v2.emp.orgs": "Organizations", "v2.emp.orgsNote": "You are authorized to act for these", "v2.emp.orgsNone": "None yet. Request one below.", "v2.emp.orgsLink": "Manage organizations",
+  "v2.emp.offers": "Offers you manage", "v2.emp.offersNote": "Active offers you can review", "v2.emp.offersNone": "No active offers yet.", "v2.emp.offersLink": "Create an offer",
+  "v2.emp.apps": "Applications received", "v2.emp.appsNote": "{live} live of {listings} listing(s)", "v2.emp.appsNone": "No listings published yet.", "v2.emp.appsLink": "Review applicants",
+  // Work Passport hours chart (14 Nov 2026). Other languages fall back to English until reviewed.
+  "v2.pp.hoursTitle": "Verified hours by year", "v2.pp.hoursAria": "Verified hours per year of work period", "v2.pp.verifiedHours": "Verified hours",
+  "v2.pp.yearTitle": "{year}: {hours} verified hours", "v2.pp.partial": "Counted from the entries loaded so far. Load more entries to include older work.",
   "v2.menu": "Menu",
   "v2.menuClose": "Close menu",
 } as const;

@@ -6,6 +6,7 @@ import { companyResultsSchema } from "@/features/authority/company-schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import { queueResponse, domainRow } from "@/features/recruiter/schema";
+import { userMessage } from "@/lib/user-error";
 
 type Queue = z.infer<typeof queueResponse>["items"];
 const proofed = z.strictObject({ items: z.array(domainRow.extend({ proof: z.strictObject({ controlled: z.boolean(), method: z.enum(["dns", "well-known"]).nullable(), observedAt: z.string() }) })) });
@@ -37,7 +38,7 @@ export function RecruiterEmployerPanel() {
   const loadDomains = useCallback(async (id: string) => { setDomains(await fetchDomains(id)); }, [fetchDomains]);
   useEffect(() => { let active = true; if (companyId) fetchDomains(companyId).then(items => { if (active) setDomains(items); }).catch(() => { if (active) setDomains([]); }); return () => { active = false; }; }, [companyId, fetchDomains]);
 
-  async function guard(action: () => Promise<void>) { setBusy(true); setError(""); try { await action(); } catch (caught) { setError(caught instanceof Error ? caught.message : t("re.failed")); } finally { setBusy(false); } }
+  async function guard(action: () => Promise<void>) { setBusy(true); setError(""); try { await action(); } catch (caught) { setError(userMessage(caught, t("re.failed"))); } finally { setBusy(false); } }
   function decide(verificationId: string, decision: "confirm" | "dispute" | "withdraw") {
     return guard(async () => {
       const reason = (reasons[verificationId] ?? "").trim();

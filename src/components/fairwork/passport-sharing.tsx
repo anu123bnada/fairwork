@@ -7,6 +7,7 @@ import { shareField,shareList,shareProjection,shareReceipt } from "@/features/wo
 import { useI18n } from "@/i18n/use-i18n";
 import { RecipientQr } from "./recipient-qr";
 import type { MessageKey } from "@/i18n";
+import { userMessage } from "@/lib/user-error";
 const endpoint="/api/v1/passport/sharing";
 const display=(value:string)=>value.replaceAll("_"," ");
 export function PassportSharing(){
@@ -19,13 +20,13 @@ export function PassportSharing(){
  const pending=useRef(new Map<string,{itemId:string;grantId:string}>());
  useEffect(()=>{
   let active=true;
-  Promise.all([appRequest("/api/v1/passport"),appRequest(endpoint)]).then(([p,l])=>{if(active){setPassport(passportSchema.parse(p));setList(shareList.parse(l));}}).catch(e=>{if(active)setError(e.message);});
+  Promise.all([appRequest("/api/v1/passport"),appRequest(endpoint)]).then(([p,l])=>{if(active){setPassport(passportSchema.parse(p));setList(shareList.parse(l));}}).catch(e=>{if(active)setError(userMessage(e));});
   const grantId=new URLSearchParams(window.location.search).get("grantId");
-  if(grantId&&z.uuid().safeParse(grantId).success)appRequest(`${endpoint}?grantId=${grantId}&mode=recipient`).then(p=>{if(active){setProjection(shareProjection.parse(p));setPreview(false);}}).catch(e=>{if(active)setError(e.message);});
+  if(grantId&&z.uuid().safeParse(grantId).success)appRequest(`${endpoint}?grantId=${grantId}&mode=recipient`).then(p=>{if(active){setProjection(shareProjection.parse(p));setPreview(false);}}).catch(e=>{if(active)setError(userMessage(e));});
   return()=>{active=false;};
  },[]);
  async function refresh(cursor:string|null=null){setList(shareList.parse(await appRequest(endpoint+(cursor?`?cursor=${cursor}`:""))));}
- async function perform(action:()=>Promise<void>){setBusy(true);setError("");setMessage("");try{await action();}catch(e){setProjection(null);setList(null);setPassport(null);setError(e instanceof Error?e.message:t("sh.unavailable"));}finally{setBusy(false);}}
+ async function perform(action:()=>Promise<void>){setBusy(true);setError("");setMessage("");try{await action();}catch(e){setProjection(null);setList(null);setPassport(null);setError(userMessage(e, t("sh.unavailable")));}finally{setBusy(false);}}
  async function records(cursor:string|null){setPassport(null);setProjection(null);setReviewed(false);setPassport(passportSchema.parse(await appRequest("/api/v1/passport"+(cursor?`?cursor=${cursor}`:""))));}
  async function open(grantId:string,owner:boolean){setProjection(null);setReviewed(false);setPreview(owner);setProjection(shareProjection.parse(await appRequest(`${endpoint}?grantId=${grantId}&mode=${owner?"preview":"recipient"}`)));}
  async function prepare(event:FormEvent<HTMLFormElement>){

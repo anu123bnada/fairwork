@@ -13,6 +13,7 @@ import { ExtractionQualityNote } from "./extraction-quality-note";
 import { RuleAnalysis } from "./rule-analysis";
 import { useProduct } from "./product-app";
 import "./scan-offer.css";
+import { userMessage } from "@/lib/user-error";
 
 // A single screenshot may take a while on a slow phone; the screen shows live elapsed seconds and a Cancel button, so a longer limit is honest.
 const SCAN_READ_TIMEOUT_MS = 120000;
@@ -120,7 +121,7 @@ export function ScanOfferScreen() {
       stopTicker();
       if (mine.signal.aborted) return;
       const stage = caught instanceof StageError ? caught.stage : "read";
-      set(stage, "failed", caught instanceof Error ? caught.message : t("scan.err.reader"));
+      set(stage, "failed", userMessage(caught, t("scan.err.reader")));
       setPhase("failed");
     }
   }

@@ -32,7 +32,7 @@ export function Donut({ segments, centerValue, centerLabel, ariaLabel }: { segme
 export type Bar = { key: string; label: string; primary: number; secondary: number; title: string };
 
 // Stacked columns: `primary` (solid) and `secondary` (outlined). The scale always starts at zero and ends at a rounded value at or above the largest column.
-export function StackedBars({ bars, unit, primaryName, secondaryName, ariaLabel }: { bars: Bar[]; unit: string; primaryName: string; secondaryName: string; ariaLabel: string }) {
+export function StackedBars({ bars, unit, primaryName, secondaryName, ariaLabel }: { bars: Bar[]; unit: string; primaryName: string; secondaryName?: string; ariaLabel: string }) {
   const peak = Math.max(1, ...bars.map(bar => bar.primary + bar.secondary));
   const step = niceStep(peak / 3), top = Math.ceil(peak / step) * step;
   const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, index) => index * step);
@@ -53,9 +53,9 @@ export function StackedBars({ bars, unit, primaryName, secondaryName, ariaLabel 
         </g>;
       })}
     </svg>
-    <ul className="oq-legend oq-legend-inline"><li><i className="tone-1" aria-hidden="true" /><span>{primaryName}</span></li><li><i className="tone-outline" aria-hidden="true" /><span>{secondaryName}</span></li><li className="oq-unit">{unit}</li></ul>
-    <table className="oq-sr-only"><caption>{ariaLabel}</caption><thead><tr><th scope="col">{ariaLabel}</th><th scope="col">{primaryName}</th><th scope="col">{secondaryName}</th></tr></thead>
-      <tbody>{bars.map(bar => <tr key={bar.key}><th scope="row">{bar.label}</th><td>{bar.primary}</td><td>{bar.secondary}</td></tr>)}</tbody></table>
+    <ul className="oq-legend oq-legend-inline"><li><i className="tone-1" aria-hidden="true" /><span>{primaryName}</span></li>{secondaryName && <li><i className="tone-outline" aria-hidden="true" /><span>{secondaryName}</span></li>}<li className="oq-unit">{unit}</li></ul>
+    <table className="oq-sr-only"><caption>{ariaLabel}</caption><thead><tr><th scope="col">{ariaLabel}</th><th scope="col">{primaryName}</th>{secondaryName && <th scope="col">{secondaryName}</th>}</tr></thead>
+      <tbody>{bars.map(bar => <tr key={bar.key}><th scope="row">{bar.label}</th><td>{bar.primary}</td>{secondaryName && <td>{bar.secondary}</td>}</tr>)}</tbody></table>
   </div>;
 }
 

@@ -8,6 +8,7 @@ import { authPath } from "@/features/identity/auth-navigation";
 import { AuthLink } from "./auth-link";
 import { createVerificationStore } from "./verification-store";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 
 export function RegistrationForm({ confirmation = false, profile = false, displayName = "" }: { confirmation?: boolean; profile?: boolean; displayName?: string }) {
   const router = useRouter();
@@ -47,7 +48,7 @@ export function RegistrationForm({ confirmation = false, profile = false, displa
       setMessage(t("au.reg.resendDone"));
     } catch (caught) {
       if (caught instanceof ApiRequestError && caught.code === "RATE_LIMITED") beginCooldown();
-      setError(caught instanceof Error ? caught.message : t("au.reg.resendFailed"));
+      setError(userMessage(caught, t("au.reg.resendFailed")));
     }
     finally { setBusy(false); }
   }
@@ -87,7 +88,7 @@ export function RegistrationForm({ confirmation = false, profile = false, displa
       if (step === "confirm" && caught instanceof ApiRequestError && caught.code === "AUTH_REQUIRED") verification.clear();
       setError(step === "confirm" && caught instanceof ApiRequestError && caught.code === "AUTH_REQUIRED"
         ? t("au.reg.linkInvalid")
-        : caught instanceof Error ? caught.message : t("au.reg.cannotContinue"));
+        : userMessage(caught, t("au.reg.cannotContinue")));
     }
     finally { setBusy(false); }
   }

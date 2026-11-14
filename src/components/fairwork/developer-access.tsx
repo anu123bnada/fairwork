@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { appRequest } from "@/features/authority/client";
 import { developerKeyList, webhookList, type developerKeyRow, type webhookRow } from "@/features/developer/schema";
 import type { z } from "zod";
+import { userMessage } from "@/lib/user-error";
 
 type Row = z.infer<typeof developerKeyRow>;
 type Hook = z.infer<typeof webhookRow>;
@@ -34,7 +35,7 @@ export function DeveloperAccess() {
     try {
       const result = await appRequest("/api/v1/developer/webhooks", { url: hookUrl.trim() }) as { secret: string };
       setHookSecret(result.secret); setHookUrl(""); await reloadHooks();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The endpoint could not be added."); }
+    } catch (caught) { setError(userMessage(caught, "The endpoint could not be added.")); }
     finally { setBusy(false); }
   }
   async function testHook(webhookId: string) {
@@ -43,13 +44,13 @@ export function DeveloperAccess() {
       const result = await appRequest("/api/v1/developer/webhooks/test", { webhookId }) as { outcome: string; statusCode: number | null };
       setHookNotice(result.outcome === "delivered" ? `Test event delivered (HTTP ${result.statusCode}).` : `Test event not delivered${result.statusCode ? ` (HTTP ${result.statusCode})` : " (no response)"}. Check that the address is reachable and returns a 2xx answer.`);
       await reloadHooks();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The test event could not be sent."); }
+    } catch (caught) { setError(userMessage(caught, "The test event could not be sent.")); }
     finally { setBusy(false); }
   }
   async function removeHook(webhookId: string) {
     setBusy(true); setError("");
     try { await appRequest("/api/v1/developer/webhooks/delete", { webhookId }); setHookConfirm(null); await reloadHooks(); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "The endpoint could not be removed."); }
+    catch (caught) { setError(userMessage(caught, "The endpoint could not be removed.")); }
     finally { setBusy(false); }
   }
   async function reload() { try { setRows(developerKeyList.parse(await appRequest("/api/v1/developer/keys")).items); } catch { setError("Your keys could not be refreshed."); } }
@@ -60,13 +61,13 @@ export function DeveloperAccess() {
       const result = await appRequest("/api/v1/developer/keys", { label: label.trim() }) as { key: string };
       if (current === attempt.current) { setCreated(result.key); setLabel(""); }
       await reload();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The key could not be created."); }
+    } catch (caught) { setError(userMessage(caught, "The key could not be created.")); }
     finally { setBusy(false); }
   }
   async function revoke(keyId: string) {
     setBusy(true); setError("");
     try { await appRequest("/api/v1/developer/keys/revoke", { keyId }); setConfirming(null); await reload(); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : "The key could not be revoked."); }
+    catch (caught) { setError(userMessage(caught, "The key could not be revoked.")); }
     finally { setBusy(false); }
   }
   async function copy() {

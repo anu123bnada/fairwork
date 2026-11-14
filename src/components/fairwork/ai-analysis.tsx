@@ -7,6 +7,7 @@ import { redactOfferForAi } from "@/features/offer/ai-redaction";
 import { useI18n } from "@/i18n/use-i18n";
 import { AiResultView } from "./ai-result-view";
 import type { MessageKey } from "@/i18n";
+import { userMessage } from "@/lib/user-error";
 const providerName = z.enum(["openai", "gemini", "selfhosted"]);
 const providerInfo = z.strictObject({ provider: providerName, model: z.string(), processingRegion: z.string(), dataUse: z.string(), policyHash: z.string() });
 const configSchema = z.strictObject({
@@ -26,7 +27,7 @@ export function AiAnalysis({ text, role }: { text: string; role: "WORKER" | "EMP
  const result = response?.context === context ? response.data : null;
  useEffect(() => {
   let active = true;
-  appRequest("/api/v1/offers/analyze").then(raw => { if (active) setConfig(configSchema.parse(raw)); }).catch(e => { if (active) setError(e.message); });
+  appRequest("/api/v1/offers/analyze").then(raw => { if (active) setConfig(configSchema.parse(raw)); }).catch(e => { if (active) setError(userMessage(e)); });
   return () => { active = false; };
  }, []);
  async function analyze() {
@@ -36,7 +37,7 @@ export function AiAnalysis({ text, role }: { text: string; role: "WORKER" | "EMP
    const fallbacks = config.fallbacks.filter(item => fallbackAccepted[item.provider]).map(item => ({ provider: item.provider, policyHash: item.policyHash }));
    setResponse({ context, data: aiOfferAnalysisResponseSchema.parse(await appRequest("/api/v1/offers/analyze", { text, role, consent: { provider: config.provider, noticeVersion: config.noticeVersion, policyHash: config.policyHash, transmit: true, adultConfirmed: true, ...(fallbacks.length ? { fallbacks } : {}) } })) });
   }
-  catch (e) { setError(e instanceof Error ? e.message : t("ai.failed")); }
+  catch (e) { setError(userMessage(e, t("ai.failed"))); }
   finally { setBusy(false); setConsentedText(null); }
  }
  return <section className="fw-list-card" aria-label={t("ai.aria")}>

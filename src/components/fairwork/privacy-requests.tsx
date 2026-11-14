@@ -4,6 +4,7 @@ import { appRequest } from "@/features/authority/client";
 import { privacyList, privacyRequest, type PrivacyRequest } from "@/features/identity/privacy-schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import { userMessage } from "@/lib/user-error";
 const terminal = new Set(["fulfilled", "declined", "withdrawn"]);
 export function PrivacyRequests({ operator = false }: { operator?: boolean }) {
  const { t } = useI18n();
@@ -15,13 +16,13 @@ export function PrivacyRequests({ operator = false }: { operator?: boolean }) {
  useEffect(() => {
   let active = true;
   appRequest(endpoint).then(raw => { const page = privacyList.parse(raw); if (active) { setItems(page.items); setCursor(page.nextCursor); } })
-   .catch(e => { if (active) { setItems(null); setError(e.message); } });
+   .catch(e => { if (active) { setItems(null); setError(userMessage(e)); } });
   return () => { active = false; };
  }, [endpoint]);
  async function refresh(next: string | null = null) {
   setBusy(true); setError(""); setItems(null); setCursor(null);
   try { const page = privacyList.parse(await appRequest(endpoint + (next ? `?cursor=${next}` : ""))); setItems(page.items); setCursor(page.nextCursor); }
-  catch (e) { setError(e instanceof Error ? e.message : t("pv.unavailable")); }
+  catch (e) { setError(userMessage(e, t("pv.unavailable"))); }
   finally { setBusy(false); }
  }
  async function command(body: unknown) {
@@ -37,13 +38,13 @@ export function PrivacyRequests({ operator = false }: { operator?: boolean }) {
     : { operation: "create", kind: data.get("kind"), scope: data.get("scope") });
    form.reset(); setMessage(item ? t("pv.reviewRecorded") : t("pv.saved"));
    await refresh();
-  } catch (e) { setItems(null); setError(e instanceof Error ? e.message : t("pv.saveFail")); }
+  } catch (e) { setItems(null); setError(userMessage(e, t("pv.saveFail"))); }
   finally { setBusy(false); }
  }
  async function withdraw(item: PrivacyRequest) {
   setBusy(true); setError(""); setMessage("");
   try { await command({ operation: "withdraw", requestId: item.requestId, expectedRevision: item.revision }); setMessage(t("pv.withdrawn")); await refresh(); }
-  catch (e) { setItems(null); setError(e instanceof Error ? e.message : t("pv.withdrawFail")); }
+  catch (e) { setItems(null); setError(userMessage(e, t("pv.withdrawFail"))); }
   finally { setBusy(false); }
  }
  return <section className="fw-list-card" aria-label={operator ? t("pv.queue") : t("pv.title")}>

@@ -8,6 +8,7 @@ import { appRequest } from "@/features/authority/client";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./records.css";
+import { userMessage } from "@/lib/user-error";
 
 const storageKey = "oryqen.career-skills.v1";
 // Every answer carries its source: "rules" (fixed rules and the SAMPLE framework) or "ai" (written by the approved AI provider after the person agreed to send the question).
@@ -51,7 +52,7 @@ export function CareerAssistant({ anonymous = false }: { anonymous?: boolean }) 
       const result = assistantAnswerSchema.parse(await appRequest("/api/v1/career-assistant", { question: clean, careerId, skills, consent: { provider: config.provider, policyHash: config.policyHash, noticeVersion: ASSISTANT_NOTICE, transmit: true, adultConfirmed: true } }, undefined, "POST", { timeoutMs: 60000 }));
       if (result.status === "SUCCESS" && result.answer) add({ question: clean, lines: result.answer.split(/\n+/).map(line => line.trim()).filter(Boolean), source: "ai", provider: providerName });
       else rules(clean, `${t("ca.aiFailed")} ${result.message}`.trim());
-    } catch (caught) { rules(clean, `${t("ca.aiFailed")} ${caught instanceof Error ? caught.message : ""}`.trim()); }
+    } catch (caught) { rules(clean, `${t("ca.aiFailed")} ${userMessage(caught, "")}`.trim()); }
     finally { setBusy(false); }
   }
   return <section className="oq-rec" aria-label={t("ca.aria")}>

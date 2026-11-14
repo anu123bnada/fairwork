@@ -3,6 +3,7 @@ import { useEffect,useRef,useState } from "react";
 import { screenshotDimensions } from "@/features/offer/screenshot-validation";
 import { useI18n } from "@/i18n/use-i18n";
 import { ExtractionQualityNote } from "./extraction-quality-note";
+import { userMessage } from "@/lib/user-error";
 
 export function OfferScreenshot({onReviewed}:{onReviewed:(text:string)=>void}){
  const { t } = useI18n();
@@ -30,7 +31,7 @@ export function OfferScreenshot({onReviewed}:{onReviewed:(text:string)=>void}){
     else setError(t("im.shot.noText"));
    };
    running.postMessage(file);
-  }catch(caught){if(current!==sequence.current)return;stop();setBusy(false);setError(caught instanceof Error?caught.message:t("im.shot.openFail"));}
+  }catch(caught){if(current!==sequence.current)return;stop();setBusy(false);setError(userMessage(caught, t("im.shot.openFail")));}
  }
  return <section className="fw-card fw-source-panel" aria-label={t("im.shot.aria")}>
   <h3>{t("im.shot.title")}</h3>

@@ -7,6 +7,7 @@ import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import "./credentials-experience.css";
 import "./feature-tokens.css";
+import { userMessage } from "@/lib/user-error";
 
 export type CredentialItem = { credentialId: string; sourceId: string; sourceVersion: number; assurance: string; issuedAt: string; expiresAt: string; token: string; status: "valid" | "revoked" | "expired" | "unknown"; reason: string | null };
 export type CredentialAllowance = { planName: string; limit: number; used: number; remaining: number };
@@ -53,7 +54,7 @@ export function IssueCredential({ claim, data, onIssued }: { claim: TrustClaim; 
       if (statement.trim() !== claim.statement) body.statement = statement.trim();
       const result = await appRequest("/api/v1/credentials", body) as { verifyUrl: string; expiresAt: string };
       key.current = null; setIssued({ verifyUrl: result.verifyUrl, expiresAt: result.expiresAt }); onIssued();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : t("cr.createFail")); }
+    } catch (caught) { setError(userMessage(caught, t("cr.createFail"))); }
     finally { setBusy(false); }
   }
   if (issued) return <ShareView verifyUrl={issued.verifyUrl} expiresAt={issued.expiresAt} caveat={claim.verification.caveat} onClose={() => { setIssued(null); setOpen(false); }} />;
