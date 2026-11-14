@@ -64,6 +64,7 @@ import { RuleAnalysis } from "./rule-analysis";
 import { OfferFindings } from "./offer-findings";
 import { ClauseFindings } from "./offer-intelligence";
 import { OfferAssessment } from "./offer-assessment";
+import { CheckGroup, CheckJump } from "./check-layout";
 import { CompanyProfiles } from "./company-profiles";
 import { RecruiterVerification } from "./recruiter-verification";
 import { CaseReviewScreen } from "./case-review";
@@ -843,11 +844,22 @@ function CheckScreen() {
   const missingCount = missing.length;
   return (
     <>
+      <CheckJump label={t("v2.ck.jump")} items={[["ck-summary", t("v2.ck.summary")], ["ck-score", t("v2.ck.score")], ["ck-risks", t("v2.ck.risks")], ["ck-missing", t("v2.ck.missing")], ["ck-questions", t("v2.ck.questions")], ["ck-clauses", t("v2.ck.clauses")], ["ck-support", t("v2.ck.support")]]} />
+      <CheckGroup id="ck-summary" step={1} title={t("v2.ck.summary")} hint={t("v2.ck.summaryHint")}>
       <section className="fw-card fw-check-summary">
         <span className="fw-check-ring fw-check-count">{statedCount}<small>/{requiredFields.length}</small></span>
         <span><strong>{missingCount ? t("check.someClarify") : t("check.requiredStated")}</strong><br /><span className="fw-offer-employer">{t("check.statedCount", { stated: statedCount, total: requiredFields.length, missing: missingCount })}</span><span className="fw-check-basis">{t("check.basis")}</span></span>
       </section>
       <OfferFindings stated={entries.filter(([key]) => !missingFields.has(key)).length} missing={missingCount} text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
+      </CheckGroup>
+      <CheckGroup id="ck-score" step={2} title={t("v2.ck.score")} hint={t("v2.ck.scoreHint")}>
+      <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
+      </CheckGroup>
+      <CheckGroup id="ck-risks" step={3} title={t("v2.ck.risks")} hint={t("v2.ck.risksHint")}>
+      {/* The rules read English field names from this text, so it is deliberately not translated. */}
+      <div id="check-risks"><RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} /></div>
+      </CheckGroup>
+      <CheckGroup id="ck-missing" step={4} title={t("v2.ck.missing")} hint={t("v2.ck.missingHint")}>
       <div className="fw-check-details" id="check-stated" aria-label={t("check.completenessAria")}>
         {entries.map(([key, value]) => (
           <div className="fw-check-row" key={key}>
@@ -858,9 +870,20 @@ function CheckScreen() {
           </div>
         ))}
       </div>
-      {/* The rules read English field names from this text, so it is deliberately not translated. */}
-      <div id="check-risks"><RuleAnalysis text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} /></div>
+      </CheckGroup>
+      <CheckGroup id="ck-questions" step={5} title={t("v2.ck.questions")} hint={t("v2.ck.questionsHint")}>
+      {missing.length ? (
+        <section id="check-missing" aria-label={t("check.needsClarification")}>
+          <p className="fw-check-explainer">{t("check.foundFew")}</p>
+          {missing.map((question) => <Link href={routeFor("questions")} key={question.id} className="fw-question-card fw-check-question fw-question-link"><strong>{labelFor(question.field, t)}</strong><p>{question.question}</p><span className="fw-question-badge">{t("check.needsClarification")}</span></Link>)}
+        </section>
+      ) : <p className="fw-success">{t("check.noQuestions")}</p>}
+      <OfferPreparation key={`prep:${offer.offerId}:${offer.version}`} snapshot={offer.snapshot ?? {}} />
+      </CheckGroup>
+      <CheckGroup id="ck-clauses" step={6} title={t("v2.ck.clauses")} hint={t("v2.ck.clausesHint")} collapsible>
       <ClauseFindings includeMissing={false} text={Object.entries(terms).map(([key, value]) => `${labelFor(key)}: ${value}`).join("\n")} />
+      </CheckGroup>
+      <CheckGroup id="ck-support" step={7} title={t("v2.ck.support")} hint={t("v2.ck.supportHint")} collapsible>
       <section className="fw-list-card" aria-label={t("sum.button")}>
         <p>{t("sum.note")}</p>
         <button type="button" className="fw-secondary" onClick={() => {
@@ -869,19 +892,12 @@ function CheckScreen() {
           link.href = url; link.download = `oryqen-offer-summary-revision-${offer.version}.md`; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 10_000);
         }}>{t("sum.button")}</button>
       </section>
-      <OfferPreparation key={`prep:${offer.offerId}:${offer.version}`} snapshot={offer.snapshot ?? {}} />
       <OfferNotes key={offer.offerId} offerId={offer.offerId} />
-      <OfferAssessment key={`${offer.offerId}:${offer.version}:${offer.termHash}`} offerId={offer.offerId} version={offer.version} termHash={offer.termHash} hoursPerWeek={offer.snapshot?.hoursPerWeek} />
       <RecruiterVerification defaultEmployer={terms.employer ?? terms.company ?? ""} defaultRole={terms.jobTitle ?? terms.role ?? ""} />
-      {missing.length ? (
-        <section id="check-missing" aria-label={t("check.needsClarification")}>
-          <p className="fw-check-explainer">{t("check.foundFew")}</p>
-          {missing.map((question) => <Link href={routeFor("questions")} key={question.id} className="fw-question-card fw-check-question fw-question-link"><strong>{labelFor(question.field, t)}</strong><p>{question.question}</p><span className="fw-question-badge">{t("check.needsClarification")}</span></Link>)}
-        </section>
-      ) : <p className="fw-success">{t("check.noQuestions")}</p>}
       {offer?.changes.length ? (
         <section className="fw-list-card"><strong>{t("check.changes")}</strong>{offer.changes.map((change) => <div className="fw-list-row" key={change.field}><span>{labelFor(change.field, t)}</span><strong>{change.previous ?? "—"} → {change.current ?? "—"}</strong></div>)}</section>
       ) : null}
+      </CheckGroup>
       <div className="fw-fixed-action"><Link className="fw-primary" href={routeFor(missing.length ? "questions" : "agreement")}>{missing.length ? t("check.questionsToAsk") : t("check.reviewAgreement")} <Icon name="arrow" size={18} /></Link></div>
     </>
   );

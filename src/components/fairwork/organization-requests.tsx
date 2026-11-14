@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { appRequest,ApiRequestError } from "@/features/authority/client";
 import { organizationListSchema, organizationQueueSchema, type OrganizationList, type OrganizationQueue } from "@/features/authority/organization-schema";
 import { organizationFormCommand, OrganizationFormError } from "@/features/authority/organization-form";
+import { userMessage } from "@/lib/user-error";
 
 export function OrganizationRequests({ operator = false }: { operator?: boolean }) {
  const [page, setPage] = useState<OrganizationList | OrganizationQueue | null>(null);
@@ -19,7 +20,7 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
  useEffect(() => {
   let active = true;const ticket=++serial.current;
   appRequest(endpoint).then(raw => { if (active&&ticket===serial.current) setPage((operator ? organizationQueueSchema : organizationListSchema).parse(raw)); })
-   .catch(e => { if (active&&ticket===serial.current) setError(e instanceof Error ? e.message : "Unable to load requests."); });
+   .catch(e => { if (active&&ticket===serial.current) setError(userMessage(e, "Unable to load requests.")); });
   return () => { active = false; };
  }, [endpoint, operator]);
  async function submit(event: FormEvent<HTMLFormElement>, requestId?: string) {
@@ -39,7 +40,7 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
     const control=form.elements.namedItem(e.field);
     if(control instanceof HTMLElement)control.focus();
    }
-   setError(e instanceof Error ? e.message : "Unable to save request.");
+   setError(userMessage(e, "Unable to save request."));
   }
   finally { setBusy(false); }
  }
@@ -51,7 +52,7 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
    await appRequest("/api/v1/organizations/appeals",body,key);
    setMessage("Linked appeal saved. The original rejection is retained; a different independent reviewer must decide.");
    await refresh();
-  }catch(e){if(e instanceof ApiRequestError&&[401,403].includes(e.status))setPage(null);setError(e instanceof Error?e.message:"Unable to submit appeal.");}
+  }catch(e){if(e instanceof ApiRequestError&&[401,403].includes(e.status))setPage(null);setError(userMessage(e, "Unable to submit appeal."));}
   finally{setBusy(false);}
  }
  return <section className="fw-card" style={{ padding: 20 }} aria-label="Organization requests">
@@ -94,8 +95,8 @@ export function OrganizationRequests({ operator = false }: { operator?: boolean 
     <button className="fw-primary" disabled={busy}>Record independent decision</button>
    </form>}
   </section>)}
-  <button className="fw-secondary" disabled={busy} onClick={() => void refresh().catch(e => setError(e.message))}>Refresh organization requests</button>
-  {page?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void refresh(page.nextCursor).catch(e => setError(e.message))}>Next requests</button>}
+  <button className="fw-secondary" disabled={busy} onClick={() => void refresh().catch(e => setError(userMessage(e)))}>Refresh organization requests</button>
+  {page?.nextCursor && <button className="fw-secondary" disabled={busy} onClick={() => void refresh(page.nextCursor).catch(e => setError(userMessage(e)))}>Next requests</button>}
   {message && <p role="status">{message}</p>}{error && <p role="alert">{error}</p>}
  </section>;
 }

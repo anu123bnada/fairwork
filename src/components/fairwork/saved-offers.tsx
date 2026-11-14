@@ -14,6 +14,7 @@ import { RecruiterEmployerPanel } from "./recruiter-employer";
 import { filterOffers } from "@/features/offer/list-filter";
 import { OrganizationPlan } from "./org-plan-panel";
 import { OfferComparison } from "./offer-comparison";
+import { EmployerKpis } from "./employer-kpis";
 
 export function SavedOffers({ context = "WORKER" }: { context?: "WORKER" | "EMPLOYER" }) {
   const { t } = useI18n();
@@ -102,12 +103,13 @@ export function EmployerWorkspace() {
       </div>
       <p className="oq-emp-note">Approved organization membership is required. Selecting employer does not grant access.</p>
     </section>
+    <EmployerKpis />
     <section className="oq-emp-steps fw-list-card" aria-label="Employer onboarding"><h3>Set up your organization</h3>
       <ol><li><span className="oq-emp-n" aria-hidden="true">1</span>Request a new organization or join an existing one below.</li><li><span className="oq-emp-n" aria-hidden="true">2</span>Check your request status after independent review.</li><li><span className="oq-emp-n" aria-hidden="true">3</span>Once authorized, complete company information and manage your offers.</li></ol>
       <p>Account registration is complete. Organization verification is separate; no real employer verification service is connected.</p>
     </section>
     <div className="oq-emp-grid">
-      <div className="oq-emp-col" aria-label="Organization">
+      <div className="oq-emp-col" id="org" aria-label="Organization">
         <OrganizationRequests />
         <CompanyProfiles />
         <OrganizationPlan />

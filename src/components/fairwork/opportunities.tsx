@@ -11,6 +11,7 @@ import type { MessageKey } from "@/i18n";
 import { ReportProblem } from "./report-problem";
 import { QualificationPanel } from "./offer-intelligence";
 import { RecommendationHistory } from "./recommendation-history";
+import { userMessage } from "@/lib/user-error";
 
 const inputText = (data: FormData, key: string) => String(data.get(key) ?? "").trim();
 const amount = (data: FormData, key: string) => inputText(data, key) === "" ? null : Number(data.get(key));
@@ -40,13 +41,13 @@ export function OpportunitiesScreen() {
       if (cursor) params.set("cursor", cursor);
       const result = opportunityPage.parse(await appRequest(`/api/v1/opportunities?${params}`));
       if (sequence.current === current) setData(previous => ({ ...result, items: cursor ? [...(previous?.items ?? []), ...result.items] : result.items }));
-    } catch (caught) { if (sequence.current === current) { setData(null); setEditing(null); setError(caught instanceof Error ? caught.message : t("op.unavailable")); } }
+    } catch (caught) { if (sequence.current === current) { setData(null); setEditing(null); setError(userMessage(caught, t("op.unavailable"))); } }
     finally { if (sequence.current === current) setBusy(false); }
   }
   useEffect(() => {
     let active = true;
     appRequest("/api/v1/opportunities?view=discover").then(raw => { if (active) setData(opportunityPage.parse(raw)); })
-      .catch(caught => { if (active) setError(caught instanceof Error ? caught.message : t("op.unavailable")); })
+      .catch(caught => { if (active) setError(userMessage(caught, t("op.unavailable"))); })
       .finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [t]);
@@ -65,7 +66,7 @@ export function OpportunitiesScreen() {
     } catch (caught) {
       setData(null);
       if (caught instanceof ApiRequestError && [401, 403].includes(caught.status)) setEditing(null);
-      setError(caught instanceof Error ? caught.message : t("op.saveFail")); return false;
+      setError(userMessage(caught, t("op.saveFail"))); return false;
     }
     finally { setBusy(false); }
   };

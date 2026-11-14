@@ -6,13 +6,16 @@ import { passportSchema,passportReceiptSchema,type Passport } from "@/features/w
 import { collectPrivatePassportExport } from "@/features/work/passport-export";
 import { PassportPrintSheet } from "./passport-print-sheet";
 import { groupPassportByYear,summarizePassport } from "@/features/work/passport-summary";
+import { StackedBars, type Bar } from "./charts";
+import { bcp47 } from "@/i18n";
 import { useI18n } from "@/i18n/use-i18n";
 import { toast } from "@/components/ui/toast";
 import "./passport-experience.css";
 import "./feature-tokens.css";
+import { userMessage } from "@/lib/user-error";
 
 export function WorkPassportScreen({displayName}:{displayName:string}) {
- const { t } = useI18n();
+ const { t, locale } = useI18n();
  const [passport,setPassport]=useState<Passport|null>(null),[busy,setBusy]=useState(true),[error,setError]=useState<Error|null>(null);
  const initializeKey=useRef<string|null>(null);
  const [sheet,setSheet]=useState<Awaited<ReturnType<typeof collectPrivatePassportExport>>|null>(null);
@@ -73,6 +76,10 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
  const groups=groupPassportByYear(passport?.entries??[]);
  const hasPassport=Boolean(passport?.passportId)&&!error;
  const fmt=(iso:string)=>new Date(iso+"T00:00:00").toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"});
+ const day=(iso:string)=>new Date(iso+"T00:00:00").toLocaleDateString(bcp47(locale),{year:"numeric",month:"short",day:"numeric"});
+ // Verified hours per calendar year of the work period, from the entries loaded on this page only (every Passport entry is verified).
+ const yearHours=new Map<string,number>();for(const entry of passport?.entries??[]){const hours=Number(entry.hours);if(Number.isFinite(hours)&&hours>0)yearHours.set(entry.periodStart.slice(0,4),(yearHours.get(entry.periodStart.slice(0,4))??0)+hours);}
+ const bars:Bar[]=[...yearHours.entries()].sort(([a],[b])=>a.localeCompare(b)).slice(-6).map(([year,hours])=>({key:year,label:year,primary:Math.round(hours*100)/100,secondary:0,title:t("v2.pp.yearTitle",{year,hours:Math.round(hours*100)/100})}));
  return <div className="fw-demo-passport fw-live-passport oq-passport">
   <section className="oq-pp-hero" aria-label={t("pp.title")}>
    <div className="oq-pp-person"><span className="oq-pp-avatar" aria-hidden>{displayName.slice(0,1).toUpperCase()}</span><span><strong>{displayName}</strong><span className="oq-pp-sub">{t("pp.tagline")}</span></span></div>
@@ -87,10 +94,11 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
    <p className="oq-pp-note">{busy?t("pp.loadingShort"):t("pp.onlyYou")}</p>
   </section>
   {busy&&<p role="status">{t("pp.loading")}</p>}
-  {error&&<section className="fw-card fw-offer-detail-card"><p className="fw-error" role="alert">{error.message}</p>{error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"&&<Link href="/sign-in">{t("pp.signIn")}</Link>}</section>}
+  {error&&<section className="fw-card fw-offer-detail-card"><p className="fw-error" role="alert">{userMessage(error)}</p>{error instanceof ApiRequestError&&error.code==="AUTH_REQUIRED"&&<Link href="/sign-in">{t("pp.signIn")}</Link>}</section>}
   {!busy&&!error&&passport&&!passport.passportId&&<section className="oq-pp-empty"><strong>{t("pp.createTitle")}</strong><span>{t("pp.createSub")}</span><button className="fw-primary" onClick={()=>void initialize()}>{t("pp.create")}</button></section>}
   {!busy&&!error&&passport?.passportId&&<>
    <p className="oq-pp-trust">{t("pp.trustNote")}</p>
+   {bars.length>0&&<section className="oq-pp-chart" aria-label={t("v2.pp.hoursTitle")}><h3>{t("v2.pp.hoursTitle")}</h3><StackedBars bars={bars} unit={t("v2.unitHours")} primaryName={t("v2.pp.verifiedHours")} ariaLabel={t("v2.pp.hoursAria")}/>{passport?.nextCursor&&<p className="fw-sum-note">{t("v2.pp.partial")}</p>}</section>}
    <h3 className="fw-section-label">{t("pp.history")}</h3>
    {!passport.entries.length?<div className="oq-pp-empty"><strong>{t("pp.noneTitle")}</strong><span>{t("pp.noneSub")}</span><Link href="/app/work-record">{t("pp.viewRecords")}</Link></div>:<div className="oq-pp-timeline" aria-label={t("pp.history")}>{groups.map(group=><section key={group.year} aria-label={group.year}>
     <h4 className="oq-pp-year">{group.year}</h4>
@@ -99,7 +107,7 @@ export function WorkPassportScreen({displayName}:{displayName:string}) {
      <div className="oq-pp-card">
       <div className="oq-pp-card-head"><Link href={`/app/work-record?workId=${entry.workId}`}><strong>{entry.role}</strong></Link><span className="oq-pp-badge oq-pp-badge-ok">{t("pp.badge.verified")}</span></div>
       <p className="oq-pp-employer">{entry.companyName??t("pp.employerRef")}</p>
-      <p>{t("pp.period",{start:entry.periodStart,end:entry.periodEnd,hours:entry.hours})}</p>
+      <p>{t("pp.period",{start:day(entry.periodStart),end:day(entry.periodEnd),hours:entry.hours})}</p>
       {entry.summary&&<p>{entry.summary}</p>}
       <p className="oq-pp-meta">{t("pp.verified",{date:new Date(entry.verifiedAt).toLocaleDateString(),version:entry.version})} · {t("pp.evidence",{count:entry.evidenceCount})}</p>
       <p><Link href={`/app/agreement-workflow?workflowId=${entry.agreementId}`}>{t("pp.agreementRev",{version:entry.agreementVersion})}</Link></p>

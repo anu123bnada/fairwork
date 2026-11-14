@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { appRequest } from "@/features/authority/client";
 import { reportQueue } from "@/features/reports/schema";
+import { userMessage } from "@/lib/user-error";
 
 type Item = ReturnType<typeof reportQueue.parse>["items"][number];
 const EVENTS = [["reviewing", "Start reviewing"], ["needs_information", "Ask the reporter for more information"], ["closed_actioned", "Close: action was taken"], ["closed_no_action", "Close: no action"]] as const;
@@ -12,7 +13,7 @@ export function ReportQueue() {
   const [notes, setNotes] = useState<Record<string, string>>({}), keys = useRef(new Map<string, string>());
   useEffect(() => {
     let active = true;
-    appRequest(`/api/v1/operator/reports?status=${status}`).then(raw => { if (active) { setItems(reportQueue.parse(raw).items); setError(""); } }).catch(caught => { if (active) { setItems(null); setError(caught instanceof Error ? caught.message : "The queue could not be loaded."); } });
+    appRequest(`/api/v1/operator/reports?status=${status}`).then(raw => { if (active) { setItems(reportQueue.parse(raw).items); setError(""); } }).catch(caught => { if (active) { setItems(null); setError(userMessage(caught, "The queue could not be loaded.")); } });
     return () => { active = false; };
   }, [status]);
   async function act(item: Item, event: (typeof EVENTS)[number][0]) {
@@ -23,7 +24,7 @@ export function ReportQueue() {
       await appRequest("/api/v1/operator/reports", body, key);
       setNotes(previous => ({ ...previous, [item.reportId]: "" }));
       setItems(reportQueue.parse(await appRequest(`/api/v1/operator/reports?status=${status}`)).items);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "That did not work."); }
+    } catch (caught) { setError(userMessage(caught, "That did not work.")); }
     finally { setBusy(false); }
   }
   return <section className="fw-list-card" aria-label="Report review queue">

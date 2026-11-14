@@ -5,6 +5,7 @@ import { appRequest } from "@/features/authority/client";
 import { deactivationReceipt } from "@/features/identity/deactivation-schema";
 import { z } from "zod";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 const outcome=deactivationReceipt.extend({sessionsRevoked:z.boolean()});
 export function AccountSecurity({revision}:{revision:number}) {
  const { t } = useI18n();
@@ -12,9 +13,9 @@ export function AccountSecurity({revision}:{revision:number}) {
  const [ready,setReady]=useState(false),[verified,setVerified]=useState(false),[busy,setBusy]=useState(false);
  const [error,setError]=useState(""),[message,setMessage]=useState(""),[done,setDone]=useState(false);
  const key=useRef<{revision:number;key:string}|null>(null);
- useEffect(()=>{let active=true;appRequest("/api/v1/auth/mfa").then(result=>{if(active){setFactor(result.factors.find((f:{status:string})=>f.status==="verified")?.id??"");setReady(true);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+ useEffect(()=>{let active=true;appRequest("/api/v1/auth/mfa").then(result=>{if(active){setFactor(result.factors.find((f:{status:string})=>f.status==="verified")?.id??"");setReady(true);}}).catch(e=>{if(active)setError(userMessage(e));});return()=>{active=false;};},[]);
  async function perform(action:()=>Promise<void>) {
-  setBusy(true);setError("");setMessage("");try{await action();}catch(e){setError(e instanceof Error?e.message:t("sec.unavailable"));}finally{setBusy(false);}
+  setBusy(true);setError("");setMessage("");try{await action();}catch(e){setError(userMessage(e, t("sec.unavailable")));}finally{setBusy(false);}
  }
  function verify(event:FormEvent<HTMLFormElement>){
   event.preventDefault();const form=event.currentTarget,data=new FormData(form);

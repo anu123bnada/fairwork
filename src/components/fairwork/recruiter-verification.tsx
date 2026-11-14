@@ -7,6 +7,7 @@ import { emailDomain } from "@/features/recruiter/domain";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
 import { ReportProblem } from "./report-problem";
+import { userMessage } from "@/lib/user-error";
 
 const STATUS_KEY: Record<RecruiterStatus, MessageKey> = { VERIFIED: "rv.status.verified", PARTIALLY_VERIFIED: "rv.status.partial", UNVERIFIED: "rv.status.unverified", CONFLICTING_EVIDENCE: "rv.status.conflicting" };
 const EFFECT: Record<Evidence["effect"], string> = { supports: "Supports", contradicts: "Does not match", neutral: "Note", not_checked: "Not checked" };
@@ -33,12 +34,12 @@ export function RecruiterVerification({ defaultEmployer = "", defaultRole = "" }
 
   async function showResult(id: string) {
     setBusy(true); setError(""); setWording(null); setConfirmDelete(false);
-    try { setOpen(resultSchema.parse(await appRequest(`/api/v1/recruiter/result?id=${id}`))); } catch (caught) { setError(caught instanceof Error ? caught.message : t("rv.loadError")); } finally { setBusy(false); }
+    try { setOpen(resultSchema.parse(await appRequest(`/api/v1/recruiter/result?id=${id}`))); } catch (caught) { setError(userMessage(caught, t("rv.loadError"))); } finally { setBusy(false); }
   }
   async function searchEmployer() {
     setError(""); setMatches([]); setCompanyId("");
     if (form.claimedEmployer.trim().length < 4) return setError(t("rv.searchShort"));
-    try { const found = companySearchResponse.parse(await appRequest(`/api/v1/recruiter/companies?query=${encodeURIComponent(form.claimedEmployer.trim())}`)).items; setMatches(found); if (!found.length) setError(t("rv.searchNone")); } catch (caught) { setError(caught instanceof Error ? caught.message : t("rv.loadError")); }
+    try { const found = companySearchResponse.parse(await appRequest(`/api/v1/recruiter/companies?query=${encodeURIComponent(form.claimedEmployer.trim())}`)).items; setMatches(found); if (!found.length) setError(t("rv.searchNone")); } catch (caught) { setError(userMessage(caught, t("rv.loadError"))); }
   }
   async function create(event: FormEvent) {
     event.preventDefault(); setBusy(true); setError("");
@@ -52,7 +53,7 @@ export function RecruiterVerification({ defaultEmployer = "", defaultRole = "" }
   }
   async function remove() {
     if (!open) return; setBusy(true); setError("");
-    try { await appRequest("/api/v1/recruiter/delete", { verificationId: open.claim.verificationId }); setOpen(null); setConfirmDelete(false); await loadList(); } catch (caught) { setError(caught instanceof Error ? caught.message : t("rv.loadError")); } finally { setBusy(false); }
+    try { await appRequest("/api/v1/recruiter/delete", { verificationId: open.claim.verificationId }); setOpen(null); setConfirmDelete(false); await loadList(); } catch (caught) { setError(userMessage(caught, t("rv.loadError"))); } finally { setBusy(false); }
   }
   function checkWording() {
     const domain = open?.evidence.find(item => item.area === "email" && item.effect === "supports") ? emailDomain(open.claim.email) ?? undefined : undefined;

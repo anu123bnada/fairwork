@@ -6,6 +6,7 @@ import { appRequest } from "@/features/authority/client";
 import { companyResult, membershipResult } from "@/features/authority/schema";
 import { meSchema } from "@/features/identity/schema";
 import { OrganizationRequests } from "@/components/fairwork/organization-requests";
+import { userMessage } from "@/lib/user-error";
 
 export default function AuthorityPage() {
   const [ready,setReady]=useState(false); const [operator,setOperator]=useState(false);
@@ -24,12 +25,12 @@ export default function AuthorityPage() {
     Promise.all([appRequest("/api/v1/me"),appRequest("/api/v1/auth/mfa")]).then(([raw,mfa])=>{
       if(!active)return; const profile=meSchema.parse(raw); setOperator(profile.capabilities.includes("authority_operator"));
       setFactor(mfa.factors.find((f:{status:string})=>f.status==="verified")?.id??""); setReady(true);
-    }).catch(e=>{if(active)setError(e instanceof Error?e.message:"Unable to load your session.");});
+    }).catch(e=>{if(active)setError(userMessage(e, "Unable to load your session."));});
     return ()=>{active=false;};
   },[]);
   async function perform(action:()=>Promise<void>) {
     setBusy(true);setError("");setMessage("");
-    try { await action(); } catch(e) {setError(e instanceof Error?e.message:"Unable to complete the action.");}
+    try { await action(); } catch(e) {setError(userMessage(e, "Unable to complete the action."));}
     finally {setBusy(false);}
   }
   async function command(path:string,body:unknown) {

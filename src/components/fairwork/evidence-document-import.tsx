@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/use-i18n";
 import { importEvidenceText, MAX_DOCUMENT_BYTES } from "@/features/work/document-import";
+import { userMessage } from "@/lib/user-error";
 export function EvidenceDocumentImport({ capacity, disabled, append }: { capacity: number; disabled: boolean; append: (notes: string[]) => void }) {
   const { t } = useI18n();
   const [notes, setNotes] = useState<string[]>([]), [error, setError] = useState(""), [reading, setReading] = useState(false);
@@ -18,7 +19,7 @@ export function EvidenceDocumentImport({ capacity, disabled, append }: { capacit
       const imported = importEvidenceText(file.name, file.type, new Uint8Array(bytes), digest);
       if (imported.length > capacity) throw new Error(t("ev.slots", { needed: imported.length, left: capacity }));
       if (current === sequence.current) setNotes(imported);
-    } catch (caught) { if (current === sequence.current) setError(caught instanceof Error ? caught.message : t("ev.readFail")); }
+    } catch (caught) { if (current === sequence.current) setError(userMessage(caught, t("ev.readFail"))); }
     finally { if (current === sequence.current) setReading(false); }
   }
   return <section className="fw-list-card" aria-label={t("ev.aria")}>

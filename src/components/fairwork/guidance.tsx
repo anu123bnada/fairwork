@@ -5,6 +5,7 @@ import { appRequest } from "@/features/authority/client";
 import { guidanceDeleteReceipt, guidancePage, guidanceRead, guidanceSend, type GuidancePage } from "@/features/guidance/schema";
 import { useI18n } from "@/i18n/use-i18n";
 import type { MessageKey } from "@/i18n";
+import { userMessage } from "@/lib/user-error";
 
 export function GuidanceScreen() {
   const { t } = useI18n();
@@ -19,7 +20,7 @@ export function GuidanceScreen() {
     const input = guidanceRead.safeParse({ operation: "read", threadId: params.get("threadId") });
     const path = input.success && input.data.threadId ? `/api/v1/guidance?threadId=${input.data.threadId}` : "/api/v1/guidance";
     appRequest(path).then(raw => { if (active) { const result = guidancePage.parse(raw); setData(result); setThread(result.threadId); } })
-      .catch(caught => { if (active) setError(caught instanceof Error ? caught.message : t("gd.historyFail")); }).finally(() => { if (active) setBusy(false); });
+      .catch(caught => { if (active) setError(userMessage(caught, t("gd.historyFail"))); }).finally(() => { if (active) setBusy(false); });
     return () => { active = false; };
   }, [t]);
   async function load(id: string | null) {
@@ -27,7 +28,7 @@ export function GuidanceScreen() {
     try {
       const result = guidancePage.parse(await appRequest(`/api/v1/guidance${id ? `?threadId=${id}` : ""}`));
       if (current === generation.current) { setData(result); setThread(id); window.history.replaceState(window.history.state, "", `/app/guidance${id ? `?threadId=${id}` : ""}`); }
-    } catch (caught) { if (current === generation.current) setError(caught instanceof Error ? caught.message : t("gd.loadFail")); }
+    } catch (caught) { if (current === generation.current) setError(userMessage(caught, t("gd.loadFail"))); }
     finally { if (current === generation.current) setBusy(false); }
   }
   async function erase() {
@@ -38,7 +39,7 @@ export function GuidanceScreen() {
       setConfirming(false); setNotice(receipt.deleted > 0 ? t("gd.deleted") : t("gd.alreadyEmpty"));
       setThread(null); window.history.replaceState(window.history.state, "", "/app/guidance");
       setData(guidancePage.parse(await appRequest("/api/v1/guidance")));
-    } catch (caught) { setError(caught instanceof Error ? caught.message : t("gd.deleteFail")); }
+    } catch (caught) { setError(userMessage(caught, t("gd.deleteFail"))); }
     finally { setBusy(false); }
   }
   async function send(event: FormEvent) {
@@ -51,7 +52,7 @@ export function GuidanceScreen() {
     if (!parsed.success) { setError(t("gd.invalid")); return; }
     setBusy(true); setError(""); setData(null);
     try { const result = guidancePage.parse(await appRequest("/api/v1/guidance", parsed.data)); setData(result); setQuestion(""); keys.current.delete(fingerprint); window.history.replaceState(window.history.state, "", `/app/guidance?threadId=${id}`); }
-    catch (caught) { setError(caught instanceof Error ? caught.message : t("gd.saveFail")); }
+    catch (caught) { setError(userMessage(caught, t("gd.saveFail"))); }
     finally { setBusy(false); }
   }
   return <section className="fw-opportunities" aria-label={t("gd.aria")}>

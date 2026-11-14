@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { userMessage } from "@/lib/user-error";
 
 const DEFAULT_TERMS = {
   salary: 120000,
@@ -85,7 +86,7 @@ export function Day3OfferDemo() {
       setAnsweredQuestionIds(new Set());
       setAgreementState(null);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Offer review failed");
+      setError(userMessage(caught, "Offer review failed"));
     } finally {
       setBusy(false);
     }
@@ -116,7 +117,7 @@ export function Day3OfferDemo() {
       }
       setAnsweredQuestionIds((current) => new Set(current).add(questionId));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Question answer failed");
+      setError(userMessage(caught, "Question answer failed"));
     } finally {
       setBusy(false);
     }
@@ -149,7 +150,7 @@ export function Day3OfferDemo() {
       }
       setAgreementState(json.data);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Agreement confirmation failed");
+      setError(userMessage(caught, "Agreement confirmation failed"));
     } finally {
       setBusy(false);
     }

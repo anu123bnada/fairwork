@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { appRequest } from "@/features/authority/client";
 import { meSchema, updateProfileSchema } from "@/features/identity/schema";
 import type { z } from "zod";
+import { userMessage } from "@/lib/user-error";
 type Profile = z.infer<typeof meSchema>;
 
 export function ProfileEditor({ profile, onSaved }: { profile: Profile; onSaved: (profile: Profile) => void }) {
@@ -26,7 +27,7 @@ export function ProfileEditor({ profile, onSaved }: { profile: Profile; onSaved:
       onSaved(saved); setName(saved.displayName); setTimeZone(saved.timeZone);
       pending.current = null; setMessage("Profile saved.");
     } catch (error) {
-      setFailed(true); setMessage(error instanceof Error ? error.message : "Your profile could not be saved. Retry or reload to check the latest version.");
+      setFailed(true); setMessage(userMessage(error, "Your profile could not be saved. Retry or reload to check the latest version."));
     } finally { setBusy(false); }
   }
   return <form className="oq-profile-editor fw-card" onSubmit={event => void save(event)} aria-label="Edit profile">

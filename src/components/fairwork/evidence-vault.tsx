@@ -6,6 +6,7 @@ import { vaultCategories, vaultLimits, vaultListResponse, type VaultCategory, ty
 import { useI18n } from "@/i18n/use-i18n";
 import { evidenceStatusList, type EvidenceStatus } from "@/features/vault/evidence";
 import { DocumentStatus } from "./evidence-status";
+import { userMessage } from "@/lib/user-error";
 
 const accepted = ".pdf,.png,.jpg,.jpeg,.webp,application/pdf,image/png,image/jpeg,image/webp";
 const size = (bytes: number) => bytes >= 1024 * 1024 ? `${(bytes / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -76,14 +77,14 @@ export function EvidenceVault() {
     try {
       const link = await appRequest(`/api/v1/vault/link?id=${id}`) as { url: string };
       const anchor = document.createElement("a"); anchor.href = link.url; anchor.rel = "noopener noreferrer"; document.body.append(anchor); anchor.click(); anchor.remove();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The download link could not be created."); }
+    } catch (caught) { setError(userMessage(caught, "The download link could not be created.")); }
   }
   async function remove(id: string) {
     setError(""); setBusy(true);
     try {
       const result = await appRequest("/api/v1/vault/delete", { documentId: id }) as { fileRemoved: boolean };
       setConfirming(null); setNotice(result.fileRemoved ? "Document deleted." : "Document deleted. Its stored file will be removed when storage is reachable."); await load();
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "The document could not be deleted."); }
+    } catch (caught) { setError(userMessage(caught, "The document could not be deleted.")); }
     finally { setBusy(false); }
   }
 

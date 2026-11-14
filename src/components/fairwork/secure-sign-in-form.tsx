@@ -6,6 +6,7 @@ import { appRequest } from "@/features/authority/client";
 import { participantDestination, participantAuthQuery } from "@/features/offer/participant-path";
 import { AuthLink } from "./auth-link";
 import { useI18n } from "@/i18n/use-i18n";
+import { userMessage } from "@/lib/user-error";
 
 export function SecureSignInForm({ className }: { className?: string }) {
   const router = useRouter();
@@ -31,7 +32,7 @@ export function SecureSignInForm({ className }: { className?: string }) {
         : participantDestination(window.location.search) ?? "/app/intro-welcome");
       router.refresh();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : t("au.signInFailed"));
+      setError(userMessage(caught, t("au.signInFailed")));
     } finally {
       setBusy(false);
     }
