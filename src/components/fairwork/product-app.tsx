@@ -89,6 +89,7 @@ import { SalaryCompare } from "./salary-compare";
 import { ScheduleReminders } from "./schedule-reminders";
 import { DemoBanner } from "./demo-banner";
 import { ScreenIntro, StartHere } from "./screen-intro";
+import { MobileHome, useIsPhone } from "./mobile-home";
 import { CommandPalette, openCommandPalette } from "./command-palette";
 import { NavMenuSheet, openNavMenu } from "./menu-sheet";
 import "./motion.css";
@@ -486,13 +487,13 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["navg.employers", [["applicants", t("nav.applicants")], ["employers-demo", t("nav.employersDemo")]]],
     ["navg.account", [["help", t("nav.help")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")], ["demo", t("nav.demo")]]],
   ];
-  const more = groups.flatMap(([, links]) => links);
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <>
     <nav className="fw-bottom-nav" aria-label="Main navigation">
       <span className="fw-nav-brand"><BrandMark className="fw-nav-mark" /><span>ORYQEN</span></span>
       <button type="button" className="fw-nav-search" onClick={openCommandPalette}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg><span>{t("cp.open")}</span><kbd>Ctrl K</kbd></button>
+      <div className="fw-nav-pill">
       {items.slice(0, 2).map(([route, label, icon]) => (
         <Link key={route} className={`fw-nav-link${active === route ? " active" : ""}`} href={previewRouteFor(route, demoPreview)} aria-current={active === route ? "page" : undefined}>
           <Icon name={icon} size={22} />
@@ -506,7 +507,8 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
           <span>{label}</span>
         </Link>
       ))}
-      {!demoPreview && <details className="fw-nav-more" open={more.some(([route]) => route === current) || undefined}>
+      </div>
+      {!demoPreview && <details className="fw-nav-more">
         <summary className="fw-nav-more-title">{t("nav.more")}</summary>
         {groups.map(([group, links]) => <div key={group} className="fw-nav-group" role="group" aria-label={t(group)}>
           <span className="fw-nav-group-title" aria-hidden="true">{t(group)}</span>
@@ -668,6 +670,7 @@ function DemoPreviewControl({ screen, enabled }: { screen: string; enabled: bool
 function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPreview: boolean }) {
   const { offer } = useProduct();
   const dashboard = useDashboardData();
+  const phone = useIsPhone();
   const { t } = useI18n();
   const name = demoPreview ? "Nimal Perera" : profile?.displayName || "ORYQEN member";
   const statusText = offer
@@ -725,9 +728,11 @@ function HomeScreen({ profile, demoPreview }: { profile: Profile | null; demoPre
         </div>
       </div>
       {!REAL_BACKEND && <Link className="fw-home-demo-link" href={`${routeFor("home")}?preview=demo`}>Figma sample</Link>}
-      <DashboardHero name={name.split(" ")[0]!} data={dashboard} status={statusText} />
-      <StartHere />
-      <SummaryCards data={dashboard} />
+      {phone ? <MobileHome name={name} data={dashboard} /> : <>
+        <DashboardHero name={name.split(" ")[0]!} data={dashboard} status={statusText} />
+        <StartHere />
+        <SummaryCards data={dashboard} />
+      </>}
       <DashboardInsights data={dashboard} />
       <div className="fw-dash-columns">
         <div className="fw-dash-main">
