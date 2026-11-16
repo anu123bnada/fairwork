@@ -18,6 +18,8 @@ export const destinations: readonly Destination[] = [
   { href: "/app/cover-letter", label: "nav.coverLetter", group: "career", words: "letter application write" },
   { href: "/app/portfolio", label: "nav.portfolio", group: "career", words: "projects certificates achievements work samples" },
   { href: "/app/career-explorer", label: "nav.careerExplorer", group: "career", words: "skills gap roadmap path roles" },
+  { href: "/app/career-intelligence", label: "nav.careerIntelligence", group: "career", words: "career goal gap analyzer learning path free courses skills qualifications progress" },
+  { href: "/app/opportunity-intelligence", label: "nav.opportunityIntelligence", group: "career", words: "matched jobs recommendations connections linkedin fiverr feedback like dislike" },
   { href: "/app/career-assistant", label: "nav.careerAssistant", group: "career", words: "ask advice guidance copilot questions" },
   { href: "/app/work-record", label: "nav.record", group: "work", words: "hours work log evidence vault upload documents" },
   { href: "/app/passport", label: "nav.passport", group: "work", words: "verified work credentials share qr trust chain" },

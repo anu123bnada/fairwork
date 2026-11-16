@@ -41,6 +41,32 @@ export type ProjectContent = z.infer<typeof projectContent>;
 export const emptyApplication: ApplicationContent = { listingId: null, organization: "", location: "", appliedOn: "", nextStepAt: "", notes: "", events: [], prep: prepItems.map(() => false) };
 export const emptyProject: ProjectContent = { description: "", dueOn: "", milestones: [], tasks: [] };
 
+// Career goal profile and opportunity feedback. Both are typed by the person, private to them and NOT verified by anyone: "evidence_attached" only means the person says they hold proof and
+// described it. Nothing here can mark a skill or qualification as independently verified, and a finished course never turns into a qualification by itself.
+export const careerProfileStatuses = ["active", "archived"] as const;
+export const educationLevels = ["none", "primary", "secondary", "vocational", "diploma", "bachelor", "master", "doctorate"] as const;
+export const learningFormats = ["any", "video", "reading", "interactive"] as const;
+export const evidenceLevels = ["self_reported", "demonstrated", "evidence_attached"] as const;
+export const progressStatuses = ["started", "completed"] as const;
+export const feedbackActions = ["like", "dislike", "save", "hide", "not_relevant", "applied"] as const;
+const careerGoal = z.strictObject({ careerId: z.string().regex(/^([a-z0-9-]{1,40})?$/), title: text(120) });
+export const careerProfileContent = z.strictObject({
+  primaryGoal: careerGoal,
+  altGoals: z.array(careerGoal).max(3),
+  educationLevel: z.enum(educationLevels),
+  qualifications: z.array(z.strictObject({ id: z.uuid(), name: z.string().trim().min(1).max(120), kind: z.enum(["academic", "professional", "certification"]), evidence: z.enum(evidenceLevels), note: text(300) })).max(30),
+  skills: z.array(z.strictObject({ id: z.uuid(), name: z.string().trim().min(1).max(60), kind: z.enum(["technical", "soft"]), evidence: z.enum(evidenceLevels), note: text(300) })).max(60),
+  experience: text(2000), projects: text(2000),
+  learning: z.strictObject({ language: text(40), format: z.enum(learningFormats), hoursPerWeek: z.number().int().min(0).max(80) }),
+  customRequirements: z.array(z.string().trim().min(1).max(60)).max(30),
+  progress: z.array(z.strictObject({ resourceId: z.string().regex(/^[a-z0-9-]{1,60}$/), status: z.enum(progressStatuses), updatedOn: day, evidenceLink: z.string().max(300).regex(/^(https:\/\/[^\s]+)?$/, "Use a link starting with https://") })).max(100),
+});
+export const opportunityFeedbackContent = z.strictObject({ entries: z.array(z.strictObject({ listingId: z.uuid(), action: z.enum(feedbackActions), at: z.string().max(30) })).max(200) });
+export type CareerProfileContent = z.infer<typeof careerProfileContent>;
+export type OpportunityFeedbackContent = z.infer<typeof opportunityFeedbackContent>;
+export const emptyCareerProfile: CareerProfileContent = { primaryGoal: { careerId: "", title: "" }, altGoals: [], educationLevel: "none", qualifications: [], skills: [], experience: "", projects: "", learning: { language: "English", format: "any", hoursPerWeek: 5 }, customRequirements: [], progress: [] };
+export const emptyFeedback: OpportunityFeedbackContent = { entries: [] };
+
 const title = z.string().trim().min(1).max(120);
 const base = { id: z.uuid(), title, expectedRevision: z.number().int().min(0) };
 export const recordSaveInput = z.discriminatedUnion("kind", [
@@ -49,8 +75,10 @@ export const recordSaveInput = z.discriminatedUnion("kind", [
   z.strictObject({ ...base, kind: z.literal("cover_letter"), status: z.enum(coverLetterStatuses), content: coverLetterContent }),
   z.strictObject({ ...base, kind: z.literal("portfolio"), status: z.enum(portfolioStatuses), content: portfolioContent }),
   z.strictObject({ ...base, kind: z.literal("roadmap"), status: z.enum(roadmapStatuses), content: roadmapContent }),
+  z.strictObject({ ...base, kind: z.literal("career_profile"), status: z.enum(careerProfileStatuses), content: careerProfileContent }),
+  z.strictObject({ ...base, kind: z.literal("opportunity_feedback"), status: z.literal("active"), content: opportunityFeedbackContent }),
 ]);
-export const recordKind = z.enum(["application", "project", "cover_letter", "portfolio", "roadmap"]);
+export const recordKind = z.enum(["application", "project", "cover_letter", "portfolio", "roadmap", "career_profile", "opportunity_feedback"]);
 export type RecordKind = z.infer<typeof recordKind>;
 export const recordSaved = z.strictObject({ id: z.uuid(), revision: z.number().int().positive() });
 export const recordSummary = z.strictObject({
@@ -64,6 +92,8 @@ export const recordDocument = z.discriminatedUnion("kind", [
   z.strictObject({ id: z.uuid(), kind: z.literal("cover_letter"), title: z.string(), status: z.enum(coverLetterStatuses), content: coverLetterContent, revision: z.number().int().positive(), updatedAt: z.string() }),
   z.strictObject({ id: z.uuid(), kind: z.literal("portfolio"), title: z.string(), status: z.enum(portfolioStatuses), content: portfolioContent, revision: z.number().int().positive(), updatedAt: z.string() }),
   z.strictObject({ id: z.uuid(), kind: z.literal("roadmap"), title: z.string(), status: z.enum(roadmapStatuses), content: roadmapContent, revision: z.number().int().positive(), updatedAt: z.string() }),
+  z.strictObject({ id: z.uuid(), kind: z.literal("career_profile"), title: z.string(), status: z.enum(careerProfileStatuses), content: careerProfileContent, revision: z.number().int().positive(), updatedAt: z.string() }),
+  z.strictObject({ id: z.uuid(), kind: z.literal("opportunity_feedback"), title: z.string(), status: z.literal("active"), content: opportunityFeedbackContent, revision: z.number().int().positive(), updatedAt: z.string() }),
 ]);
 export const recordDeleteInput = z.strictObject({ id: z.uuid() });
 export const recordDeleted = z.strictObject({ id: z.uuid() });

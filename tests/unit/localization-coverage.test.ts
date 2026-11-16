@@ -8,6 +8,8 @@ import path from "node:path";
 const walk = (dir: string): string[] => readdirSync(dir).flatMap(name => { const file = path.join(dir, name); return statSync(file).isDirectory() ? walk(file) : [file]; });
 const ENGLISH_ON_PURPOSE: Record<string, string> = {
   "src/components/admin/operations-overview.tsx": "administration console (operators)",
+  "src/components/fairwork/career-intelligence.tsx": "Career gap analyzer (16 Nov); English only, because its requirement wording and course notes need native-speaker review before translation",
+  "src/components/fairwork/opportunity-intelligence.tsx": "Opportunity intelligence (16 Nov); English only, because its platform limitation statements and matching explanations need native-speaker review before translation",
   "src/components/fairwork/company-profiles.tsx": "organization and company screens, listed in the note",
   "src/components/fairwork/credential-verifier.tsx": "public verifier page",
   "src/components/fairwork/dashboard-records.tsx": "home record lists",

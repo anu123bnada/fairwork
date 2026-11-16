@@ -1403,6 +1403,8 @@ export const en = {
   "cl.copied": "Copied.",
   "cl.notice": "Only include things that are true. ORYQEN does not check what you write and does not apply for you.",
   "nav.careerExplorer": "Career explorer",
+  "nav.careerIntelligence": "Career gap analyzer",
+  "nav.opportunityIntelligence": "Opportunity intelligence",
   "cx.aria": "Career path explorer and skill gap",
   "cx.sampleLabel": "SAMPLE DATA.",
   "cx.sampleBody": "The roles, skills and steps on this screen are a synthetic sample written for this demonstration. They are not real labour-market data, not an official job classification and not verified.",
