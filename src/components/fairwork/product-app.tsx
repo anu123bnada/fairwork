@@ -77,6 +77,8 @@ import { ApplicationTracker } from "./application-tracker";
 import { Workroom } from "./workroom";
 import { CoverLetter } from "./cover-letter";
 import { CareerExplorer } from "./career-explorer";
+import { CareerIntelligence } from "./career-intelligence";
+import { OpportunityIntelligence } from "./opportunity-intelligence";
 import { PortfolioBuilder } from "./portfolio-builder";
 import { ApplicantManagement } from "./applicant-management";
 import { InterviewStudio } from "./interview-studio";
@@ -385,6 +387,8 @@ const screenTitle: Record<string, string> = {
   workroom: "Workroom",
   "cover-letter": "Cover letter",
   "career-explorer": "Career explorer",
+  "career-intelligence": "Career gap analyzer",
+  "opportunity-intelligence": "Opportunity intelligence",
   portfolio: "Portfolio",
   applicants: "Applicants",
   interviews: "Interviews",
@@ -419,6 +423,8 @@ const backTarget: Record<string, string> = {
   workroom: "home",
   "cover-letter": "home",
   "career-explorer": "home",
+  "career-intelligence": "home",
+  "opportunity-intelligence": "home",
   portfolio: "home",
   applicants: "home",
   interviews: "home",
@@ -474,7 +480,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["passport", t("nav.passport"), "badge"],
   ] as const;
   const groups: readonly (readonly [MessageKey, readonly (readonly [string, string])[]])[] = [
-    ["navg.findWork", [["opportunities", t("nav.opportunities")], ["applications", t("nav.applications")], ["interviews", t("nav.interviews")], ["cv", t("nav.cv")], ["cover-letter", t("nav.coverLetter")], ["portfolio", t("nav.portfolio")], ["career-explorer", t("nav.careerExplorer")], ["career-assistant", t("nav.careerAssistant")]]],
+    ["navg.findWork", [["opportunities", t("nav.opportunities")], ["applications", t("nav.applications")], ["interviews", t("nav.interviews")], ["cv", t("nav.cv")], ["cover-letter", t("nav.coverLetter")], ["portfolio", t("nav.portfolio")], ["career-intelligence", t("nav.careerIntelligence")], ["opportunity-intelligence", t("nav.opportunityIntelligence")], ["career-explorer", t("nav.careerExplorer")], ["career-assistant", t("nav.careerAssistant")]]],
     ["navg.offers", [["scan", t("nav.scan")], ["agreement-workflow", t("nav.agreements")], ["salary", t("nav.salary")]]],
     ["navg.myWork", [["workroom", t("nav.workroom")], ["cases", t("nav.cases")]]],
     ["navg.employers", [["applicants", t("nav.applicants")], ["employers-demo", t("nav.employersDemo")]]],
@@ -615,6 +621,8 @@ function ScreenContent({ screen, demoPreview }: { screen: string; demoPreview: b
       {screen === "workroom" && profile ? <Workroom /> : null}
       {screen === "cover-letter" && profile ? <CoverLetter displayName={profile.displayName} /> : null}
       {screen === "career-explorer" && profile ? <CareerExplorer /> : null}
+      {screen === "career-intelligence" && profile ? <CareerIntelligence /> : null}
+      {screen === "opportunity-intelligence" && profile ? <OpportunityIntelligence /> : null}
       {screen === "portfolio" && profile ? <PortfolioBuilder /> : null}
       {screen === "applicants" && profile ? <><ApplicantManagement /><OrgDemo /></> : null}
       {screen === "interviews" && profile ? <InterviewStudio /> : null}

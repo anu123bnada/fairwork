@@ -26,7 +26,7 @@ describe("command palette destinations", () => {
     // "pay" is only a search term for salary, not in any label that starts with it.
     expect(searchDestinations(ranked, "benchmark").map(item => item.href)).toEqual(["/app/salary"]);
     const career = searchDestinations(ranked, "career");
-    expect(career.slice(0, 2).map(item => item.href).sort()).toEqual(["/app/career-assistant", "/app/career-explorer"]);
+    expect(career.slice(0, 3).map(item => item.href).sort()).toEqual(["/app/career-assistant", "/app/career-explorer", "/app/career-intelligence"]);
   });
   it("requires every typed word to match and is case-insensitive", () => {
     expect(searchDestinations(ranked, "WORK PASSPORT").some(item => item.href === "/app/passport")).toBe(true);

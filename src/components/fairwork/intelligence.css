@@ -1,0 +1,37 @@
+/* Career Gap Analyzer and Opportunity Intelligence. Uses the ORYQEN design tokens from ui-v2.css; no separate design system. Mobile first. */
+.oq-ci { display: grid; gap: var(--oq-s4, 16px); min-width: 0; }
+.oq-ci > * { min-width: 0; }
+.oq-ci-card { display: grid; align-content: start; gap: var(--oq-s3, 12px); padding: var(--oq-card-pad, 16px); border-radius: 22px; background: var(--oq-surface); border: 1px solid var(--oq-border); box-shadow: var(--oq-elev-1); color: var(--oq-text); }
+.oq-ci-card h2, .oq-ci-card h3, .oq-ci-card h4 { margin: 0; letter-spacing: -.01em; }
+.oq-ci-card p { margin: 0; }
+.oq-ci-hero { background: linear-gradient(160deg, var(--oq-navy-1) 0%, var(--oq-navy-2) 100%); color: #f3f6ff; border-color: transparent; box-shadow: var(--oq-elev-2); }
+.oq-ci-hero h2 { color: #fff; font-size: 20px; }
+.oq-ci-note { color: var(--oq-text-2); font-size: var(--oq-t-sm, 14px); }
+.oq-ci-hero .oq-ci-note { color: #cdd6f4; }
+.oq-ci-label { display: inline-block; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--oq-border); font-size: 12px; font-weight: 700; color: var(--oq-text-2); }
+.oq-ci-label.ai { border-color: var(--oq-chart-1); }
+.oq-ci-grid { display: grid; gap: var(--oq-s3, 12px); grid-template-columns: 1fr; }
+.oq-ci-stats { display: grid; gap: var(--oq-s3, 12px); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.oq-ci-stat { display: grid; gap: 2px; padding: 12px; border-radius: 16px; border: 1px solid var(--oq-border); }
+.oq-ci-stat strong { font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.oq-ci-bar { height: 10px; border-radius: 999px; background: var(--oq-border); overflow: hidden; }
+.oq-ci-bar > span { display: block; height: 100%; background: var(--oq-chart-1); }
+.oq-ci-row { display: grid; gap: 6px; padding: 12px; border-radius: 16px; border: 1px solid var(--oq-border); }
+.oq-ci-row header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between; }
+.oq-ci-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.oq-ci-actions a, .oq-ci-actions button { min-height: 44px; }
+.oq-ci-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--oq-s2, 8px); }
+.oq-ci a.oq-ci-link { color: var(--oq-link); font-weight: 700; overflow-wrap: anywhere; }
+.oq-ci-inline { display: grid; gap: 8px; grid-template-columns: 1fr; }
+.oq-ci input, .oq-ci select, .oq-ci textarea { max-width: 100%; }
+.oq-ci-pill-ok, .oq-ci-pill-gap, .oq-ci-pill-warn { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--oq-border); }
+.oq-ci-pill-gap { border-color: #b3261e; color: #b3261e; }
+.oq-ci-pill-warn { border-color: #8a6100; color: #8a6100; }
+@media (prefers-color-scheme: dark) { html:not([data-theme="light"]) .oq-ci-pill-gap { color: #ffb4ab; border-color: #ffb4ab; } html:not([data-theme="light"]) .oq-ci-pill-warn { color: #f5c869; border-color: #f5c869; } }
+html[data-theme="dark"] .oq-ci-pill-gap { color: #ffb4ab; border-color: #ffb4ab; }
+html[data-theme="dark"] .oq-ci-pill-warn { color: #f5c869; border-color: #f5c869; }
+@media (min-width: 760px) {
+  .oq-ci-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .oq-ci-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .oq-ci-inline { grid-template-columns: 2fr 1fr 1fr auto; align-items: end; }
+}

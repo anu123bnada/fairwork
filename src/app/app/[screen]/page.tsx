@@ -20,6 +20,8 @@ const screens = new Set([
   "applications",
   "cover-letter",
   "career-explorer",
+  "career-intelligence",
+  "opportunity-intelligence",
   "portfolio",
   "applicants",
   "interviews",
