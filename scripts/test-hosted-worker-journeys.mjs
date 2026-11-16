@@ -274,6 +274,36 @@ await step('18 Application tracker and Workroom: save, read back exactly, list, 
   return 'both kinds saved, read back, counted, updated, stale/invalid/foreign-owner refused, then deleted (cross-user isolation is proven by the local real-stack harness and the database tests, since this run has one account)';
 });
 
+// ---- 23/24. career goal profile and opportunity feedback (record kinds added 16 Nov; need migration 20261116090000 on the project)
+await step('23/24 Career profile and opportunity feedback: save, read back exactly, list, update with the revision, refuse stale, unknown key, wrong status and unsafe link, delete', async () => {
+  const profileId = randomUUID(), feedbackId = randomUUID();
+  const profile = { primaryGoal: { careerId: 'junior-web-developer', title: 'Junior web developer' }, altGoals: [], educationLevel: 'diploma',
+    qualifications: [{ id: randomUUID(), name: 'Synthetic certificate (DEMO)', kind: 'certification', evidence: 'self_reported', note: '' }],
+    skills: [{ id: randomUUID(), name: 'HTML', kind: 'technical', evidence: 'demonstrated', note: 'Synthetic project' }], experience: 'Synthetic', projects: 'Synthetic',
+    learning: { language: 'English', format: 'any', hoursPerWeek: 5 }, customRequirements: [],
+    progress: [{ resourceId: 'webdev-learn-html', status: 'completed', updatedOn: '2026-11-16', evidenceLink: 'https://example.test/synthetic' }] };
+  const profileBody = { id: profileId, kind: 'career_profile', title: 'Synthetic hosted career profile', status: 'active', content: profile, expectedRevision: 0 };
+  const feedbackBody = { id: feedbackId, kind: 'opportunity_feedback', title: 'Synthetic hosted feedback', status: 'active', content: { entries: [{ listingId: randomUUID(), action: 'like', at: '2026-11-16T09:00:00Z' }] }, expectedRevision: 0 };
+  try {
+    if ((await call('/api/v1/records', profileBody)).data.revision !== 1) throw new Error('the first profile save should be revision 1');
+    if ((await call('/api/v1/records', feedbackBody)).data.revision !== 1) throw new Error('the first feedback save should be revision 1');
+    const read = (await call('/api/v1/records?id=' + profileId)).data;
+    if (JSON.stringify(read.content) !== JSON.stringify(profile) || read.kind !== 'career_profile') throw new Error('the profile did not read back as saved');
+    if (!(await call('/api/v1/records?kind=career_profile')).data.items.some(item => item.id === profileId)) throw new Error('the profile is missing from its list');
+    if ((await call('/api/v1/records?kind=opportunity_feedback')).data.items.some(item => item.id === profileId)) throw new Error('the feedback list contains a profile');
+    if ((await call('/api/v1/records', { ...profileBody, expectedRevision: 1 })).data.revision !== 2) throw new Error('the update should be revision 2');
+    await call('/api/v1/records', { ...profileBody, expectedRevision: 1 }, { statuses: [409] });
+    await call('/api/v1/records', { ...profileBody, id: randomUUID(), status: 'draft' }, { statuses: [422] });
+    await call('/api/v1/records', { ...profileBody, id: randomUUID(), content: { ...profile, verified: true } }, { statuses: [422] });
+    await call('/api/v1/records', { ...profileBody, id: randomUUID(), content: { ...profile, progress: [{ ...profile.progress[0], evidenceLink: 'javascript:alert(1)' }] } }, { statuses: [422] });
+  } finally {
+    await call('/api/v1/records/remove', { id: profileId }).catch(() => null);
+    await call('/api/v1/records/remove', { id: feedbackId }).catch(() => null);
+  }
+  await call('/api/v1/records?id=' + profileId, undefined, { statuses: [404] });
+  return 'both kinds saved, read back, listed, updated, stale/unknown-key/wrong-status/unsafe-link refused, then deleted';
+});
+
 // ---- 12. notifications
 await step('12 Notifications: the feed loads for this account only', async () => { const feed = (await call('/api/v1/notifications')).data; if (!Array.isArray(feed.items)) throw new Error('unexpected feed'); return `${feed.items.length} item(s)`; });
 
