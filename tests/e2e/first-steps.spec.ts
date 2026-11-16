@@ -116,7 +116,7 @@ test("the sidebar groups the longer list under plain headings and is present on 
   await page.goto("/app/workroom");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   for (const group of ["Find work", "Offers and agreements", "My work", "Hiring", "Help and account"]) await expect(nav.getByRole("group", { name: group })).toBeVisible();
-  await expect(nav.getByRole("group", { name: "Find work" }).getByRole("link")).toHaveCount(8);
+  await expect(nav.getByRole("group", { name: "Find work" }).getByRole("link")).toHaveCount(10);
   await expect(nav.getByRole("group", { name: "My work" }).getByRole("link", { name: "Workroom" })).toHaveAttribute("aria-current", "page");
   await nav.getByRole("link", { name: "Settings" }).click();
   await expect(page).toHaveURL(/\/app\/settings$/);
