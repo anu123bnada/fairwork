@@ -68,3 +68,29 @@ Mapping to ORYQEN (no fake figures; every number comes from the person's own rec
 ## 8. Integration
 
 `git -C <release checkout> cherry-pick agent/ui-replication` (one commit), or merge the branch. Revert = remove the two CSS imports from `layout.tsx` and the `MobileHome` branch in `HomeScreen`. Capture again with: start `npx next dev -p 3107`, then `REPLICA_SET=after npx playwright test -c playwright.replica.config.ts replica-capture`.
+
+---
+
+# Update 2: priority screens (Check, Evidence Vault, Work Passport, Employer, Career, Opportunities)
+
+New layer `src/components/oryqen/replica-screens.css` (same root as `replica.css`, loaded after it). Captures: `after/<screen>-<width>.jpg` (1440, 390 and, for the dashboard, all six sizes) against `before/`. All 36 captures (6 screens x 1440/1280/1024/390/375/360) were taken and measured: horizontal overflow 0px in every one.
+
+| Screen | Route | What changed (visual only) |
+|---|---|---|
+| Check | `/app/check` | Left-aligned 34px title row, flow steps as a segmented pill, numbered sections as white 24px cards, score hero as the violet gradient card, jump links as pills |
+| Evidence Vault / Work record | `/app/work-record` | Hours summary as the violet gradient card, chips and ring restyled, documents as a card grid with violet icon chips |
+| Work Passport | `/app/passport` | Profile hero as the violet detail card with translucent stat tiles, mint verified badges, white chart and entry cards |
+| Employer workspace | `/app/employer` | Hero in the violet gradient, white pill CTA, KPI tiles as white cards |
+| Career Intelligence + Gap Analyzer | `/app/career-explorer` | Skill chips (selected = violet), role cards in a 2-column grid, violet section markers |
+| Opportunity Intelligence | `/app/opportunities` | Segmented pill tabs, listing cards in a 2-column grid with inline actions |
+
+Shared: page header is now a title row (back circle, large title, actions). Phone: the header wraps its actions onto a second row so titles never break.
+
+Verification: 51 existing e2e tests in the related specs (dashboard, command palette, career explorer, applicants, passport, work record, localization, sharing, ui-redesign) pass against the worktree dev server when run serially (`--workers=1`); in a parallel run on the dev server 8 failed from load, and one real regression (the header Search button hidden on desktop) was found and fixed. tsc and eslint clean on touched files.
+
+Known issues / not done:
+- The Career Intelligence, Career Gap Analyzer and Opportunity Intelligence screens that exist in the uncommitted work of the main checkout (`src/features/careers/*`, `src/features/opportunities/intelligence.ts`) are not in this branch's base commit, so only the committed Career explorer and Opportunities screens were restyled. Re-capture after those land.
+- Employer has no top navigation (the app deliberately omits the nav on that screen).
+- Deep inner content (long Check sections, forms) keeps its existing structure inside the new cards; the aim was the shell, surfaces, heroes and grids, not a rewrite.
+- Dark mode, Sinhala and Tamil layouts were not visually reviewed.
+- Full-page captures show the fixed bottom bar and the fixed Share button mid-page; that is a capture artifact.

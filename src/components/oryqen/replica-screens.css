@@ -1,0 +1,115 @@
+/* ORYQEN design replication: screen layer for the priority screens (Check, Work record / Evidence Vault, Work Passport, Employer, Career explorer, Opportunities).
+   Visual only. Same high-specificity root as replica.css; loaded after it. Tokens (--rp-*) are defined in replica.css. */
+
+html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
+
+  /* ---------- Shared page frame: left-aligned title row, intro card, inputs, buttons ---------- */
+  .fw-product .fw-product-header { display: flex; align-items: center; gap: 14px; min-height: 0; margin: 4px 0 22px; }
+  .fw-product .fw-product-header > span:empty { display: none; }
+  .fw-product .fw-product-header .fw-back { order: 0; flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
+  .fw-product .fw-product-header h1 { order: 1; flex: 1; min-width: 0; margin: 0; text-align: left; font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: var(--rp-ink); }
+  .fw-product .fw-product-header .fw-header-actions { order: 2; margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .fw-product .fw-product-header .fw-header-search { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
+  .fw-product .oq-intro { background: var(--rp-card); border: 1px solid var(--rp-line); border-left: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); color: var(--rp-ink-2); }
+  .fw-product .oq-intro-mark { background: var(--rp-violet-soft); color: var(--rp-violet); }
+  .fw-product .oq-intro-how, .fw-product .oq-intro a { color: var(--rp-violet); }
+  .fw-product .fw-flow { display: flex; gap: 4px; width: fit-content; max-width: 100%; padding: 5px; border-radius: var(--rp-r-pill); background: var(--rp-card); border: 1px solid var(--rp-line); box-shadow: var(--rp-shadow); overflow-x: auto; scrollbar-width: none; }
+  .fw-product .fw-flow li { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px 0 8px; border-radius: var(--rp-r-pill); font-size: 13px; font-weight: 600; color: var(--rp-ink-2); background: none; border: 0; }
+  .fw-product .fw-flow li a { color: inherit; text-decoration: none; }
+  .fw-product .fw-flow .fw-flow-dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; background: var(--rp-card-2); color: var(--rp-ink-3); }
+  .fw-product .fw-flow li.is-done .fw-flow-dot { background: var(--rp-mint-soft); color: #0e8a63; }
+  .fw-product .fw-flow li.is-current { background: var(--rp-violet); color: #fff; }
+  .fw-product .fw-flow li.is-current .fw-flow-dot { background: rgba(255, 255, 255, .24); color: #fff; }
+  .fw-product .fw-field :is(input, select, textarea) { min-height: 48px; border-radius: 14px; border: 1px solid var(--rp-line); background: var(--rp-card); color: var(--rp-ink); }
+  .fw-product .fw-field :is(input, select, textarea):focus-visible { border-color: var(--rp-violet); box-shadow: 0 0 0 4px rgba(91, 76, 240, .16); outline: 0; }
+  .fw-product .fw-field { color: var(--rp-ink-2); }
+  .fw-product .fw-secondary { background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: none; font-weight: 700; }
+  .fw-product .fw-dark-button, .fw-product .fw-full-dark-link { background: var(--rp-violet); color: #fff; border-radius: var(--rp-r-pill); box-shadow: 0 14px 26px -14px rgba(91, 76, 240, .9); }
+  .fw-product .fw-pill { border-radius: var(--rp-r-pill); background: var(--rp-violet-soft); color: var(--rp-violet); border-color: transparent; }
+  .fw-product .fw-notice { color: var(--rp-ink-2); }
+
+  /* ---------- Work Passport ---------- */
+  .oq-passport .oq-pp-hero { background: linear-gradient(150deg, #6e62f4 0%, #5a4bea 55%, #4a3cd0 100%); border: 0; border-radius: 28px; color: #fff; box-shadow: 0 30px 50px -30px rgba(91, 76, 240, .85); }
+  .oq-passport .oq-pp-hero :is(h2, h3, strong, p, span, dd) { color: #fff; }
+  .oq-passport .oq-pp-hero :is(dt, .oq-pp-sub, .oq-pp-span, .oq-pp-meta) { color: #dcd8ff; }
+  .oq-passport .oq-pp-avatar { background: rgba(255, 255, 255, .22); color: #fff; }
+  .oq-passport .oq-pp-badge { background: rgba(255, 255, 255, .16); color: #fff; border-color: transparent; }
+  .oq-passport .oq-pp-badge-ok { background: var(--rp-mint); color: #053d2c; }
+  .oq-passport .oq-pp-stats div { background: rgba(255, 255, 255, .14); border-radius: var(--rp-r-tile); padding: 14px 16px; }
+  .oq-passport .oq-pp-stats dd { font-size: 28px; font-variant-numeric: tabular-nums; }
+  .oq-passport .oq-pp-chart, .oq-passport .oq-pp-card { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); }
+  .oq-passport .oq-pp-card-head a, .oq-passport .oq-pp-employer a { color: var(--rp-violet); }
+  .oq-passport .oq-pp-dot { background: var(--rp-mint); color: #fff; }
+  .oq-passport .oq-pp-year, .oq-passport .fw-section-label { color: var(--rp-ink-3); }
+  .oq-passport .oq-pp-trust, .oq-passport .oq-pp-note { background: var(--rp-violet-soft); border: 0; border-radius: var(--rp-r-tile); color: var(--rp-ink); }
+  .oq-passport .oq-pp-hero .oq-pp-note { background: rgba(255, 255, 255, .14); color: #fff; }
+
+  /* ---------- Work record and Evidence Vault ---------- */
+  .fw-product .fw-work-summary, .fw-product .fw-progress-card.fw-work-summary { background: linear-gradient(150deg, #6e62f4 0%, #5a4bea 55%, #4a3cd0 100%); border: 0; border-radius: 28px; box-shadow: 0 30px 50px -30px rgba(91, 76, 240, .85); color: #fff; }
+  .fw-product .fw-work-summary :is(h2, p, span, small, .fw-eyebrow) { color: #fff; }
+  .fw-product .fw-work-summary .fw-eyebrow { color: #dcd8ff; }
+  .fw-product .oq-wr-chip { background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); border-radius: var(--rp-r-pill); font-weight: 700; }
+  .fw-product .oq-wr-ring { color: var(--rp-violet); }
+  .fw-product .fw-live-work :is(.fw-work-row, .fw-demo-day) { background: var(--rp-card); border-radius: var(--rp-r-tile); }
+  .fw-product .fw-work-row-status { border-radius: var(--rp-r-pill); }
+  .fw-product .oq-doclist { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .fw-product .oq-doclist > li { background: var(--rp-card-2); border: 1px solid var(--rp-line); border-radius: 20px; box-shadow: none; }
+  .fw-product .oq-doc-icon { background: var(--rp-violet); color: #fff; border-radius: 14px; }
+
+  /* ---------- ORYQEN Check ---------- */
+  .fw-product .oq-ck-step { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); }
+  .fw-product .oq-ck-jump a, .fw-product .oq-ck-jump button { background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); border-radius: var(--rp-r-pill); font-weight: 700; }
+  .fw-product .ui-assess-hero, .fw-product .ui-assess-score { background: linear-gradient(150deg, #6e62f4 0%, #5a4bea 55%, #4a3cd0 100%); color: #fff; border: 0; border-radius: 28px; }
+  .fw-product .ui-assess-hero :is(h3, h4, p, span, strong, small, div) { color: inherit; }
+  .fw-product .ui-assess-counts > * { background: var(--rp-card-2); border: 1px solid var(--rp-line); border-radius: var(--rp-r-tile); }
+  .fw-product .ui-assess-cat { border-radius: 14px; }
+  .fw-product .oq-ck-hint, .fw-product .ui-assess-note { background: var(--rp-violet-soft); border: 0; border-radius: var(--rp-r-tile); color: var(--rp-ink); }
+
+  /* ---------- Opportunities ---------- */
+  .fw-product .fw-discovery-tabs { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; gap: 4px; width: fit-content; max-width: 100%; padding: 5px; border-radius: var(--rp-r-pill); background: var(--rp-card); border: 1px solid var(--rp-line); box-shadow: var(--rp-shadow); }
+  .fw-product .fw-discovery-tabs .fw-secondary { flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; min-height: 40px; padding: 0 22px; border: 0; background: transparent; box-shadow: none; color: var(--rp-ink-2); outline: 0; }
+  .fw-product .fw-discovery-tabs [aria-pressed="true"] { background: var(--rp-violet); color: #fff; outline: 0; box-shadow: 0 10px 20px -12px rgba(91, 76, 240, .9); }
+  .fw-product .fw-opportunity-card { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 22px; }
+  .fw-product .fw-opportunity-card > :not(.fw-secondary):not(.fw-primary) { flex: 1 1 100%; margin: 0; }
+  .fw-product .fw-opportunity-card > :is(.fw-secondary, .fw-primary) { flex: 0 0 auto; width: auto; min-width: 0; margin: 0; }
+  .fw-product .fw-discovery-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fw-product .fw-discovery-actions > :is(.fw-secondary, .fw-primary) { flex: 0 0 auto !important; width: auto !important; min-width: 0 !important; }
+  .fw-product .fw-opportunity-card h3 { font-size: 20px; font-weight: 800; letter-spacing: -.015em; color: var(--rp-ink); }
+  @media (min-width: 1100px) {
+    .fw-product .fw-opportunities { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; max-width: none; }
+    .fw-product .fw-opportunities > :not(.fw-opportunity-card) { grid-column: 1 / -1; }
+  }
+
+  /* ---------- Career explorer (Career Intelligence and Gap Analyzer) ---------- */
+  .fw-product .oq-rec-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fw-product .oq-rec-chips .fw-secondary { min-height: 38px; padding: 0 16px; font-size: 13px; }
+  .fw-product .oq-rec-chips .fw-secondary[aria-pressed="true"] { background: var(--rp-violet); border-color: var(--rp-violet); color: #fff; }
+  .fw-product .oq-rec-list > li, .fw-product .oq-rec-group { background: var(--rp-card); border: 1px solid var(--rp-line); border-left: 1px solid var(--rp-line); border-radius: var(--rp-r-tile); box-shadow: var(--rp-shadow); }
+  @media (min-width: 1100px) { .fw-product .oq-rec-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+  .fw-product .oq-rec progress { accent-color: var(--rp-violet); }
+  .fw-product .oq-rec h3::before, .fw-product .oq-rec h2::before { background: var(--rp-violet); }
+
+  /* ---------- Employer workspace ---------- */
+  .oq-emp { padding-top: 24px; }
+  .oq-emp .oq-emp-hero { background: linear-gradient(150deg, #6e62f4 0%, #5a4bea 55%, #4a3cd0 100%); border: 0; border-radius: 28px; box-shadow: 0 30px 50px -30px rgba(91, 76, 240, .85); }
+  .oq-emp .oq-emp-primary { background: #fff; color: var(--rp-violet-deep); border-radius: var(--rp-r-pill); font-weight: 800; }
+  .oq-emp .oq-emp-secondary { background: rgba(255, 255, 255, .16); border: 0; color: #fff; border-radius: var(--rp-r-pill); }
+  .oq-emp .oq-ek-tile { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); color: var(--rp-ink); }
+  .oq-emp .oq-ek-value { color: var(--rp-ink); font-weight: 800; font-variant-numeric: tabular-nums; }
+  .oq-emp .oq-ek-label, .oq-emp .oq-ek-note { color: var(--rp-ink-2); }
+  .oq-emp .oq-ek-tile a { color: var(--rp-violet); }
+  .oq-emp .oq-emp-bar a { color: #fff; }
+  .oq-emp .oq-emp-n { background: var(--rp-violet); }
+
+  /* ---------- Phone ---------- */
+  @media (max-width: 767px) {
+    .fw-product .fw-product-header { margin: 2px 0 16px; flex-wrap: wrap; row-gap: 10px; }
+    .fw-product .fw-product-header .fw-header-actions { order: 3; flex: 1 1 100%; justify-content: flex-end; margin-left: 0; }
+    .fw-product .fw-product-header h1 { font-size: 24px; white-space: normal; overflow: visible; flex: 1 1 0; }
+    .fw-product .fw-product-header .fw-back { width: 44px; height: 44px; }
+    .fw-product .fw-discovery-tabs { width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .fw-product .fw-discovery-tabs .fw-secondary { padding: 0 16px; }
+    .fw-product .fw-work-summary, .oq-passport .oq-pp-hero, .oq-emp .oq-emp-hero { border-radius: 24px; }
+    .fw-product .oq-doclist { grid-template-columns: minmax(0, 1fr); }
+  }
+}
