@@ -47,7 +47,13 @@ Owner-only rows under forced RLS; strict schemas reject unknown keys and non-htt
 Type check clean; lint clean; 143 unit and integration files, 789 tests pass (14 new unit, 3 new database, 2 existing tests updated: command-palette ranking now has three "career" matches, and the two new English-only screens are listed with a reason in the localization coverage test). Browser spec `tests/e2e/career-intelligence.spec.ts`: 11 of 11 pass against a local server with a stand-in API (goal, evidence levels, course card content and link, progress recalculation, save, reload and delete, regulated profession, degraded server, listings explanation, feedback and reset, no-listings state, overflow and script errors at three widths). The full existing browser suite was **not** re-run locally; CI runs it.
 
 ## 12. Staging commit and deployment verification
-_Filled in below after CI._
+**Source commits and CI [V].** Feature `0f5247c`, then two test-only fixes that CI found: `48e0294` (the staging-upgrade rehearsal pins the migration count: 34 became 35) and `edada27` (the sidebar test pins the "Find work" link count: 8 became 10). CI results on the branch: `0f5247c` failed (migration count), `48e0294` failed (sidebar count; 786 other browser tests passed), **`edada27` succeeded** (run 43861781195, full unit, database and browser suites and the build). Both failures were caused by my changes and were not flakes. My earlier local run covered only part of the suite, which is why CI found them.
+
+**Staging deployment [V].** Staging branch `release/oryqen-oct27` fast-forwarded from `62c75d2` to **`b0e78d0`**, made of three cherry-picks of the CI-passed commits (`f8addf8`, `ba2874f`, `b0e78d0`). The source tree was compared with `edada27` before pushing: zero differences in `src`, `tests`, `scripts`, `package.json` and `supabase`; the only differences are two documents staging does not carry. Vercel: `oryqen` success, `fairwork` success. Production was not touched.
+
+**Live checks on `https://oryqen-staging.vercel.app` at `b0e78d0` (16 Nov) [V].** `/`, `/sign-in`, `/app/career-intelligence` and `/app/opportunity-intelligence` return 200 (the screens render after sign-in); anonymous `/api/v1/me` 401; anonymous `/api/v1/records?kind=career_profile` 401; a cross-origin POST to `/api/v1/records` 403; HSTS, `X-Frame-Options: DENY` and `nosniff` present.
+
+**Not verified on staging [U].** Nothing signed-in on the new screens has been seen on staging. **The database migration has not been applied, so saving a profile or feedback will fail there**; the screens say so instead of pretending. A local note: one existing browser test (`first-steps.spec.ts:81`) fails on my local dev server but passes in CI's production build; the cause was not investigated further.
 
 ## 13. Live demonstration (about 4 minutes)
 1. Sign in, open **Find work, Career gap analyzer**. Choose Junior web developer. Say: requirements are an editorial reference, not employer data.

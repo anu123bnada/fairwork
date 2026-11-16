@@ -5,7 +5,7 @@ Prepared 14 Nov 2026 by the release lead agent. **This is a competition-inspecti
 **Evidence legend.** **[V]** verified by me on the date shown (method named). **[F]** verified only against fixture data (a stand-in for the API; proves layout and rendering of real fields, never that the hosted service works). **[U]** not verified.
 
 ## Verdict
-**Ready to show, with named conditions.** The public site, the redesigned screens and the rules-based analysis are verified as far as evidence allows. **No signed-in journey has been verified on hosted staging** because no authorized test account exists in this environment [U]. Section 7 says exactly what the owner must do to close that gap. Without it, the worker and employer journeys must be presented from a local stack or labelled "not shown live".
+**Ready to show, with named conditions.** The public site, the redesigned screens and the rules-based analysis are verified as far as evidence allows. **Single-account worker API journeys now pass on hosted staging (17 PASS, 0 FAIL, 8 NOT RUN; section 7)**, run by the owner and reported to me. **Nothing signed-in has been seen in a browser on staging, and every journey that needs a second account, an organization or an employer is still not run [U].** Those must be presented from a local stack or labelled "not shown live".
 
 ## 1. Completed work
 | Area | What changed | Evidence |
@@ -74,19 +74,27 @@ Caveats a reviewer should know:
 | Employer dashboard | pass | Figures, grid collapses to one column |
 
 ## 7. Signed-in test results
-**None. All signed-in journeys are [U] on hosted staging.**
-| Journey | Status | Why |
+**Hosted worker API run, 15 Nov 2026: PASS 17 | FAIL 0 | NOT RUN 8** against `https://oryqen-staging.vercel.app`, command `node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app --email <worker account>`. **[V-reported]**: the owner ran it locally and pasted the printed lines; I did not run it, never saw the password, and the output does not print the deployed commit, so I have not tied it to `62c75d2`. It is API-level (real sign-in, real endpoints) with one account. It is **not** a browser run.
+
+| Journey | Status | What the output shows |
 |---|---|---|
-| Worker login | not verified | No authorized test account in this environment |
-| Worker dashboard | fixture only [F] | |
-| Offer submission | not verified live | needs account |
-| FAIRWORK assessment | fixture only [F]; engine output is real, transport stubbed | |
-| Evidence Vault | fixture only [F] | storage must also be configured on staging |
-| Work Passport | fixture only [F] | real entries need an employer-confirmed record (two accounts) |
+| Sign in, profile, sign out | **PASS** [V-reported] | Sign in works, profile belongs to the session, session ends with 401 after sign-out. No authenticator enrolled on this account, so the second-factor step was not exercised. |
+| Plans | **PASS** | Free plan, no billing offered |
+| Offer analysis (AI state) | **PASS** | AI is OFF and reported as UNCONFIGURED; no model called, nothing invented |
+| Evidence Vault | **PASS** | Upload, list, signed download of the same bytes, delete: storage is configured on staging. Correction note, resolve, revoke, reinstate pass; another account's document answers 404 (a single-account probe, not independent-account isolation) |
+| Research history, job preferences, CV Builder, saved-listing history, application tracker and Workroom, notifications, security activity, credentials, developer API | **PASS** | Create, read back, update, stale or invalid input refused, delete, as listed in the printed lines. Credential signing key reports configured. Job discovery showed 0 listings; notifications 0 items; security activity empty. |
+| Worker dashboard, FAIRWORK assessment screens | fixture only [F] | Not seen signed in on staging in a browser |
+| Offer workspace (saved offers, notes, documents) | NOT RUN | needs an organization the account may use |
+| Digital agreements and expiry/renewal | NOT RUN | needs a second account |
+| Work Passport (verified work, sharing) | NOT RUN | needs an employer account to verify a record |
+| Revocation blocks attaching | NOT RUN | needs a saved work record or offer |
+| Dispute and appeals | NOT RUN | needs an independent reviewer capability |
+| Organization portal | NOT RUN | needs two independent approvers with the authority capability |
+| Recruiter scam protection | NOT RUN | needs an organization representative |
 | Employer login, applicants | not verified | needs second account and approved organization |
 | Admin governance | not verified | needs an authorized admin account with a second factor |
 
-I did not look for or use credentials, change any role, or bypass or weaken any control. **Owner action to close this (about 10 minutes, the repo's own process):** create two users (one worker, one employer) in the Supabase staging project with Auto Confirm; run `node scripts/test-hosted-worker-journeys.mjs https://oryqen-staging.vercel.app --email <worker test email>` locally, typing the password at the hidden prompt; send me only the printed PASS/FAIL lines. Two-account journeys additionally need an approved organization membership and are described in `ORYQEN_TEST_ACCOUNT_WORKFLOW.md`.
+Caveats: (1) cross-user isolation is still **not** proven on hosted infrastructure; the script itself says it is proven only by the local real-stack harness and database tests. (2) The run used one account and wrote then deleted its own test data on staging. (3) The signed-in browser journeys script (`scripts/run-hosted-browser-journeys.mjs`) has **not** been run. I changed no role, credential or control. The NOT RUN items need an approved organization membership and capabilities for test accounts; the procedure is in `ORYQEN_TEST_ACCOUNT_WORKFLOW.md`, and I will not touch the staging database without the owner's go-ahead.
 
 ## 8. Demonstration instructions
 See `docs/ORYQEN_INSPECTION_DEMONSTRATION_20261116.md`: a ten-minute walk-through (problem, offer submission, assessment, evidence, Passport, employer workspace, trust and privacy) with every step labelled **LIVE**, **RULES**, **AI**, **FIXTURE** or **NOT AVAILABLE**, plus fallbacks.
@@ -111,9 +119,9 @@ P0: no production environment exists; no rehearsed backup and restore; cross-use
 | No broken primary actions | **Not fully verified**: fixture mode only |
 | No blocking console errors | **Fixture mode only**, with the caveat in section 6 |
 | No horizontal overflow at 390/375/360 | **Verified [F]**, 15 of 15 phone cells |
-| Core worker journey tested | **Not verified live [U]** |
+| Core worker journey tested | **Verified at API level on hosted staging, single account [V-reported]** (17 PASS, 0 FAIL); not yet seen in a browser; offer workspace NOT RUN |
 | Employer journey tested | **Explicitly unverified [U]** |
-| Authentication and authorization | **Verified for anonymous callers [V]** (401 on `/api/v1/me`, 403 on a cross-origin write); signed-in role checks not exercised hosted |
+| Authentication and authorization | **Verified for anonymous callers [V]** (401 on `/api/v1/me`, 403 on a cross-origin write) and for one signed-in worker session (sign in, own-data access, sign-out 401) [V-reported]; role checks and cross-user isolation not exercised hosted |
 | CI results | **Verified [V]**, three green runs |
 | Staging deployment SHA | **`62c75d2` [V]** |
 | Screenshots of the five priority screens | **Provided [F]**, 25 images |
