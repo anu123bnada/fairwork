@@ -11,6 +11,8 @@ import "@/components/oryqen/tokens.css";
 import "@/components/oryqen/design-system.css";
 import "@/components/fairwork/ui-polish.css";
 import "@/components/fairwork/ui-v2.css";
+import "@/components/oryqen/replica.css";
+import "@/components/oryqen/replica-phone.css";
 
 export const metadata: Metadata = {
   title: { default: "ORYQEN — Your work, clearly recorded", template: "%s | ORYQEN" },
