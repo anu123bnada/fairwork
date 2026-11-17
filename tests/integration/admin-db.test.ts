@@ -8,6 +8,8 @@ import {twoAccountFlow} from "../../scripts/hosted-two-account-flow.mjs";
 import {followupPage,followupReceipt} from "../../src/features/cases/followup-schema";
 import {organizationListSchema,organizationQueueSchema} from "../../src/features/authority/organization-schema";
 const db=process.env.FAIRWORK_LOCAL_POSTGRES_PORT?await localPostgresConnection():new PGlite();
+// Pin the session time zone to UTC, like the hosted database (TimeZone=UTC). Without this the date window below (built from the UTC date) disagrees with a non-UTC machine in the hours after local midnight.
+await db.exec("set time zone 'UTC'");
 const owner=randomUUID(),admin=randomUUID(),support=randomUUID(),auditor=randomUUID(),worker=randomUUID();
 const claims=(id:string,aal="aal2",age=0)=>({sub:id,role:"authenticated",aal,is_anonymous:false,amr:[{method:"totp",timestamp:Math.floor(Date.now()/1000)-age}]});
 async function rpc(name:string,body:unknown,id:string=owner,aal="aal2",age=0){await db.exec("begin;set local role authenticated");try{await db.query("select set_config('request.jwt.claims',$1,true)",[JSON.stringify(claims(id,aal,age))]);const r=await db.query<{result:Record<string,unknown>}>(`select api.${name}($1::jsonb) result`,[JSON.stringify(body)]);await db.exec("commit");return r.rows[0]!.result;}catch(e){await db.exec("rollback");throw e;}}
