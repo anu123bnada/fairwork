@@ -37,7 +37,7 @@
     "lucide-react": "0.468.0",
     "motion-dom": "12.23.23",
     "motion-utils": "12.23.6",
-    "next": "16.4.1",
+    "next": "16.4.6",
     "pdfjs-dist": "6.4.299",
     "pg": "8.23.1",
     "qrcode": "1.5.4",
