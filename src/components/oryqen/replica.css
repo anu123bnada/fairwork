@@ -15,6 +15,12 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
   --rp-shadow-pop: 0 24px 60px -24px rgba(20, 22, 43, .38);
   --oq-chart-1: #5b4cf0; --oq-chart-2: #a69eff; --oq-chart-3: #2fcf9b; --oq-chart-4: #f5a524; --oq-chart-5: #cfd1e6;
   --ui-side: 0px; --ui-content: 1280px;
+  --rp-btn: var(--rp-violet); --rp-violet-text: var(--rp-violet);
+}
+/* Accessibility (WCAG AA 4.5:1), found by the axe spec after integration: secondary text on the lavender canvas measured 4.14:1, so light mode darkens it; white button text on the dark-mode violet measured 3.87:1, so dark mode uses the deeper violet for button fills. */
+html[lang][data-brand="oryqen"][data-theme="light"]:not(.o1):not(.o2):not(.o3) { --oq-text-2: #4f5b78; --rp-ink-2: #555a77; }
+@media (prefers-color-scheme: light) {
+  html[lang][data-brand="oryqen"]:not([data-theme="light"]):not([data-theme="dark"]):not(.o1):not(.o2):not(.o3) { --oq-text-2: #4f5b78; --rp-ink-2: #555a77; }
 }
 html[lang][data-brand="oryqen"][data-theme="dark"]:not(.o1):not(.o2):not(.o3) {
   --rp-canvas: #0e1022; --rp-card: #181a31; --rp-card-2: #20233f; --rp-line: #2b2e4d;
@@ -23,6 +29,7 @@ html[lang][data-brand="oryqen"][data-theme="dark"]:not(.o1):not(.o2):not(.o3) {
   --rp-navy: #11132a; --rp-navy-2: #1d2040; --rp-navy-3: #2b2f58; --rp-mint-soft: #123a30; --rp-blue-soft: #1c2754;
   --rp-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -26px rgba(0, 0, 0, .8);
   --oq-chart-1: #8d83ff; --oq-chart-2: #5b4cf0; --oq-chart-3: #3fe0ae;
+  --rp-btn: #5b4cf0; --rp-violet-text: #9a91ff;
 }
 @media (prefers-color-scheme: dark) {
   html[lang][data-brand="oryqen"]:not([data-theme="light"]):not([data-theme="dark"]):not(.o1):not(.o2):not(.o3) {
@@ -32,11 +39,14 @@ html[lang][data-brand="oryqen"][data-theme="dark"]:not(.o1):not(.o2):not(.o3) {
     --rp-navy: #11132a; --rp-navy-2: #1d2040; --rp-navy-3: #2b2f58; --rp-mint-soft: #123a30; --rp-blue-soft: #1c2754;
     --rp-shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -26px rgba(0, 0, 0, .8);
     --oq-chart-1: #8d83ff; --oq-chart-2: #5b4cf0; --oq-chart-3: #3fe0ae;
+    --rp-btn: #5b4cf0; --rp-violet-text: #9a91ff;
   }
 }
 
 html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
-  body { background: var(--rp-canvas); color: var(--rp-ink); }
+  /* Only pages that use the product shell take the lavender and navy canvas; public pages (sign in, about, verify) keep their own styling, which has no dark variant for this canvas. */
+  body:has(.fw-product) { background: var(--rp-canvas); color: var(--rp-ink); }
+  .fw-product .fw-method-tabs button:not(.active) { background: var(--rp-card); color: var(--rp-ink); border-color: var(--rp-line); }
   .fw-product { background: transparent; }
 
   /* ================= DESKTOP (>= 768px): top pill navigation, page-title row, card grid ================= */
@@ -57,7 +67,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-product .fw-nav-pill .fw-nav-link { flex-direction: row; justify-content: center; gap: 8px; height: 44px; min-height: 0; padding: 0 22px; border-radius: var(--rp-r-pill); font-size: 13.5px; font-weight: 600; color: #c4c7e6; background: transparent; box-shadow: none; text-decoration: none; }
     .fw-product .fw-nav-pill .fw-nav-link svg { width: 16px; height: 16px; opacity: .85; }
     .fw-product .fw-nav-pill .fw-nav-link:not(.active):hover { background: rgba(255, 255, 255, .08); color: #fff; }
-    .fw-product .fw-nav-pill .fw-nav-link.active { background: var(--rp-violet); color: #fff; box-shadow: 0 10px 22px -10px rgba(91, 76, 240, .9); }
+    .fw-product .fw-nav-pill .fw-nav-link.active { background: var(--rp-btn); color: #fff; box-shadow: 0 10px 22px -10px rgba(91, 76, 240, .9); }
     .fw-product .fw-nav-pill .fw-nav-link.active::before { display: none; }
     .fw-product .fw-nav-pill .fw-nav-fab { display: none; }
     .fw-product .fw-nav-search { grid-column: 3; grid-row: 1; justify-self: end; margin: 0 58px 0 0; width: 46px; height: 46px; padding: 0; border-radius: 50%; display: grid; place-items: center; font-size: 0; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
@@ -68,7 +78,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-product .fw-nav-more-title { list-style: none; cursor: pointer; display: grid; place-items: center; width: 46px; height: 46px; padding: 0; border-radius: 50%; background: var(--rp-card); border: 1px solid var(--rp-line); box-shadow: var(--rp-shadow); font-size: 0; color: var(--rp-ink); }
     .fw-product .fw-nav-more-title::-webkit-details-marker { display: none; }
     .fw-product .fw-nav-more-title::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 7h16M4 12h16M4 17h10' stroke='black' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 7h16M4 12h16M4 17h10' stroke='black' stroke-width='2.2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E") center / contain no-repeat; }
-    .fw-product .fw-nav-more[open] > .fw-nav-more-title { background: var(--rp-violet); color: #fff; border-color: var(--rp-violet); }
+    .fw-product .fw-nav-more[open] > .fw-nav-more-title { background: var(--rp-btn); color: #fff; border-color: var(--rp-violet); }
     .fw-product .fw-nav-more > :not(summary) { position: relative; }
     .fw-product .fw-nav-more[open]::after { content: ""; position: fixed; inset: 0; z-index: -1; }
     .fw-product .fw-nav-more[open] { z-index: 70; }
@@ -80,7 +90,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-product .fw-nav-more { --pop-w: 300px; }
     .fw-product .fw-nav-more[open] > .fw-nav-group:first-of-type { margin-top: 70px; }
     .fw-product .fw-nav-more .fw-nav-sub { color: var(--rp-ink); }
-    .fw-product .fw-nav-more .fw-nav-sub:hover, .fw-product .fw-nav-more .fw-nav-sub.active { background: var(--rp-violet-soft); color: var(--rp-violet); }
+    .fw-product .fw-nav-more .fw-nav-sub:hover, .fw-product .fw-nav-more .fw-nav-sub.active { background: var(--rp-violet-soft); color: var(--rp-violet-text); }
     .fw-product .fw-nav-group-title { color: var(--rp-ink-3); }
     .fw-product :is(.fw-fixed-action, .fw-demo-passport-action) { left: calc(50% - 175px); }
   }
@@ -93,7 +103,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
   .fw-product .fw-hint-card { background: var(--rp-violet-soft); color: var(--rp-ink); border: 0; border-radius: var(--rp-r-card); }
   .fw-product .fw-product-header h1 { color: var(--rp-ink); }
   .fw-product .fw-primary:not(:disabled), .fw-product .fw-hero-primary {
-    background: var(--rp-violet); color: #fff; border: 0; border-radius: var(--rp-r-pill); box-shadow: 0 14px 26px -14px rgba(91, 76, 240, .9);
+    background: var(--rp-btn); color: #fff; border: 0; border-radius: var(--rp-r-pill); box-shadow: 0 14px 26px -14px rgba(91, 76, 240, .9);
   }
   .fw-product .fw-primary:not(:disabled):hover { filter: none; background: var(--rp-violet-deep); }
   .fw-product .fw-secondary { border-radius: var(--rp-r-pill); }
@@ -106,7 +116,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-dash-top .fw-eyebrow { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .fw-dash-top .fw-header-menu { display: none; }
     .fw-dash-top .fw-home-actions { position: absolute; top: 0; right: 0; z-index: 2; display: flex; align-items: center; gap: 10px; height: 50px; }
-    .fw-home-demo-link { position: static; justify-self: start; order: 9; font-size: 12px; }
+    .fw-home-demo-link { position: static; justify-self: start; order: 9; font-size: 12px; color: var(--rp-ink); background: var(--rp-card); border-color: var(--rp-line); }
     .fw-dash .fw-hero { order: 1; } .fw-dash .fw-sum-grid { order: 2; } .fw-dash .oq-insights { order: 3; } .fw-dash .fw-dash-columns { order: 4; } .fw-dash .oq-start { order: 5; }
     .fw-dash .fw-hero-actions { margin-right: 124px; }
     .fw-dash .fw-hero-primary svg { color: #fff; stroke: #fff; }
@@ -129,7 +139,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-dash .fw-journey li { flex: none; }
     .fw-dash .fw-journey a { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px 0 8px; border-radius: var(--rp-r-pill); background: transparent; border: 0; color: var(--rp-ink-2); font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
     .fw-dash .fw-journey .fw-journey-dot { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; background: var(--rp-mint-soft); color: #0e8a63; }
-    .fw-dash .fw-journey li.is-current a { background: var(--rp-violet); color: #fff; box-shadow: 0 10px 20px -12px rgba(91, 76, 240, .9); }
+    .fw-dash .fw-journey li.is-current a { background: var(--rp-btn); color: #fff; box-shadow: 0 10px 20px -12px rgba(91, 76, 240, .9); }
     .fw-dash .fw-journey li.is-current .fw-journey-dot { background: rgba(255, 255, 255, .22); color: #fff; }
     .fw-dash .fw-journey li:not(.is-done):not(.is-current) .fw-journey-dot { background: var(--rp-card-2); color: var(--rp-ink-3); }
 
@@ -139,10 +149,10 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-dash .oq-start-sub { color: var(--rp-ink-2); }
     .fw-dash .oq-start-tile { background: var(--rp-card-2); border: 1px solid transparent; border-radius: var(--rp-r-tile); color: var(--rp-ink); }
     .fw-dash .oq-start-tile:hover { background: var(--rp-violet-soft); border-color: var(--rp-violet-2); }
-    .fw-dash .oq-start-icon { background: var(--rp-violet); color: #fff; border-radius: 14px; }
+    .fw-dash .oq-start-icon { background: var(--rp-btn); color: #fff; border-radius: 14px; }
     .fw-dash .oq-start-text small { color: var(--rp-ink-2); }
-    .fw-dash .oq-start-go { color: var(--rp-violet); }
-    .fw-dash .oq-start-search { color: var(--rp-violet); }
+    .fw-dash .oq-start-go { color: var(--rp-violet-text); }
+    .fw-dash .oq-start-search { color: var(--rp-violet-text); }
 
     /* KPI row: five cards (3 + 2 on a narrow desktop), icon chip top-right, big tabular numeral, mini chart */
     .fw-dash .fw-sum-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 16px; margin: 0; }
@@ -151,13 +161,13 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     @media (min-width: 1200px) { .fw-dash .fw-sum-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); } .fw-dash .fw-sum-card, .fw-dash .fw-sum-card:nth-child(n+4) { grid-column: span 2; } }
     .fw-dash .fw-sum-card:hover { transform: translateY(-2px); box-shadow: var(--rp-shadow-pop); }
     .fw-dash .fw-sum-card::after { display: none; }
-    .fw-dash .fw-sum-icon { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-violet-soft); color: var(--rp-violet); box-shadow: none; }
+    .fw-dash .fw-sum-icon { position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-violet-soft); color: var(--rp-violet-text); box-shadow: none; }
     .fw-dash .fw-sum-icon svg { width: 17px; height: 17px; }
     .fw-dash .fw-sum-card h3 { margin: 0; padding-right: 44px; font-size: 14px; font-weight: 600; color: var(--rp-ink); }
     .fw-dash .fw-sum-value { margin: 8px 0 2px; font-size: 32px; font-weight: 800; letter-spacing: -.02em; color: var(--rp-ink); font-variant-numeric: tabular-nums; }
     .fw-dash .fw-sum-unit { font-size: 16px; color: var(--rp-ink-2); }
     .fw-dash .fw-sum-note { color: var(--rp-ink-2); font-size: 12.5px; margin: 0; }
-    .fw-dash .fw-sum-link { color: var(--rp-violet); font-weight: 700; font-size: 13px; text-decoration: none; }
+    .fw-dash .fw-sum-link { color: var(--rp-violet-text); font-weight: 700; font-size: 13px; text-decoration: none; }
     .fw-dash .fw-sum-chip { background: var(--rp-amber-soft); color: #8a5a00; }
     .fw-dash .oq-bars { height: 56px; gap: 6px; margin-top: 12px; }
     .fw-dash .oq-bars i { max-width: 26px; border: 0; border-radius: 8px 8px 4px 4px; background: #dcd8ff; }
@@ -168,7 +178,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-dash .oq-insights { gap: 16px; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr) minmax(0, 1fr); }
     .fw-dash .oq-insight { background: var(--rp-card); border: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); padding: 22px; }
     .fw-dash .oq-insight h3 { font-size: 16px; color: var(--rp-ink); }
-    .fw-dash .oq-insight header a { color: var(--rp-violet); }
+    .fw-dash .oq-insight header a { color: var(--rp-violet-text); }
     .fw-dash .oq-insight-empty { background: var(--rp-navy); }
     .fw-dash .oq-tick { fill: var(--rp-ink-3); }
     .fw-dash .oq-grid, .fw-dash .oq-axis { stroke: var(--rp-line); }

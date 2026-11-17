@@ -115,6 +115,8 @@ test("the sidebar groups the longer list under plain headings and is present on 
   await setup(page, []);
   await page.goto("/app/workroom");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
+  // The desktop shell keeps the long list in a collapsed "More" menu (design replication); open it before reading the groups.
+  await nav.locator("summary").click();
   for (const group of ["Find work", "Offers and agreements", "My work", "Hiring", "Help and account"]) await expect(nav.getByRole("group", { name: group })).toBeVisible();
   await expect(nav.getByRole("group", { name: "Find work" }).getByRole("link")).toHaveCount(10);
   await expect(nav.getByRole("group", { name: "My work" }).getByRole("link", { name: "Workroom" })).toHaveAttribute("aria-current", "page");
