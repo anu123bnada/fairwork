@@ -4,7 +4,8 @@ Branch `integration/phase-0` = `agent/ui-replication` (2 commits, merged cleanly
 
 Already fixed by Agent 1 so you do not repeat it (28 failures down to 0 locally): axe contrast in light mode (secondary text on the lavender canvas, 4.14:1) and dark mode (white on `#7a6ff6`, 3.87:1; violet text on the card, 4.41:1; split into `--rp-btn` fill and `--rp-violet-text` text tokens), the global dark body colour leaking onto public pages (now `body:has(.fw-product)`), add-offer method chips, the demo chip, and `first-steps.spec.ts:113` (opens the collapsed More menu).
 
-## Group A: owner decision needed (the shell contradicts a recorded requirement) - 8 tests
+## Group A: OWNER DECISION RECORDED 22 Nov 2026: **KEEP THE SIDEBAR** - 8 tests
+**Decision: the side navigation stays (under 200 px on wide screens, as the existing tests require).** The replication must be adapted to a sidebar shell; the top-pill desktop shell is not accepted. Do not edit or relax `desktop-layout.spec.ts` or `report-design.spec.ts`. The text below is the original finding.
 - `desktop-layout.spec.ts:2:64` at 768, 1024, 1280, 1440, 1920 px: expects a side navigation wider than 800 in the measured axis, received 64.
 - `report-design.spec.ts:114:3` at 768, 1280, 1920 px: "on wide screens the side navigation keeps one width, under 200 px", received 1216 (and 704 at 768).
 These tests encode the earlier requirement "keep the side navigation under 200 px" (commit `d1c9bde`). The replication's desktop **top-pill shell** replaces the side navigation, so the requirement and the design disagree. **Agent 1 will not edit or relax these tests.** The owner decides: keep the sidebar (adapt the replication), or retire the requirement deliberately and have the tests rewritten to the new shell with the reason in the commit.
