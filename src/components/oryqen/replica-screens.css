@@ -9,7 +9,7 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
   .fw-product .fw-product-header .fw-back { order: 0; flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
   .fw-product .fw-product-header h1 { order: 1; flex: 1; min-width: 0; margin: 0; text-align: left; font-size: 34px; line-height: 1.1; font-weight: 800; letter-spacing: -.025em; color: var(--rp-ink); }
   .fw-product .fw-product-header .fw-header-actions { order: 2; margin-left: auto; display: flex; align-items: center; gap: 8px; }
-  .fw-product .fw-product-header .fw-header-search { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
+  .fw-product .fw-product-header .fw-header-search { width: 44px; height: 44px; border-radius: 50%; place-items: center; background: var(--rp-card); border: 1px solid var(--rp-line); color: var(--rp-ink); box-shadow: var(--rp-shadow); }
   .fw-product .oq-intro { background: var(--rp-card); border: 1px solid var(--rp-line); border-left: 1px solid var(--rp-line); border-radius: var(--rp-r-card); box-shadow: var(--rp-shadow); color: var(--rp-ink-2); }
   .fw-product .oq-intro-mark { background: var(--rp-violet-soft); color: var(--rp-violet-text); }
   .fw-product .oq-intro-how, .fw-product .oq-intro a { color: var(--rp-violet-text); }
