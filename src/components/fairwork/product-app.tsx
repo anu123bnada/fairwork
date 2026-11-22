@@ -487,6 +487,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
     ["navg.employers", [["applicants", t("nav.applicants")], ["employers-demo", t("nav.employersDemo")]]],
     ["navg.account", [["help", t("nav.help")], ["guidance", t("nav.guidance")], ["notifications", t("nav.notifications")], ["settings", t("nav.settings")], ["demo", t("nav.demo")]]],
   ];
+  const more = groups.flatMap(([, links]) => links);
   const current = (usePathname() ?? "").split("/").pop() ?? "";
   return (
     <>
@@ -508,7 +509,7 @@ function BottomNav({ active, demoPreview }: { active: string; demoPreview: boole
         </Link>
       ))}
       </div>
-      {!demoPreview && <details className="fw-nav-more">
+      {!demoPreview && <details className="fw-nav-more" open={more.some(([route]) => route === current) || undefined}>
         <summary className="fw-nav-more-title">{t("nav.more")}</summary>
         {groups.map(([group, links]) => <div key={group} className="fw-nav-group" role="group" aria-label={t(group)}>
           <span className="fw-nav-group-title" aria-hidden="true">{t(group)}</span>

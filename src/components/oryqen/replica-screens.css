@@ -113,3 +113,6 @@ html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) {
     .fw-product .oq-doclist { grid-template-columns: minmax(0, 1fr); }
   }
 }
+
+/* Screens with a fixed primary action: the last content must stay reachable above the action and the navigation on every width. */
+html[lang][data-brand="oryqen"]:not(.o1):not(.o2):not(.o3) .fw-product:has(.fw-fixed-action, .fw-demo-passport-action) .fw-product-body { padding-bottom: calc(240px + env(safe-area-inset-bottom)); }

@@ -1,11 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
-import { bcp47 } from "@/i18n";
 import { useI18n } from "@/i18n/use-i18n";
 import type { DashboardData } from "./dashboard";
 import { JourneyStrip } from "./dashboard";
 import { openCommandPalette } from "./command-palette";
+import { openNavMenu } from "./menu-sheet";
 
 // Phone composition of the Worker Dashboard (Finology / Finora references). It reads the same data object as the desktop dashboard and invents nothing:
 // every number is derived from the person's own offers and work records, and a failed read says so.
@@ -22,7 +22,7 @@ const path = (d: string) => <svg viewBox="0 0 24 24" width="22" height="22" fill
 const ICON = {
   offer: "M12 5v14M5 12h14", scan: "M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M7 12h10",
   work: "M12 8v5l3 2M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0", passport: "M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4",
-  search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5", bell: "M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7zM10 20a2 2 0 0 0 4 0",
+  menu: "M4 7h16M4 12h16M4 17h10", search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-3.5-3.5", bell: "M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7zM10 20a2 2 0 0 0 4 0",
 };
 
 // Smooth line through the per-record hours (real values only); nothing is drawn when there is nothing to draw.
@@ -42,20 +42,20 @@ function Wave({ values }: { values: number[] }) {
 }
 
 export function MobileHome({ name, data }: { name: string; data: DashboardData }) {
-  const { t, locale } = useI18n();
+  const { t } = useI18n();
   const offers = data.offers.state === "ready" ? data.offers.data.items : null;
   const records = data.records.state === "ready" ? data.records.data.items : null;
   const hours = (value: string) => { const n = Number(value); return Number.isFinite(n) && n > 0 ? n : 0; };
   const verified = records?.filter(item => item.state === "verified") ?? [];
   const verifiedHours = Math.round(verified.reduce((sum, item) => sum + hours(item.hours), 0) * 100) / 100;
   const ordered = records ? [...records].sort((a, b) => a.periodStart.localeCompare(b.periodStart)).slice(-8).map(item => hours(item.hours)) : [];
-  const day = (value: string) => Number.isNaN(Date.parse(value)) ? value : new Date(value).toLocaleDateString(bcp47(locale), { month: "short", day: "numeric" });
   const none = <b className="mh-chip-v">–</b>;
   const first = name.split(" ")[0]!;
   return <div className="mh">
     <header className="mh-top">
       <Link className="mh-avatar" href="/app/settings" aria-label={t("home.openSettings")}>{name.slice(0, 1).toUpperCase()}</Link>
-      <h2 className="mh-hello">{t("home.greeting", { name: first })}</h2>
+      <div className="mh-hello"><p className="mh-eyebrow">{t("home.workspace")}</p><h2>{t("home.greeting", { name: first })}</h2></div>
+      <button type="button" className="mh-round" aria-label={t("v2.menu")} aria-haspopup="dialog" onClick={openNavMenu}>{path(ICON.menu)}</button>
       <button type="button" className="mh-round" aria-label={t("cp.openAria")} onClick={openCommandPalette}>{path(ICON.search)}</button>
       <Link className="mh-round" href="/app/notifications" aria-label={t("home.notifications")}>{path(ICON.bell)}</Link>
     </header>
@@ -71,21 +71,10 @@ export function MobileHome({ name, data }: { name: string; data: DashboardData }
       </ul>
     </section>
 
-    <nav className="mh-actions" aria-label={t("start.aria")}>
+    <div className="mh-actions" role="region" aria-label={t("dash.heroAria")}>
       {([["/app/add-offer", "offer", t("v2.addOffer")], ["/app/scan", "scan", t("nav.scan")], ["/app/work-record", "work", t("nav.record")], ["/app/passport", "passport", t("nav.passport")]] as const).map(([href, icon, label]) => <Link key={href} href={href}><span aria-hidden="true">{path(ICON[icon])}</span>{label}</Link>)}
-    </nav>
+    </div>
 
     <JourneyStrip data={data} />
-
-    <section className="mh-list" aria-label={t("dash.recent")}>
-      <header><h3>{t("dash.recent")}</h3><Link href="/app/check">{t("v2.openCheck")}</Link></header>
-      {data.offers.state === "failed" && <p className="mh-note">{t("dash.unavailable")}</p>}
-      {offers && offers.length === 0 && <p className="mh-note">{t("dash.offersEmpty")} <Link href="/app/add-offer">{t("dash.firstOffer")} →</Link></p>}
-      {offers && offers.slice(0, 4).map((item, index) => <Link key={item.offerId} className="mh-row" href={`/app/check?offerId=${item.offerId}`}>
-        <span className={`mh-row-icon tone-${index % 3}`} aria-hidden="true">{(item.role || "?").slice(0, 1).toUpperCase()}</span>
-        <span className="mh-row-main"><strong>{item.role || t("offers.untitled")}</strong><small>{day(item.createdAt)} · {t("dash.revision", { version: item.version })}</small></span>
-        <span className={`mh-row-pill${item.questions > 0 ? " is-open" : ""}`}>{item.questions > 0 ? t("dash.questionsOpen", { count: item.questions }) : t("dash.noQuestions")}</span>
-      </Link>)}
-    </section>
   </div>;
 }
